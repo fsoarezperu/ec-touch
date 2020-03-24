@@ -1,0 +1,19 @@
+este proyecto maneja la maquina tambox cashbox, que es la version de ka maquina tambox mas sencilla
+ya que no una bashbag. esta configurado el OS para funcionar con el RMS de tambo.
+esta en su ultima version.
+
+
+procedimiento para autostart en raspberry pi, basicamente lo que se busca aqui es
+elegir con que proyecto va a autoarancar y nos estamos basando en el pm2
+
+lo primero es borrar la lista de autoarranque del pm2
+con los siquiente ordenes
+
+pm2 delete server
+
+pm2 pm2 save
+
+pm2 cleardump
+
+con estas 3 lineas lo que hago es borrar la tarea de autoarranque dejando la lista vacia para
+agregar que autoarranque el proyecto que queremos

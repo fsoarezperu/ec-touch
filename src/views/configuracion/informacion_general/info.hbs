@@ -1,0 +1,90 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+  setTimeout(function(){
+  window.location.replace("/");
+  },10000);
+
+  $("#config").click(function(){
+  window.location.replace("/configuracion");
+  });
+  $("#main").click(function(){
+  window.location.replace("/");
+  });
+  //////////////////////////////////////////
+  // Unlock TEBS Cashbox
+  $("#UC").click( function(){
+  socket.emit('unlock_cashbox');
+  });
+  socket.on('unlock_cashbox', function(msg){
+  display_message(msg);
+  });
+  //////////////////////////////////////////
+  // lock TEBS Cashbox
+  $("#LC").click( function(){
+  socket.emit('lock_cashbox');
+  });
+  socket.on('lock_cashbox', function(msg){
+  display_message(msg);
+  });
+  //////////////////////////////////////////
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+      $("#system_running_indicator").show();
+    //document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+      $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Información General</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+
+    <div class="grupo">
+      <!-- <div>Mac address</div>
+      <div>Ip local</div> -->
+      <div>
+<p>Tebs_barcode:{{tebs}}</p>
+<p>relesase version:{{release}}</p>
+
+<p>machine_ip:{{given_ip}}</p>
+<p>machine port:{{given_port}}</p>
+<p>developer:{{developer}}</p>
+<p>support concact:{{support}}</p>
+      </div>
+      <div></div>
+      <div class="btn volver" id='UC'><i class="fas fa-lock-open fa-3x"></i></div>
+      <div></div>
+      <div class="btn volver" id='LC'><i class="fas fa-lock fa-3x"></i></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="btn volver" id='main'>OK</div>
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

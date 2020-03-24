@@ -1,0 +1,185 @@
+<script type="text/javascript">
+  var socket = io();
+  var counter;
+  var counter2;
+ var message_timer;
+ var qty_billx=0;
+$(document).ready(function() {
+  //para dar por finalizada una remesa
+  $("#finish").click(function() {
+    socket.emit('finish', "finalizando remesa");
+    window.clearTimeout(counter);
+    window.clearTimeout(counter2);
+    window.location.replace("/finish/"+qty_billx);
+    //window.location.href("/finish/"+qty_billx);
+  //  window.location.replace("/finish");
+  //  next_page();
+  });
+  //para cancelar el pago de una remesa, solo antes de iniciarse
+  $("#cancelling").click(function() {
+    socket.emit('disable_validator');
+    window.location.replace("/cancelling");
+  });
+  update_in_process({{remesa.monto}});
+  start_timer();
+});
+/////////////////////////////////////////////////////
+socket.on('system_running_indicator', function(msg) {
+  display_system_running_indicator()
+});
+
+/////////////////////////////////////////////////////
+//cuando el validador detecta un billete y lo guarda en su base de datos, pinta en pantalla el monto
+socket.on('nuevo_billete_recivido', function(msg) {
+  socket.emit('nuevo_billete_recivido',msg);
+  var valor_de_billete=msg.monto;
+  var country_code=msg.country_code;
+  //  alert("nuevo_billete_recivido de valor:"+valor_de_billete);
+  update_currency(country_code);
+  $("#cancelling").hide();
+  //display_message(valor_de_billete);
+  var value_read = parseInt(valor_de_billete, 10);
+  acumular_montos_agregados(value_read);
+  pintar_valor_en_pantalla();
+  window.clearTimeout(counter);
+  window.clearTimeout(counter2);
+  console.log("timmer stopped");
+  start_timer();
+
+});
+/////////////////////////////////////////////////////
+socket.on('Staking', function(msg) {
+    display_message("Leyendo Billete");
+      $("#finish").hide();
+  });
+/////////////////////////////////////////////////////
+socket.on('Staked', function(msg) {
+    display_message("Billete Almacenado");
+          $("#finish").show();
+          qty_billx=qty_billx+1;
+          pintar_qty_bill_en_pantalla();
+  });
+/////////////////////////////////////////////////////
+socket.on('Note_Stored_in_Payout', function(msg) {
+    display_message("Billete Almacenado");
+          $("#finish").show();
+          qty_billx=qty_billx+1;
+          pintar_qty_bill_en_pantalla();
+  });
+
+  socket.on('Rejecting', function(msg) {
+      display_message(msg);
+      $("#finish").show();
+    });
+/////////////////////////////////////////////////////
+var depositado = 0;
+function acumular_montos_agregados(monto) {
+  depositado = depositado + monto;
+};
+/////////////////////////////////////////////////////
+function pintar_valor_en_pantalla() {
+  document.getElementById('depositado').innerHTML = depositado + ".00";
+};
+/////////////////////////////////////////////////////
+function display_message(mes_to_display) {
+  window.clearTimeout(message_timer);
+  document.getElementById("message").innerHTML = mes_to_display;
+  message_timer=setTimeout(clear_message, 3000);
+};
+/////////////////////////////////////////////////////
+function clear_message() {
+  document.getElementById("message").innerHTML = "Ingrese dinero"
+};
+/////////////////////////////////////////////////////
+function update_in_process(msg){
+  if(msg == null){
+    console.log("la variable es null");
+    msg=0;
+  }
+  $("#cancelling").hide();
+//  display_message(msg);
+  var value_read = parseInt(msg, 10);
+  acumular_montos_agregados(value_read);
+  pintar_valor_en_pantalla();
+  socket.emit('enable_validator');
+}
+/////////////////////////////////////////////////////
+function start_timer(){
+     console.log("starting timer");
+     var link = document.getElementById('finish');
+     counter2=window.setTimeout(function(){
+     socket.emit('disable_validator');
+     console.log("disabling prior end");
+     },290000);// 10 seconds minus =10 000
+     counter=window.setTimeout(function(){
+     link.click();
+     console.log("timer DONE");
+     },300000); //5 min= 300000
+   }
+   function display_system_running_indicator(){
+     $("#system_running_indicator").show();
+       //document.getElementById("system_running_indicator").innerHTML="." ;
+       setTimeout(clear_system_running_indicator,200);
+     };
+   function clear_system_running_indicator(){
+       $("#system_running_indicator").hide();
+    //   document.getElementById("system_running_indicator").innerHTML="";
+     };
+     function pintar_qty_bill_en_pantalla() {
+       document.getElementById('qty_bill').innerHTML =qty_billx;
+     };
+     /////////////////////////////////////////////////////
+     function update_currency(currency_detected) {
+      // alert(currency_detected);
+       if(currency_detected=="USD"){
+         document.getElementById("currency_val").innerHTML = "$";
+       }
+       if(currency_detected=="PEN"){
+      //   alert ("si fue pen");
+         document.getElementById("currency_val").innerHTML = "S/.";
+       }
+
+
+    };
+function  next_page(){
+const Http = new XMLHttpRequest();
+const url='http://192.168.1.18:3000/finish/'+qty_billx;
+Http.open("GET", url);
+Http.send();
+window.location.replace("/finish");
+};
+</script>
+
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+      <div id="message">Ingrese el dinero</div>
+      <div></div>
+    </div>
+
+    <div class="grupo2">
+    <div></div>
+        <div></div>
+            <div></div>
+        <div></div>
+        <div>
+          <div id="currency_val" class="depositado"style="float:left;"></div><div id="depositado"style="float:initial;">0.00</div>
+          <div style="font-size:28px;">Billetes Leidos:</div><div id="qty_bill" style="font-size:28px;">0</div>
+
+        </div>
+        <!-- </div> -->
+        <div></div>
+        <div></div>
+        <div>
+        <a class="btn btn-primary m-2" id="finish">Terminar REMESA</a>
+        <a class="btn btn-primary m-2" id="cancelling">Cancelar REMESA</a>
+        </div>
+    </div>
+
+  </div>
+  <!-- <div id="message">
+    <ol></ol>
+  </div> -->
+
+</body>

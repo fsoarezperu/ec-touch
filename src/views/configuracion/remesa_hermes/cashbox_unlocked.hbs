@@ -1,0 +1,42 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+  socket.on('Cashbox_Back_in_Service', function(msg){
+    // aqui se asume que la bolsa fue reemplazada y deberia crear la nueva remesa hermes.
+    window.location.replace("/fin_remesa_hermes");
+  });
+  socket.on('Cashbox_out_of_Service', function(msg){
+    // aqui se asume que la bolsa fue reemplazada y deberia crear la nueva remesa hermes.
+  //  window.location.replace("/fin_remesa_hermes");
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div></div>
+      <div>Reemplace la bolsa de dinero</div>
+    </div>
+    <div class="remesa_hermes">
+      <div></div>
+      <div class="mensaje_mediano">
+        <ul>
+          <li>Introduzca la llave y gírela</li>
+          <li>Tire de la manija para retirar el cofre de dinero</li>
+          <li>Retire la bolsa plástica y entregar a Hermes</li>
+          <li>Tome una nueva bolsa de dinero vacía y colóquela en el cofre de dinero</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+</body>

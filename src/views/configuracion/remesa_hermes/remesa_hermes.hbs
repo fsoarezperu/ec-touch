@@ -1,0 +1,71 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+    setTimeout(function(){
+    window.location.replace("/");
+    },10000);
+
+  $("#config").click(function(){
+    window.location.replace("../configuracion");
+  });
+  $("#smart_empty").click( function(){
+    socket.emit('smart_empty',"Smart Empty");
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+});
+socket.on('Smart_emptying', function(msg){
+  window.location.replace("/vaciando");
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+  $("#system_running_indicator").show();
+  //  document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+    $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+    <div class="btn volver" id='config'>Configuracion</div>
+    <div>Remesa Hermes</div>
+    <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+
+<div class="remesa_hermes">
+  <div ></div>
+  <div ></div>
+  <div class="mensaje">Desea proceder con la remesa Hermes? </div>
+  <div ></div>
+  <div ></div>
+
+  <div ></div>
+  <div ></div>
+  <div class="mensaje_pequeno">En este proceso la maquina vaciará todo el dinero disponible para pagos en la bolsa de dinero</div>
+  <div ></div>
+  <div ></div>
+
+  <div ></div>
+  <div ></div>
+  <div class="btn" id='smart_empty' style="width:200px; align:center;">Procesar</div>
+  <div ></div>
+  <div ></div>
+
+ </div>
+
+  </div>
+  <div id="message"><ol></ol></div>
+
+</body>

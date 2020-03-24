@@ -1,0 +1,131 @@
+<script src="  https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    var socket = io();
+////////////////////////////////////////////////////
+    $("#reset").click(function(){
+      socket.emit('reset');
+    });
+    socket.on('reset', function(msg) {
+      alert(msg);
+    });
+////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////
+    $("#enable").click(function(){
+      socket.emit('enable_validator');
+    });
+    socket.on('enable_validator', function(msg) {
+      alert(msg);
+    });
+////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////
+    $("#disable").click(function(){
+
+      socket.emit('disable_validator');
+    });
+    socket.on('disable_validator', function(msg) {
+      alert(msg);
+    });
+////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////
+    $("#initialize").click(function(){
+
+      socket.emit('initialize_system');
+    });
+    socket.on('initialize_system', function(msg) {
+      alert(msg);
+    });
+////////////////////////////////////////////////////
+
+    $("#unlock").click( function(){
+    socket.emit('unlock_cashbox');
+    });
+    //cerrar el cajon del dinero.
+    $("#lock").click( function(){
+    socket.emit('lock_cashbox');
+    });
+
+
+    function display_message(mes_to_display) {
+      document.getElementById("message").innerHTML = mes_to_display;
+      //  $("ol").append("<li>"+mes_to_display+"</li>");
+      setTimeout(clear_message, 3000);
+    };
+
+    function clear_message() {
+      document.getElementById("message").innerHTML = ""
+    };
+    ////////////////////////////////////////////////////
+
+        $("#enable_poll").click( function(){
+        socket.emit('enable_poll');
+        });
+        //cerrar el cajon del dinero.
+        $("#disable_poll").click( function(){
+        socket.emit('disable_poll');
+        });
+
+    ////////////////////////////////////////////////////
+    $("#pay10").click( function(){
+    socket.emit('pay',10);
+    });
+  });
+</script>
+<div class="index">
+  <div class="fondo">
+    <div class="container p-2">
+        <div class="row p-3">
+
+          <div class="col-md-4 mx-auto">
+            <div class="card text-center mt-2 mb-2">
+              <div class="card-body">
+                <h3>SETUP</h3>
+                <a class="btn btn-primary m-2"  id="unlock">unlock</a>
+                <a class="btn btn-primary m-2"  id="lock">lock</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mx-auto">
+            <div class="card text-center mt-2 mb-2">
+              <div class="card-body">
+                <a class="btn btn-primary m-2"  id="reset">reset</a>
+                <a class="btn btn-primary m-2"  id="enable">enable validator</a>
+                <a class="btn btn-primary m-2"  id="disable">disable validator</a>
+                <a class="btn btn-primary m-2"  id="initialize">initialize</a>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mx-auto">
+            <div class="card text-center mt-2 mb-2">
+              <div class="card-body">
+                <a class="btn btn-primary m-2"  id="enable_poll">enable poll</a>
+                <a class="btn btn-primary m-2"  id="disable_poll">disable poll</a>
+
+                <a href="/" class="btn btn-primary m-2">salir</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 mx-auto">
+            <div class="card text-center mt-2 mb-2">
+              <div class="card-body">
+                <a class="btn btn-primary m-2"  id="pay10">Pagar 10 Soles</a>
+                <a class="btn btn-primary m-2"  id="pay20">Pagar 20 Soles</a>
+                <a class="btn btn-primary m-2"  id="pay50">Pagar 50 Soles</a>
+                <a class="btn btn-primary m-2"  id="pay100">Pagar 100 Soles</a>
+                <a class="btn btn-primary m-2"  id="pay200">Pagar 200 Soles</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>

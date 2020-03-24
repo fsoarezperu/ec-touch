@@ -1,0 +1,82 @@
+.button {
+    background-color: #3b77d6;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+.wrapper{
+font-size: 15px;
+  padding: 1em;
+  display:grid;
+  grid-template-columns: auto repeat(3, minmax(100px,200px)) auto;
+  grid-template-rows: repeat(3,auto);
+}
+.titulo{
+    /* background:#eee; */
+}
+.pagar{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: center;
+  /* background:#ddd; */
+}
+#pagar{
+  font-size: 45px;
+  font-weight: bold;
+}
+.vuelto{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: center;
+  /* background:#ccc; */
+  color: rgb(223, 29, 46);
+}
+#vuelto{
+  font-size: 45px;
+  font-weight: bold;
+}
+.depositado{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: center;
+  /* background:#bbb; */
+  color: rgb(29, 31, 223);
+
+}
+#depositado{
+  font-size: 45px;
+  font-weight: bold;
+}
+.acumulado{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: center;
+  /* background:#fff; */
+  color:rgb(128, 156, 10);
+}
+#acumulado{
+  font-size: 45px;
+  font-weight: bold;
+}
+.devuelto{
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  align-items: center;
+  /* background:rgb(162, 33, 101); */
+  color:rgb(128, 156, 10);
+}
+#devuelto{
+  font-size: 45px;
+  font-weight: bold;
+}

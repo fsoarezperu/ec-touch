@@ -1,0 +1,83 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+    setTimeout(function(){
+      window.location.replace("/");
+    },20000);
+  $("#config").click(function(){
+    window.location.replace("../configuracion");
+  });
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+  $("#soporte").click(function(){
+    window.location.replace("/soporte");
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+</script>
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Cuadre Diario</div>
+      <div class="btn volver" id='soporte'>Soporte</div>
+    </div>
+
+    <div class="cuadre_diario">
+      <table>
+        <tr>
+          <th>Tipo</th>
+          <th># Transacciones</th>
+          <th>Monto Acumulado</th>
+        </tr>
+        <tr>
+          <td>Remesas</td>
+          <td>{{totales.no_remesas}}</td>
+          <td>{{totales.moneda}} {{totales.monto_total_remesas}}.00</td>
+        </tr>
+        <tr>
+          <td>Egresos</td>
+          <td>{{totales.no_egresos}}</td>
+          <td>{{totales.moneda}} {{totales.monto_total_egresos}}.00</td>
+        </tr>
+        <tr>
+          <td>Totales</td>
+          <td>{{totales.trans_global}}</td>
+          <td>{{totales.moneda}} {{totales.saldo}}.00</td>
+        </tr>
+
+      </table>
+      <table border="0" class="ok_support">
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td width="30%">
+            <div class="btn volver" id='main'>OK</div>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+</body>

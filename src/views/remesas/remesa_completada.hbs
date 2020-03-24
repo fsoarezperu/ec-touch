@@ -1,0 +1,64 @@
+<script type="text/javascript">
+
+$(document).ready(function(){
+var socket = io();
+
+update_currency({{calculos.mondeda}});
+
+$("#remesa_ok").click( function(){
+  window.location.replace("/");
+});
+check_ok();
+});
+
+function check_ok(){
+  var a="{{calculos.qty}}";
+  var b="{{calculos.qty2}}";
+
+  if(a==b){
+      //alert("LOS BILLETES LEIDOS Y GUARDADOS  CONCIDEN")
+    //document.getElementById(aviso).innerHTML="TODO OK";
+    var link = document.getElementById('remesa_ok');
+    setTimeout(function(){
+      link.click();
+    },10000);
+  }else{
+    alert("LOS BILLETES LEIDOS Y GUARDADOS NO CONCIDEN, ERROR GRAVE")
+  }
+}
+
+function update_currency(currency_detected) {
+ // alert(currency_detected);
+  if(currency_detected=="USD"){
+    document.getElementById("currency_val").innerHTML = "$";
+  }
+  if(currency_detected=="PEN"){
+ //   alert ("si fue pen");
+    document.getElementById("currency_val").innerHTML = "S/.";
+  }
+ }
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+    <div ></div>
+    <div>Remesa Finalizada</div>
+    </div>
+
+<div class="grupo2">
+          <!-- <div> </div> -->
+          <div id="currency_val" class="depositado"style="float:left;"></div>
+          <div  class="mensaje"><h2>Se recibió {{calculos.qty}} de {{calculos.qty2}} billetes por el monto de {{calculos.moneda}} {{calculos.remesa.monto}}.00 </h2></div>
+          <!-- para la remesa #{{remesa.no_remesa}} -->
+          <div> </div>
+          <div> </div>
+          <div>
+            <a class="btn" style="width:120px;" id="remesa_ok">Aceptar</a>
+          </div>
+
+ </div>
+
+  </div>
+  <div id="message"><ol></ol></div>
+
+</body>

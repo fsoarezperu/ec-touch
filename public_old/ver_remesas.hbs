@@ -1,0 +1,75 @@
+<script src="  https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    var socket = io();
+
+    socket.on('refresh_window', function(msg) {
+      socket.emit('refresh_window', msg);
+      window.location.reload(true);
+    });
+  });
+</script>
+<div class="index">
+  <div class="fondo">
+    <div class="container p-2">
+<!-- this is the begging of the table -->
+
+      <div class="col-md-12" >
+
+                        <div style="overflow:auto; max-height:480px; width:100%;">
+
+      <table class="table table-bordered table-hover" >
+                <thead>
+                        <tr>
+                              <th>id</th>
+                              <th>tienda_id</th>
+                              <th>no_caja</th>
+                              <th>codigo_empleado</th>
+                              <th># Remesa</th>
+                              <th>monto</th>
+                              <th>status</th>
+                              <th>rms_status</th>
+                              <th>tebs_barcode</th>
+                              <th>machine_sn</th>
+                              <th>Tipo</th>
+                              <th>options</th>
+                        </tr>
+                </thead>
+
+
+                <tbody>
+                        {{#each remesas}}
+                                <tr>
+                                          <td> {{id}}</td>
+                                          <td> {{tienda_id}}</td>
+                                          <td> {{no_caja}}</td>
+                                          <td> {{codigo_empleado}}</td>
+                                          <td> {{no_remesa}}</td>
+                                          <td> {{monto}}</td>
+                                          <td> {{status}}</td>
+                                          <td> {{rms_status}}</td>
+                                          <td> {{tebs_barcode}}</td>
+                                          <td> {{machine_sn}}</td>
+                                          <td> {{tipo}}</td>
+                                          <td>
+                                          <!-- <a href="/done/{{id}}>" class="btn <%= tasks[i].status ? 'btn-success' : 'btn-dark' %>">Done</a> -->
+                                          <a href="/delete_remesas/{{id}}" class="btn btn-danger">delete</a>
+                                          <a href="/detalle_remesa/{{no_remesa}}" class="btn btn-info">detalle</a>
+                                          </td>
+                                </tr>
+                            {{else}}
+                                <tr>
+                                  <td colspan="11" align="center"> Ninguna remesa aun</td>
+
+                                </tr>
+
+                      {{/each}}
+                </tbody>
+      </table>
+      </div>
+      </div>
+<!-- end of table -->
+      </div>
+    </div>
+  </div>

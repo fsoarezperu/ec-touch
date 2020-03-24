@@ -1,0 +1,6 @@
+pendientes:
+
+-integrar para que las transacciones de remesa, remesa hermes y creditos, se graben tambeiun en nube parelelo a la copia local,
+unsa ves eso funcioanndo aplicar la rutina de sincronizacion que actualiza cuando han habido operaciones mientras la maquina no tenia internet
+
+-incluir rutina para que cuando se publique una actualizacion de software en github tambien se actualize automaticamente en el grupo de maquinas remotas

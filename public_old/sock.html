@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+  <script
+                          src="https://code.jquery.com/jquery-3.4.1.min.js"
+                          integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+                          crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+var socket = io();
+  $('#alert').click(function(){
+  //  alert("alert");
+    socket.emit('alert');
+//    socket.emit('initialize_system');
+  });
+
+  socket.on('alert', function(msg){
+        display_message(msg);
+      });
+
+      socket.on('sock', function(msg){
+            display_message(msg);
+              socket.emit('sock',msg);
+          });
+          socket.on('anuncio_diferido', function(msg){
+                display_message(msg);
+                socket.emit('anuncio_diferido',msg);
+              });
+
+
+function display_message(mes_to_display){
+      document.getElementById("message").innerHTML=mes_to_display;
+    //  $("ol").append("<li>"+mes_to_display+"</li>");
+      setTimeout(clear_message,3000);
+};
+
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+
+});
+  </script>
+
+<title>export socket</title>
+</head>
+<body>
+
+  <h1>Export socket</h1>
+  <button type="button" name="button" id="alert"> send socket alert</button>
+  <div id="message"><ol></ol></div>
+</body>
+</html>

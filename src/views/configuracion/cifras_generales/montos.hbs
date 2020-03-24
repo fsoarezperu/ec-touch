@@ -1,0 +1,95 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+    setTimeout(function(){
+    window.location.replace("/");
+  },20000);
+
+  $("#config").click(function(){
+    window.location.replace("/configuracion");
+  });
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+    $("#system_running_indicator").show();
+    //document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+    $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+</script>
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left fa-1x"></i></div>
+      <div>Cifras Generales</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+
+    <div class="cuadre_diario">
+      <table>
+        <tr>
+          <th>Tipo</th>
+          <th># Billetes</th>
+          <th>Monto Acumulado</th>
+        </tr>
+        <tr>
+          <td>en reciclador</td>
+          <td>{{totbills}}</td>
+          <td>{{moneda}} {{totaccum}}.00</td>
+        </tr>
+        <tr>
+          <td>en bolsa</td>
+          <td></td>
+          <td>{{moneda}} {{monto_en_bolsa}}.00</td>
+        </tr>
+        <tr>
+          <td>Totales</td>
+          <td></td>
+          <td>{{moneda}} {{total_general}}.00</td>
+        </tr>
+
+      </table>
+      <table border="0" class="ok_support">
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td width="30%">
+            <div class="btn volver" id='main'>OK</div>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

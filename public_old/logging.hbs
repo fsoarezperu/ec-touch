@@ -1,0 +1,62 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+
+$("#config").click(function(){
+window.location.replace("/configuracion");
+});
+
+socket.on('inicializando', function(msg){
+     display_message("inicializando TEBS");
+    });
+
+  });
+
+  socket.on('reiniciando', function(msg) {
+    window.location.replace("/");
+  });
+      function display_message(mes_to_display){
+        document.getElementById("message").innerHTML=mes_to_display;
+      //  $("ol").append("<li>"+mes_to_display+"</li>");
+        setTimeout(clear_message,1000);
+      };
+
+      function clear_message(){
+        document.getElementById("message").innerHTML=""
+      };
+</script>
+<body>
+  <div class="wrapper">
+    <div class="titulo">
+    <div class="btn volver" id='config'>Configuration</div>
+    <div>This is the Log in page</div>
+    </div>
+
+<div class="grupo">
+Logging buttons
+ </div>
+
+<div class="keypad">
+<div class="btn key">1</div>
+<div class="btn key">2</div>
+<div class="btn key">3</div>
+<div class="btn key">4</div>
+<div class="btn key">5</div>
+<div class="btn key">6</div>
+<div class="btn key">7</div>
+<div class="btn key">8</div>
+<div class="btn key">9</div>
+<div class="btn key">*</div>
+<div class="btn key">0</div>
+<div class="btn key">#</div>
+</div>
+<div class="grupo">
+  <div class="visor">xxxxxx</div>
+</div>
+
+
+
+  </div>
+  <div id="message"><ol></ol></div>
+
+</body>

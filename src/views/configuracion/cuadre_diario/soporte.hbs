@@ -1,0 +1,38 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+  $("#config").click(function(){
+    window.location.replace("/configuracion");
+  });
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'>Configuración</div>
+      <div>Pendientes en RMS</div>
+    </div>
+
+    <div class="grupo">
+      <div></div>
+      <div># remesas manuales por verificar:{{totales.no_remesas_pend}} y monto acumulado S/.{{totales.monto_total_remesas_pend}}.00</div>
+      <div># egresos manuales por verificar:{{totales.no_egresos_pend}} y monto acumulado S/.{{totales.monto_total_egresos_pend}}.00</div>
+      <div class="btn volver" id='main'>OK</div>
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

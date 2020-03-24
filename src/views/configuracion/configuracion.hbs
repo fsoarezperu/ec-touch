@@ -1,0 +1,173 @@
+<script type="text/javascript">
+var socket = io();
+//var to_TBM = io.connect( 'http://tambox.ddns.net:4000' );
+var to_TBM = io.connect( 'https://tbm-cloud.herokuapp.com' );
+
+$(document).ready(function(){
+//  setTimeout(function(){window.location.replace("/");},10000);
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+  $("#remesa_hermes").click(function(){
+    window.location.replace("/remesa_hermes");
+  });
+  $("#cuadre_diario").click(function(){
+    to_TBM.emit('retrialing',"retrialing");
+    window.location.replace("/cuadre_diario");
+  });
+  $("#info").click(function(){
+    window.location.replace("/info");
+  });
+  $("#montos").click( function(){
+    window.location.replace("/montos");
+  });
+  $("#sincro").click( function(){
+    socket.emit('sincronizando',"sincronizando via sockets");
+    to_TBM.emit('agregar',"orden agregar desde tambox");
+  });
+  $("#test").click( function(){
+  window.location.replace("/test");
+  });
+  $("#reset").click( function(){
+  socket.emit('reset',"reseteando validador");
+  });
+  $("#reset_counters").click( function(){
+  socket.emit('reset_counters',"reseteando contador");
+  });
+  $("#update").click( function(){
+  socket.emit('update_requested',"update requested");
+
+  });
+  socket.on('display_message', function(msg){
+    display_message(msg);
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+
+  socket.on('update_requested', function(msg) {
+  //  alert(msg);
+    window.location.replace("/fin_remesa_hermes");
+  });
+// OVERLAY
+  $('#test-over').on('click', function() {
+    $('#overlay, #overlay-back').fadeIn(500);
+  });
+
+  $("#testy").click(function() {
+    $('#overlay, #overlay-back').fadeOut(500);
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,4000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+      $("#system_running_indicator").show();
+  //  document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+      $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+</script>
+<style media="screen">
+  /* html, body {
+  width  : 100%;
+  height : 100%;
+} */
+.wrapper{
+  position: relative;
+}
+  #overlay-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: 15px;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 5;
+    display: none;
+  }
+
+  #overlay {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+  .grupo3{
+    /* grid-column: 1/5; */
+    min-height:350px;
+    width: 100%;
+    max-width: 700px;
+    /*grid-row: auto; */
+    background-color:  rgba(60, 60, 60, 1);
+    /* background-image: url("../img/bg_image4.jpg"); */
+    color: white;
+    border: 4.5px solid white;
+    border-radius: 15px;
+    padding: 5px;
+    text-align: center;
+    display:grid;
+    grid-template-columns: 0.5fr auto 0.5fr;
+    grid-template-rows:0.5fr 1fr 1fr 0.5fr;
+    }
+</style>
+
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+
+              <div class="popup">
+                <div id="overlay-back"></div>
+                <div id="overlay">
+                  <div class="grupo3">
+                    <div></div><div id="titulo_popup">Titulo</div><div></div>
+                    <div></div><div> YOUR HTML GOES HERE</div><div></div>
+                    <div></div><div></div><div></div>
+                    <div><a class="btn" style="width:120px;" id="opc1">Opcion1</a></div>
+                    <div><a class="btn" style="width:120px;" id="testy">Cerrar</a></div>
+                    <div></div>
+                  </div>
+                  </div>
+              </div>
+
+    <div class="titulo">
+      <div class="btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Configuración</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+    <div class="grupo">
+      <div></div>
+      <div class="btn" id='cuadre_diario'><i class="far fa-clipboard fa-4x"></i> Cuadre diario</div>
+      <div class="btn" id='montos'><i class="fas fa-chart-bar fa-4x"></i> Cifras Generales</div>
+      <div class="btn" id='remesa_hermes'><i class="fas fa-money-bill-alt fa-4x"></i>Remesa Hermes</div>
+      <div class="btn" id='info'><i class="fas fa-info fa-4x"></i>Información General</div>
+      <!-- <div class="btn" id='sincro'><i class="fab fa-hubspot fa-4x"></i>sincronización Manual</div> -->
+      <div></div>
+      <div></div>
+      <div class="btn" id='test'><i class="fab fa-mixcloud fa-4x"></i>testy</div>
+      <div class="btn" id='reset'><i class="fas fa-random fa-4x"></i>reset</div>
+      <div class="btn" id='reset_counters'><i class="fas fa-random fa-4x"></i>reset Counters</div>
+      <!-- <div class="btn" id='update'><i class="fas fa-random fa-4x"></i>update</div> -->
+      <div class="btn" id='test-over'><i class="fab fa-mixcloud fa-4x"></i>test over</div>
+
+    </div>
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+</body>

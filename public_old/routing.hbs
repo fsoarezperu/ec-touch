@@ -1,0 +1,102 @@
+<script type="text/javascript">
+var tog_10=false;
+var tog_20=false;
+var tog_50=false;
+var tog_100=false;
+var tog_200=false;
+
+function toogle(variable,objetox){
+
+if(tog_10==true){
+document.getElementById(objetox).className="select_btn";
+return  tog_10=false;
+}else {
+document.getElementById(objetox).className="unselect_btn";
+return tog_10=true;
+}
+
+}
+var socket = io();
+$(document).ready(function(){
+
+$("#config").click(function(){
+window.location.replace("/configuracion");
+});
+
+$("#test1").click(function(){
+  toogle("tog_10","test1");
+//  alert("hola");
+});
+$("#toggle20").click(function(){
+
+});
+$("#toggle50").click(function(){
+
+});
+$("#toggle100").click(function(){
+
+});
+$("#toggle200").click(function(){
+
+});
+
+socket.on('inicializando', function(msg){
+     display_message("inicializando TEBS");
+    });
+
+  });
+
+      function display_message(mes_to_display){
+        document.getElementById("message").innerHTML=mes_to_display;
+      //  $("ol").append("<li>"+mes_to_display+"</li>");
+        setTimeout(clear_message,1000);
+      };
+
+      function clear_message(){
+        document.getElementById("message").innerHTML=""
+      };
+</script>
+<body>
+  <div class="wrapper">
+    <div class="titulo">
+    <div class="btn volver" id='config'>Configuration</div>
+    <div>Routing page</div>
+    </div>
+
+<div class="grupo">
+ <div class="subgrupo">
+   <div class="select_btn" id="test1">PAYOUT</div>
+   <div class="unselect_btn">CASHBOX</div>
+   <div class="markee">10PEN</div>
+ </div>
+
+ <div class="subgrupo">
+   <div class="select_btn">PAYOUT</div>
+   <div class="unselect_btn">CASHBOX</div>
+   <div class="markee">20PEN</div>
+ </div>
+
+ <div class="subgrupo">
+   <div class="select_btn">PAYOUT</div>
+   <div class="unselect_btn">CASHBOX</div>
+   <div class="markee">50PEN</div>
+ </div>
+
+ <div class="subgrupo">
+   <div class="select_btn">PAYOUT</div>
+   <div class="unselect_btn">CASHBOX</div>
+   <div class="markee">100PEN</div>
+ </div>
+
+ <div class="subgrupo">
+   <div class="select_btn">PAYOUT</div>
+   <div class="unselect_btn">CASHBOX</div>
+   <div class="markee">200PEN</div>
+ </div>
+
+ </div>
+
+  </div>
+  <div id="message"><ol></ol></div>
+
+</body>

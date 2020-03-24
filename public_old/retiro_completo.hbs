@@ -1,0 +1,50 @@
+<script type="text/javascript">
+  var socket = io();
+  $(document).ready(function() {
+
+    $("#main").click(function(){
+    window.location.replace("/");
+    });
+
+    socket.on('note_held_in_bezel', function(msg) {
+      display_message(msg);
+    });
+
+    socket.on('reiniciando', function(msg) {
+     window.location.replace("/");
+    });
+
+  });
+
+  function display_message(mes_to_display) {
+    document.getElementById("message").innerHTML = mes_to_display;
+    //  $("ol").append("<li>"+mes_to_display+"</li>");
+    setTimeout(clear_message, 1000);
+  };
+  function clear_message() {
+    document.getElementById("message").innerHTML = ""
+  };
+</script>
+
+<body>
+  <div class="wrapper">
+    <div class="titulo">
+      <div></div>
+      <div>Pago Completado</div>
+    </div>
+
+    <div class="grupo2">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      Se entrego en total: {{!-- {{pago.monto}}  --}}
+        <div class="btn" id='main'>OK</div>
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

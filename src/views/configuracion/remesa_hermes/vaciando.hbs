@@ -1,0 +1,38 @@
+<script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+  socket.on('Smart_emptied', function(msg){
+    window.location.replace("/smart_empty");
+  });
+  socket.on('Note_Transfered_to_Stacker', function(msg){
+    display_message(msg);
+  });
+  socket.on('jam_recovery', function(msg){
+    display_message(msg);
+  });
+});
+
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+</script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div>Procesando...</div>
+    </div>
+
+    <div class="remesa_hermes">
+      <div class="mensaje_centrado">Espere un momento estamos acomodando los billetes</div>
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

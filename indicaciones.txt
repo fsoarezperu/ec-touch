@@ -1,0 +1,68 @@
+
+-node js v10.13.0 (cuando se actualiza el nodejs es necesario ejecutar npm rebuild para que los modulos depencientes se conecten al
+nueva version de node)
+-express
+- socket.io
+-forever
+-nodemon
+-se crea el archivo webserver
+-se adjunta la interface html personalizada
+- se pone el chromiun en modo kiosk
+- se acomoda de tal forma que el servidor se ejecute forever con nodemon y arranque en boot
+-para poner el pi en modo kiosk
+https://www.youtube.com/watch?v=T9AtKld8USU
+usar esta ruta al final /etc/xdg/lxsession/LXDE-pi/autostart
+
+-se agrego al boot, creando un service
+IMPORTANTE PARA BOOT: sudo update-rc.d tambox_server start 10 2 3 4 5 . stop 90 0 1 6 .
+
+// para ocultar mouse ,sudo apt-get install unclutter
+//PM2 lo es todo para arrancar processes at startup
+
+//para ocultar el cursor se agrega xserver-command= X -nocursor en el file sudo nano /etc/lightdm/lightdm.conf
+
+
+//para coneccion remota se tiene con configurar portforwarding en el router, asiganndo direcion ip fija y puerto 3000
+//luego crear una sesion de no-ip.com en el raspberry, al igual que un hostname en el servicio de www.no-ip.com para que la ddns se mantenga activa
+
+// my dedicated ip is:50.87.75.164
+
+using terminal login into raspberry pi ,ssh pi@ipadress enter  password automation
+cd tambox
+npm start (start the server)
+
+during development you need to disable the autostart in order to start it manually
+pm2 stop server (comando para parar el servidor que corre automaticamente at start up)
+platfornio es la ventana de terminal que necesitas para poder usar ssh desde atom
+
+se agrego github como version control system
+
+
+//ACtualizacion para integrar la base de datos.
+
+the boot/cmdline.txt tenia esto:
+dwc_otg.lpm_enable=0 console=serial0,115200 console=tty4 loglevel=3 root=/dev/mmcblk0p7 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait logo.nologo quiet
+
+// para el splash screen
+sudo nano /etc/rc.local
+omxplayer /home/pi/tambox/intro.mp4 &
+////////////////////////////////////////////////////////////////////////////////////////
+para usar mysqlworkbench con la base de datos de raspberry pi
+se tiene que permitir en la base de datos la conexion remota con otro ip-
+
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+bind-address= 0.0.0.0 saklvar y cerrar el archivo
+sudo systemctl restart mysql.service creiniciar el server
+sudo systemctl restart mariadb.service reiniciar el server
+sudo netstat -anp | grep 3306 confirmar y deberia salir la siguiente linea
+
+tcp       0      0 0.0.0.0:3306          0.0.0.0:*        LISTEN         3213/mysqld
+al final se habilita el usuario de la base de datos
+GRANT ALL ON tambox.* TO 'user1@192.168.1.17' IDENTIFIED BY 'pass1';
+
+    "host": "190.107.180.156",
+    "port": 222,
+
+    "host": "192.168.1.12",
+    "port": 22,
