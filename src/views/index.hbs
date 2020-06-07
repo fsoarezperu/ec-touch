@@ -1,334 +1,468 @@
 <script type="text/javascript">
-var socket = io();
-var tog_validator=true;
-var remote_TBM = io.connect( 'http://192.168.1.17:3000' );
-var is_connected=false;
-var is_cashbox_in_service=true;
-// const pool = require('../database');
-$(document).ready(function(){
-  //  $("#abc").hide();
-  $("#abc").css('visibility', 'hidden');
+var once=true;
+  var socket = io();
+  var tog_validator = true;
+  var remote_TBM = io.connect('http://192.168.1.2:3000');
+  var is_connected = false;
+  var is_cashbox_in_service = true;
+  // const pool = require('../database');
+  $(document).ready(function() {
+    //  $("#abc").hide();
+    $("#abc").css('visibility', 'hidden');
     display_remote_conection();
-  socket.on('tog_validator',function(){
-    if(tog_validator){
-      setTimeout(function(){
-           socket.emit('enable_validator');
-           tog_validator=false;
-      },1000);
-    }else{
-      setTimeout(function(){
-           socket.emit('disable_validator');
-           tog_validator=true;
-      },1000);
+    socket.on('tog_validator', function() {
+      if (tog_validator) {
+        setTimeout(function() {
+          socket.emit('enable_validator');
+          tog_validator = false;
+        }, 1000);
+      } else {
+        setTimeout(function() {
+          socket.emit('disable_validator');
+          tog_validator = true;
+        }, 1000);
+      }
+    })
+    $("#config").click(function() {
+      window.location.replace("/configuracion");
+    });
+
+    $("#deposito").click(function(){
+      socket.emit('deposito',"Deposito requerido");
+    });
+    $("#recibir_pago").click(function(){
+      alert("recibir_pago");
+    });
+    $("#cambio_moneda").click(function(){
+      alert("cambio_moneda");
+    });
+    $("#ayuda").click(function(){
+      alert("ayuda");
+    });
+
+    $("#grabar").click(function(){
+    //  alert("grabando");
+      socket.emit('cerrar_remesa_hermes');
+      $('#overlay,#overlay2,.overlay-back').fadeOut(500);
+    });
+    socket.on('cerrar_remesa_hermes', function(msg) {
+      window.location.replace("/cerrar_remesa_hermes");
+    });
+
+    $("#iniciar_remesa").click(function() {
+      socket.emit('enable_validator');
+      window.location.replace("/iniciar_remesa");
+    });
+    socket.on('deposito', function(msg) {
+      //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
+      //ejecutar via ajax
+      var no_remesa=randomString(8,'#');
+      //var hora_creacion="12:00:00";
+      var today = new Date();
+      var objToday= new Date();
+      var dd = String(today.getDate()).padStart(2, '0');
+      var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      var yyyy = today.getFullYear();
+      today = yyyy+'-'+mm+'-' +dd;
+      var fecha_creacion=today;
+
+      var curHour = objToday.getHours()
+      var	curMinute = objToday.getMinutes()
+	    var curSeconds = objToday.getSeconds()
+      var hora_creacion = curHour+':'+curMinute+':' +curSeconds;
+      $.ajax({
+        url: '/api/nueva_remesa/999/001/12345/'+no_remesa+'/'+ fecha_creacion +'/'+hora_creacion,
+        contentType: "application/json",
+        dataType: 'json',
+        type: "GET",
+        success: function(data) {
+          console.log("Dato guardado via AJAX",data);
+        },
+        error: function(e) {
+          console.log(e.message);
+        }
+
+      });
+    });
+
+    socket.on('refresh_window', function(msg) {
+      window.location.reload(true);
+    });
+    socket.on('comenzar_remesa', function(msg) {
+      socket.emit('enable_validator');
+      window.location.replace("/iniciar_remesa");
+    });
+    socket.on('retiro_en_proceso', function(msg) {
+      window.location.replace("/retiro_en_proceso");
+    });
+    socket.on('system_running_indicator', function(msg) {
+      display_system_running_indicator();
+      online = true;
+    });
+    remote_TBM.on('machine', function(data) {
+      console.log("ticking...");
+    });
+    socket.on('Cashbox_Removed', function(msg) {
+      is_cashbox_in_service = false;
+
+if(once){
+        //$('#out_of_service, #overlay-back').fadeIn(500);
+        $('#out_of_service, .overlay-back').fadeIn(500);
+
+        once=false;
+}
+    //  $('#overlay, #overlay-back').fadeIn(500);
+
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Replaced', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      once=true;
+      muestra_consulta();
+      //  display_message(msg);
+    });
+    var timer3;
+    socket.on('show_connected', function(msg) {
+      is_connected = true;
+      //  $("#abc").show();
+      display_remote_conection();
+      clearTimeout(timer3);
+      console.log("show_connected");
+      clear_conection();
+      //  document.getElementById("abc").css('visibility', 'visible');
+      //    $("#abc").css('visibility', 'visible');
+    });
+    socket.on('show_not_connected', function(msg) {
+      is_connected = false;
+      //$("#abc").hide();
+
+      //document.getElementById("abc").css('visibility', 'hidden');
+      //  $("#abc").css('visibility', 'hidden');
+    });
+
+    socket.on('no_cabezal', function(msg) {
+      window.location.replace("/no_cabezal");
+    });
+
+    function clear_conection() {
+      timer3 = setTimeout(function() {
+        is_connected = false;
+      }, 10000);
     }
-  })
-  $("#config").click(function(){
-    window.location.replace("/configuracion");
-  });
-  $("#iniciar_remesa").click(function(){
-    socket.emit('enable_validator');
-    window.location.replace("/iniciar_remesa");
-  });
-  socket.on('refresh_window', function(msg) {
-    window.location.reload(true);
-  });
-  socket.on('comenzar_remesa', function(msg) {
-    socket.emit('enable_validator');
-    window.location.replace("/iniciar_remesa");
-  });
-  socket.on('retiro_en_proceso', function(msg) {
-    window.location.replace("/retiro_en_proceso");
-  });
-  socket.on('system_running_indicator', function(msg) {
-    display_system_running_indicator();
-    online=true;
-  });
-  remote_TBM.on('machine', function(data) {
-    console.log("ticking...");
-  });
-  socket.on('Cashbox_Removed', function(msg) {
-    is_cashbox_in_service=false;
-    muestra_consulta();
-  //  display_message(msg);
-  });
-  socket.on('Cashbox_Replaced', function(msg) {
-    is_cashbox_in_service=true;
-  //  display_message(msg);
-  });
-  var timer3;
-  socket.on('show_connected', function(msg) {
-    is_connected=true;
-//  $("#abc").show();
-display_remote_conection();
-    clearTimeout(timer3);
-    console.log("show_connected");
-    clear_conection();
-//  document.getElementById("abc").css('visibility', 'visible');
-//    $("#abc").css('visibility', 'visible');
-  });
-  socket.on('show_not_connected', function(msg) {
-    is_connected=false;
-  //$("#abc").hide();
 
-  //document.getElementById("abc").css('visibility', 'hidden');
-//  $("#abc").css('visibility', 'hidden');
-  });
+    function display_remote_conection() {
+      if (is_connected) {
+        $("#abc").css('visibility', 'visible');
 
-  socket.on('no_cabezal', function(msg) {
-  window.location.replace("/no_cabezal");
-  });
+      } else {
+        $("#abc").css('visibility', 'hidden');
 
-  function clear_conection(){
-       timer3=setTimeout(function(){is_connected=false;},10000);
-  }
-  function display_remote_conection(){
-    if (is_connected){
-      $("#abc").css('visibility', 'visible');
-
-    }else{
-      $("#abc").css('visibility', 'hidden');
-
+      }
+      setTimeout(function() {
+        display_remote_conection();
+      }, 5000);
     }
-      setTimeout(function(){display_remote_conection();},5000);
-  }
 
-  $("#info").click(function(){
-    socket.emit('force_serial');
-  });
+    $("#info").click(function() {
+      socket.emit('force_serial');
+    });
 
-  // OVERLAY
+    // OVERLAY
     $('#test-over').on('click', function() {
-      $('#overlay, #overlay-back').fadeIn(500);
+      $('#overlay, .overlay-back').fadeIn(500);
+      console.log("test over click");
     });
 
-    $("#testy").click(function() {
-      $('#overlay, #overlay-back').fadeOut(500);
+    // $("#testy1").click(function() {
+    //   $('#out_of_service, #overlay-back').fadeOut(500);
+    //   console.log("testy1");
+    // });
+
+    $("#testy2").click(function() {
+      $('#overlay, .overlay-back').fadeOut(500);
+      console.log("testy2");
     });
 
-    $("#opc1").click(function() {
+    // $("#opc11").click(function() {
+    //   $('#out_of_service,#overlay-back').fadeOut(500);
+    //   //$('#overlay2, #overlay-back').fadeIn(500);
+    // });
+    $("#opc12").click(function() {
       $('#overlay').fadeOut(500);
-      $('#overlay2, #overlay-back').fadeIn(500);
+      $('#overlay2, .overlay-back').fadeIn(500);
     });
     $("#cancel").click(function() {
       $('#overlay2').fadeOut(500);
       $('#overlay').fadeIn(500);
-    //  $('#overlay, #overlay-back').fadeOut(500);
+      //  $('#overlay, #overlay-back').fadeOut(500);
     });
 
-});
-function display_system_running_indicator(){
+  });
+
+  function display_system_running_indicator() {
     $("#system_running_indicator").show();
-  //  document.getElementById("system_running_indicator").css('visibility', 'visible')
-  //  document.getElementById("system_running_indicator").innerHTML=".";
-    setTimeout(clear_system_running_indicator,200);
+    //  document.getElementById("system_running_indicator").css('visibility', 'visible')
+    //  document.getElementById("system_running_indicator").innerHTML=".";
+    setTimeout(clear_system_running_indicator, 200);
   };
-function clear_system_running_indicator(){
+
+  function clear_system_running_indicator() {
     $("#system_running_indicator").hide();
-  //  document.getElementById("system_running_indicator").css('visibility', 'hidden')
-  //  document.getElementById("system_running_indicator").innerHTML="";
+    //  document.getElementById("system_running_indicator").css('visibility', 'hidden')
+    //  document.getElementById("system_running_indicator").innerHTML="";
   };
-function display_message(mes_to_display){
-    document.getElementById("message").innerHTML=mes_to_display;
-    setTimeout(clear_message,1000);
+
+  function display_message(mes_to_display) {
+    document.getElementById("message").innerHTML = mes_to_display;
+    setTimeout(clear_message, 1000);
   };
-function clear_message(){
-    document.getElementById("message").innerHTML=""
+
+  function clear_message() {
+    document.getElementById("message").innerHTML = ""
   };
-async function muestra_consulta() {
-  // const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-  // var monto=monto_total_remesas[0].totalremesax;
-  console.log("aqui mientra el monto");
-//  console.log(monto);
-  if(!is_cashbox_in_service){
-    $('#overlay, #overlay-back').fadeIn(500);
+  async function muestra_consulta() {
+    const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+    var monto = monto_total_remesas[0].totalremesax;
+    console.log("aqui muestra el monto");
+    //  console.log(monto);
+    if (!is_cashbox_in_service) {
+      $('#overlay, .overlay-back').fadeIn(500);
+    }
   }
+  function randomString(length, chars) {
+    var mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    var result = '';
+    for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+    return result;
 }
 
 </script>
 <style media="screen">
-  /* html, body {
-  width  : 100%;
-  height : 100%;
-} */
-.wrapper{
-  position: relative;
-}
-/* .popup{
-  position: relative;
-} */
-  #overlay-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    border-radius: 15px;
-    opacity: 0.6;
-    filter: alpha(opacity=60);
-    z-index: 5;
-    display: none;
-  }
-
-  #overlay {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-  #overlay2 {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-  .grupo3{
-    /* grid-column: 1/5; */
-    min-height:350px;
-    width: 100%;
-    max-width: 700px;
-    /*grid-row: auto; */
-    background-color:  rgba(60, 60, 60, 1);
-    /* background-image: url("../img/bg_image4.jpg"); */
-    color: white;
-    border: 4.5px solid white;
-    border-radius: 15px;
-    padding: 5px;
-    text-align: center;
-    display:grid;
-    grid-template-columns: 0.5fr auto 0.5fr;
-    grid-template-rows:0.5fr 1fr 1fr 0.5fr;
+    /* html, body {
+    width  : 100%;
+    height : 100%;
+  } */
+    .wrapper {
+      position: relative;
+    }
+    /* .popup{
+    position: relative;
+  } */
+    .overlay-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      border-radius: 15px;
+      opacity: 0.6;
+      filter: alpha(opacity=60);
+      z-index: 5;
+      display: none;
+    }
+    #overlay {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 100%;
+      opacity: 1;
+      z-index: 10;
+      display: none;
+      margin: 0 auto;
+    }
+    #overlay2 {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 100%;
+      opacity: 1;
+      z-index: 10;
+      display: none;
+      margin: 0 auto;
+    }
+    #out_of_service {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 100%;
+      opacity: 1;
+      z-index: 10;
+      display: none;
+      margin: 0 auto;
+    }
+    .grupo3 {
+      /* grid-column: 1/5; */
+      min-height: 350px;
+      width: 100%;
+      max-width: 700px;
+      /*grid-row: auto; */
+      background-color: rgba(60, 60, 60, 1);
+      /* background-image: url("../img/bg_image4.jpg"); */
+      color: white;
+      border: 4.5px solid white;
+      border-radius: 15px;
+      padding: 5px;
+      text-align: center;
+      display: grid;
+      grid-template-columns: 0.5fr auto 0.5fr;
+      grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
     }
 </style>
-
 <body oncontextmenu="return false">
   <div id="loading" style="display:none">Error:<br />El servidor esta paralizado.</div>
-	<div id="display">
-  <div class="wrapper">
-
-
-
-    <div class="titulo2">
-      <!-- <div class=""><div id="system_running_indicator"><i class="fas fa-satellite-dish "></i></div></div> -->
-      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
-         <div id="abc"><i class="fas fa-wifi fa-sm"  id="status_online"></i></div>
-         <!-- <div class="">
+  <div id="display">
+    <div class="wrapper">
+      <div class="titulo2">
+        <!-- <div class=""><div id="system_running_indicator"><i class="fas fa-satellite-dish "></i></div></div> -->
+        <div class="">
+          <div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div>
+        </div>
+        <div id="abc"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
+        <!-- <div class="">
           <i class="fas fa-wifi fa-sm"></i>
          </div> -->
-    <div>EC-TOUCH 1.0 </div>
-<div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
+        <div>EC-TOUCH 1.1 </div>
+        <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
+      </div>
+      <div class="grupo2">
+        <!-- <i class="far fa-list-alt fa-10x"></i> -->
+        <!-- <i class="fas fa-link fa-2x"></i>
+              <i class="fab fa-mixcloud fa-2x"></i>
+              <i class="fas fa-network-wired fa-2x"></i>
+              <i class="fas fa-power-off fa-2x"></i>
+              <i class="fas fa-recycle fa-2x"></i>
+              <i class="fas fa-satellite-dish fa-2x"></i>
+              <i class="fas fa-server fa-2x"></i>
+              <i class="fas fa-share-alt fa-2x"></i>
+              <i class="fas fa-signal fa-2x"></i>
+              <i class="fas fa-wifi fa-2x"></i> -->
+
+        {{#if remesa}}
+          <div> </div>
+          <div>
+            <h1>Remesa lista para procesar</h1>
+            <h1>#:{{remesa.no_remesa}}</h1>
+            <h1>Presione el boton para ingresar el dinero</h1>
+          </div>
+          <div></div>
+          <div></div>
+          <div><a class="btn btn-primary m-4" id="iniciar_remesa">Iniciar remesa</a> </div>
+        {{else}}
+          {{#if retiro}}
+            <h3>Solicitud de Retiro en proceso</h3>
+            <h4>#:{{retiro.no_remesa}}</h4>
+          {{else}}
+            <div class="btn interface_button" id='deposito'><i class="fas fa-cash-register fa-4x"></i><br><div class="interface_label">Deposito</div></div>
+            <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div>
+            <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div>
+            <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div>
+              <!-- <div class="btn" id='info'><i class="fas fa-random fa-4x"></i>send serial</div> -->
+              <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
+            <div class="anuncio">
+              <!-- <img src="img/logo_tambo.png" alt="Tambox" width="500" height="300"> -->
+              <div class="btn interface_button" id='test-over'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Force Close</div></div>
+              <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
+            </div>
+
+          {{/if}}
+        {{/if}}
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="out_of_service">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Cashbox Fuera de Servicio1</div>
+            <div></div>
+            <div></div>
+            <div><i class="fas fa-cogs fa-8x"></i>Inserte el cajon del dinero</div>
+            <div></div>
+            <div></div>
+            <div>El sistema esta desabilitado</div>
+            <div></div>
+            <!-- <div><a class="btn" style="width:120px;" id="opc11">Si</a></div>
+            <div><a class="btn" style="width:120px;" id="testy1">No</a></div> -->
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="overlay">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Estas vaciando la caja?</div>
+            <div></div>
+            <div></div>
+            <div><i class="fas fa-cogs fa-8x"></i>Confirma que esta retirando el dinero?</div>
+            <div></div>
+            <div></div>
+            <div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div>
+            <div></div>
+            <div><a class="btn" style="width:120px;" id="opc12">Si</a></div>
+            <div><a class="btn" style="width:120px;" id="testy2">No</a></div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="overlay2">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Se actualizará la base de datos3</div>
+            <div></div>
+            <div></div>
+            <div>Confirma que esta Retirando el dinero?</div>
+            <div></div>
+            <div></div>
+            <div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div>
+            <div></div>
+            <div><a class="btn" style="width:120px;" id="cancel">Cancelar</a></div>
+            <div><a class="btn" style="width:120px;" id="grabar">ok</a></div>
+            <div></div>
+          </div>
+        </div>
+
+      </div>
     </div>
-<div class="grupo2">
-  <!-- <i class="far fa-list-alt fa-10x"></i> -->
-  <!-- <i class="fas fa-link fa-2x"></i>
-  <i class="fab fa-mixcloud fa-2x"></i>
-  <i class="fas fa-network-wired fa-2x"></i>
-  <i class="fas fa-power-off fa-2x"></i>
-  <i class="fas fa-recycle fa-2x"></i>
-  <i class="fas fa-satellite-dish fa-2x"></i>
-  <i class="fas fa-server fa-2x"></i>
-  <i class="fas fa-share-alt fa-2x"></i>
-  <i class="fas fa-signal fa-2x"></i>
-  <i class="fas fa-wifi fa-2x"></i> -->
-
-  {{#if remesa}}
-  <div> </div>
-  <div><h3>Remesa lista para procesar</h3>
-  <h4>#:{{remesa.no_remesa}}</h4>
-  <h5>Presione el boton para ingresar el dinero</h5>
-</div>
-    <div></div>
-    <div></div>
-    <div><a class="btn btn-primary m-4" id="iniciar_remesa">Iniciar remesa</a> </div>
-{{else}}
-    {{#if retiro}}
-     <h3>Solicitud de Retiro en proceso</h3>
-     <h4>#:{{retiro.no_remesa}}</h4>
-     {{else}}
-     <div></div>
-     <div></div>
-     <div></div>
-     <div></div>
-      <!-- <div class="btn" id='info'><i class="fas fa-random fa-4x"></i>send serial</div> -->
-<!--    <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
-     <div class="anuncio">
-   <!-- <img src="img/logo_tambo.png" alt="Tambox" width="500" height="300"> -->
-
-   
-     <!-- <div class="btn" id='test-over'><i class="fab fa-mixcloud fa-4x"></i>test over</div> -->
-     <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
-
-     </div>
-     {{/if}}
-  {{/if}}
- </div>
-
-
- <div class="popup">
-   <div id="overlay-back"></div>
-   <div id="overlay">
-     <div class="grupo3">
-       <div></div><div id="titulo_popup">Cashbox Fuera de Servicio</div><div></div>
-       <div></div><div> Confirma que esta retirando el dinero?</div><div></div>
-       <div></div><div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div><div></div>
-       <div><a class="btn" style="width:120px;" id="opc1">Si</a></div>
-       <div><a class="btn" style="width:120px;" id="testy">No</a></div>
-       <div></div>
-     </div>
-     </div>
- </div>
-
- <div class="popup">
-   <div id="overlay-back"></div>
-   <div id="overlay2">
-     <div class="grupo3">
-       <div></div><div id="titulo_popup">Se actualizara la base de datos</div><div></div>
-       <div></div><div> Confirma que esta retirando el dinero?</div><div></div>
-       <div></div><div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div><div></div>
-       <div><a class="btn" style="width:120px;" id="cancel">Cancelar</a></div>
-       <div><a class="btn" style="width:120px;" id="grabar">ok</a></div>
-       <div></div>
-     </div>
-     </div>
- </div>
-
-
   </div>
- </div> <!--Display -->
-<!-- <div id="message"><ol></ol></div> -->
-
-<script type="text/javascript">
-/////////////////////////////////////////////////////////////
-var online;
-function updateStatus(variable) {
-  	if(!variable)
-  	{
-  		document.getElementById('display').style.display = 'none';
-  		document.getElementById('loading').style.display = 'inline';
-    }else{
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('display').style.display = 'inline';
+  <!--Display -->
+  <!-- <div id="message"><ol></ol></div> -->
+  <script type="text/javascript">
+    /////////////////////////////////////////////////////////////
+    var online;
+    function updateStatus(variable) {
+      if (!variable) {
+        document.getElementById('display').style.display = 'none';
+        document.getElementById('loading').style.display = 'inline';
+      } else {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('display').style.display = 'inline';
+      }
+      online = false;
     }
-  online=false;
-}
-/////////////////////////////////////////////////////////////
-var tim;
-function control(variable){
-  tim=setTimeout(function(){
-    updateStatus(online);
-  },5000);
-}
-/////////////////////////////////////////////////////////////
-</script>
+    /////////////////////////////////////////////////////////////
+    var tim;
+    function control(variable) {
+      tim = setTimeout(function() {
+        updateStatus(online);
+      }, 5000);
+    }
+    /////////////////////////////////////////////////////////////
+  </script>
 
 </body>

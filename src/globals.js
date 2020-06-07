@@ -143,15 +143,15 @@ global.set_modulus = 0; //this is populated by GET KEYS function.
 global.request_key_exchange = 0;
 
 global.ecount = "00000000";
-global.numero_de_serie="00000";
+global.numero_de_serie="4545405";
 global.country_code;
 global.tebs_barcode = "";
 
 //cuando envia ordenes al tbm de heroku app publica
-global.tbm_adressx="https://tbm-cloud.herokuapp.com";
-//global.tbm_adressx="http://localhost:4000";
+//global.tbm_adressx="https://tbm-cloud.herokuapp.com";
+global.tbm_adressx="http://192.168.1.2:3000";
 global.release_version="1.0";
-global.machine_ip="192.168.1.18";
+global.machine_ip="192.168.1.3";
 global.machine_port="3000";
 global.machine_developer="EC-HOME AUTOMATION";
 global.machine_support="fsoarez@hotmail.com";

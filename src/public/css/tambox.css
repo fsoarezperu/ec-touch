@@ -259,3 +259,12 @@ li{
   /* text-shadow: 1px 1px 1px #ccc; */
   /* font-size: 1em; */
 }
+.interface_button{
+  margin:5px;
+}
+.interface_label{
+  margin:5px;
+  font-size: 28px;
+}
+.btn:hover{background-color:orange;}
+.btn:focus{background-color:red;}

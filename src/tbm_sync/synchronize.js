@@ -10,7 +10,7 @@ const io = require("../server.js");
 //const glo = require('./globals');
 
 var machine_sn=numero_de_serie;
-
+console.log("machine_sn="+numero_de_serie);
 var sinchronized=false;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function are_synched(){
@@ -21,8 +21,9 @@ var current_local_records=local_n_records[0].local_n_records;
 if(!current_local_records==0){
   console.log(chalk.yellow("localmente existen:"+current_local_records+" records."));
     // -envia socket consultando # de records existentes en remoto where machine-sn
-    io.to_tbm.emit('consultando_excistencia_de_records',machine_sn);
-  var current_remote_records=5;
+    //io.to_tbm.emit('consultando_excistencia_de_records',machine_sn);
+
+  var current_remote_records=consultar_cantidad_de_remesas_a_servidor_remoto();
   console.log(chalk.yellow("remotamente existen:"+current_remote_records+" records."));
   if(current_local_records==current_remote_records){
    // -SI local records y remote records coinciden the se pone en true la variable “synchhronized” y se muestra icono en pantalla visual.
@@ -100,3 +101,13 @@ function remote_update(id){
       console.log("updading... id:"+id);
   // function remote_update= every time a transaction is done on the machine , this function will be used to send via sockets the transaccion just accomplished , manteining both machines always synced
 };
+
+function consultar_cantidad_de_remesas_a_servidor_remoto(){
+  //enviar orden via socket
+  // -envia socket consultando # de records existentes en remoto where machine-sn
+  io.to_tbm.emit('consultando_excistencia_de_records',machine_sn);
+  //esperar respuesta del socket
+
+  //continuar con la tarea
+  return 1;
+}

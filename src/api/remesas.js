@@ -29,13 +29,13 @@ tambox.ensureIsSet().then(async function(){
          hora,
          moneda:country_code,
          tebs_barcode:tebs_barcode,
-         machine_sn:numero_de_serie,
+         machine_sn:serialN,
          tipo:'ingreso'
        }
    await pool.query('INSERT INTO remesas set ?', [nueva_res]);
        ready_for_pooling=true;
      io.io.emit('comenzar_remesa',"INICIAR REMESA");
-     res.json(nueva_res);
+     //res.json(nueva_res);
 
    }else {
      res.json('Datos incompletos, revise documentacion');
@@ -64,7 +64,7 @@ tambox.ensureIsSet().then(async function(){ //esto es el promise
            ready_for_pooling=true;
   })
 });
-router.get('/terminar_remesa/:no_remesa',async(req,res)=>{
+router.get('/terminar_remesa:no_remesa',async(req,res)=>{
 tambox.ensureIsSet().then(async function(){
     //ready_for_pooling=false;
     if(on_startup==false){
@@ -100,11 +100,12 @@ tambox.ensureIsSet().then(async function(){
               Http.open("GET",url);
               Http.send();
               ////////////////////////////actualizando la remesa hermes para que refleje el nuevo monto de remesa ingresado
+              const no_billetes= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
               const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
               const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
               // await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado'");
               const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
-                  console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes);
+                  console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:");
               await pool.query("UPDATE remesa_hermes SET monto=? WHERE status='iniciada'",[monto_remesa_hermes]);
               ////
               res.json(remesax);

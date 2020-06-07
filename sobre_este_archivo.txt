@@ -11,9 +11,9 @@ con los siquiente ordenes
 
 pm2 delete server
 
-pm2 pm2 save
+pm2 save
 
 pm2 cleardump
 
 con estas 3 lineas lo que hago es borrar la tarea de autoarranque dejando la lista vacia para
-agregar que autoarranque el proyecto que queremos
+agregar que autoarranque el proyecto que queremos indicando su ruta de acceso para ser ejecutado.

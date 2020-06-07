@@ -48,7 +48,7 @@ app.engine('.hbs', exphbs({
 app.set('view engine', '.hbs');
 /////////////////////////////////////////////////////////////////////
 function logea(texto,variable){
-if(typeof(variable) !='undefined'){if(view_log){console.log(texto+variable);};}else{if(view_log){console.log(texto);}; }}
+if(typeof(variable) !='undefined'){if(view_log){console.log(texto+variable);log(texto)};}else{if(view_log){console.log(texto);}; }}
 module.exports.logea=logea;
 //////////////////////////////////////////////////////////////////////
 var http = require('http').Server(app);
@@ -57,8 +57,8 @@ var io = require('socket.io', {rememberTransport: false,transports: ['Flash Sock
 
 exports.io = io; //this is to be used by other files on the project and be able to send emit by socket io.
 //////////////////////////////////////////////////////////////////////
-//var to_tbm = require("socket.io-client")('http://tambox.ddns.net:4000');
-var to_tbm = require("socket.io-client")('https://tbm-cloud.herokuapp.com');
+var to_tbm = require("socket.io-client")('http://192.168.1.2:3000');
+//var to_tbm = require("socket.io-client")('https://tbm-cloud.herokuapp.com');
 
 exports.to_tbm=to_tbm;
 to_tbm.on("connect", function() {
@@ -72,7 +72,7 @@ to_tbm.on("connect", function() {
     console.log("ticking...");
   });
   console.log("Connected to Tambox Manager");
-    io.emit('show_connected');
+  io.emit('show_connected');
   tbm_status=true;
   tambox_manager_ping();
 });
@@ -200,6 +200,7 @@ io.on('connection', function(socket) {
           logea("/////////////////////////////////");
           })
       })
+      io.emit('finish',"finish sent");
    });
   socket.on('refresh_window', function(msg) {
       console.log(msg);
@@ -270,16 +271,41 @@ console.log("country code:"+ttt);
   console.log(chalk.green(msg));
   io.emit('update_requested',"display message from update_requested");
 });
-socket.on('no_cabezal', function(msg) {
-console.log(chalk.green(msg));
-io.emit('no_cabezal',"display message from update_requested");
-});
+  socket.on('no_cabezal', function(msg) {
+  console.log(chalk.green(msg));
+  io.emit('no_cabezal',"display message from update_requested");
+  });
+  socket.on('deposito', function(msg) {
+  console.log(chalk.green(msg));
+  io.emit('deposito',"deposito sent");
+  });
+  socket.on('volver', function(msg) {
+  console.log(chalk.green(msg));
+  io.emit('volver',"volver sent");
+  });
+  socket.on('comenzar_remesa', function(msg) {
+  console.log(chalk.green(msg));
+  io.emit('comenzar_remesa',"comenzar_remesa sent");//
+  });
 
+  socket.on('cerrar_remesa_hermes', function(msg) {
+  console.log(chalk.green(msg));
+  io.emit('cerrar_remesa_hermes',"cerrar_remesa_hermes sent");//
+  });
+  // socket.on('comenzar_remesa', function(msg) {
+  // console.log(chalk.green(msg));
+  // io.emit('comenzar_remesa',"comenzar_remesa sent");
+  // });
+  socket.on('no_records', function(msg) {
+  console.log(chalk.green(msg));
+  //io.emit('cerrar_remesa_hermes',"cerrar_remesa_hermes sent");//
+  });
 });
 /////////////////////////////////////////////////////////
 function start_tebs_validator(){
   logea("/////////////////////////////////");
   console.log("Startup Initiated");
+
 //cleaRING COUNT FOR ENCRIPTION;
   it.zerox=false;
   ecount="00000000";
@@ -316,7 +342,7 @@ function sync_and_stablish_presence_of_validator() {
     return it.envio_redundante(poll)//<--------------------- poll
   })
   .then(data => {
-    logea(chalk.yellow('<-:'),chalk.yellow(data));
+    logea(chalk.yellow('<-:.'),chalk.yellow(data));
     return it.handlepoll2(data);
   })
   .then(data => {
@@ -573,7 +599,8 @@ function set_channel_inhivits(){
         console.log("Listo...");
         /////////////////////////////////////////////////////
         it.enable_sending();
-        poll_loop(); //esto tiene que descomentarse para que sea utilizado por remesa nueva.
+        exports.provisiona_remesa();
+        //poll_loop(); //esto tiene que descomentarse para que sea utilizado por remesa nueva.
 //        enable_validator() //bypass the enable until a new remesa has begun.
      })
   //   .catch(error => it.retrial(error))
@@ -588,7 +615,8 @@ function enable_validator(){
         it.handlepoll(data);
         console.log(chalk.green("validator is enabled"));
         logea("/////////////////////////////////");/////////////////////////////");
-        poll_loop();
+
+
       })
   //    .catch(error => it.retrial(error))
 
@@ -598,26 +626,25 @@ function poll_loop(){
   it.ensureIsSet().then(async function(){
         io.emit('system_running_indicator');//indica el punto intermitente en interface para notar que el programa esta corriendo adecuadamente.
         //  io.emit('tog_validator');
-
             if(ready_for_sending){
-            //  logea(chalk.green('ready for sending is:'),chalk.green(ready_for_sending));
                         if(ready_for_pooling){
-                          // logea(chalk.cyan('ready for pooling is:'),chalk.green(ready_for_pooling));
-                              console.log(chalk.magentaBright("POLL command sent"));
-                              // logea(chalk.magentaBright('POLL command sent'));
+                              console.log(chalk.magentaBright("POLL"));
                               clearTimeout(timer2);
                               return it.envio_redundante(poll)//<--------------------- poll
                               .then( data => {
-                              logea(chalk.yellow('<-:'),chalk.yellow(data));
-                              it.handlepoll(data);
-                              logea("/////////////////////////////////");
-                              setTimeout(poll_loop,300); //auto renew the poll trigger;
-                              })
+                                              logea(chalk.yellow('<-:'),chalk.yellow(data));
+                                              it.handlepoll(data);
+                                              logea("//////////////////////////");
+                                              //para logging en file
+                                              log("<-:"+data);
+                                              log("///////// RECEIVED ////////////")
+                                              /////////////////////////////////////////
+                                              setTimeout(poll_loop,300); //auto renew the poll trigger;
+                                              })
                               .catch(error => {console.log(error);console.log("error externo");})
                         }else{
                         console.log("poll disabled");
-                      //  ready_for_pooling=true; // este lo calmbie al ultimo billete perdido
-                        }// end of if
+                        }
               }else{
                 console.log("ready for sending is off");
               }
@@ -677,22 +704,85 @@ timer2=setTimeout(()=>{
   },5000);
 }
 /////////////////////////////////////////////////////////
+//async function provisiona_remesa(){
+exports.provisiona_remesa=async function(){
+
+  //si no existe una remesa que tenga una
+  console.log("Provisionando Remesa");
+  //consultar sin existen remesas en estado 'iniciada'
+  const total_tienda_id = await pool.query("SELECT COUNT(id) AS cantidad_remesas FROM remesa_hermes WHERE status='iniciada'");
+  if(total_tienda_id[0].cantidad_remesas==0){
+    console.log("No existen remesas en estado iniciado, por lo que se generara una automaticamente.");
+
+    const ultimo_no_remesa_hermes = await pool.query("SELECT MAX(tebs_barcode) AS ultimo FROM remesa_hermes WHERE validator_type='NV200 spectral'");
+    const consecutivo=ultimo_no_remesa_hermes[0].ultimo+1
+    tebs_barcode=consecutivo;
+    console.log("nuevo_tebs_es:"+tebs_barcode);
+    const remesa_autogenerada={
+      monto:0,
+      tebs_barcode:consecutivo,
+      machine_sn:serialN,
+      status:"iniciada",
+      moneda:country_code,
+      no_billetes:0,
+      validator_type:note_validator_type
+    }
+      const total_tienda_id = await pool.query("INSERT into remesa_hermes set ?",[remesa_autogenerada]);
+      console.log("Nueva remesa provisionada satisfactoriamente");
+  }else{
+    console.log("Remesa hermes iniciada existente, no hubo cambios");
+  }
+//  console.log(total_tienda_id);//
+  poll_loop();
+}
+exports.provisiona_remesa2=async function(){
+
+  //si no existe una remesa que tenga una
+  console.log("Provisionando Remesa");
+  //consultar sin existen remesas en estado 'iniciada'
+  const total_tienda_id = await pool.query("SELECT COUNT(id) AS cantidad_remesas FROM remesa_hermes WHERE status='iniciada'");
+  if(total_tienda_id[0].cantidad_remesas==0){
+    console.log("No existen remesas en estado iniciado, por lo que se generara una automaticamente.");
+
+    const ultimo_no_remesa_hermes = await pool.query("SELECT MAX(tebs_barcode) AS ultimo FROM remesa_hermes WHERE validator_type='NV200 spectral'");
+    const consecutivo=ultimo_no_remesa_hermes[0].ultimo+1
+    tebs_barcode=consecutivo;
+    console.log("nuevo_tebs_es:"+tebs_barcode);
+    const remesa_autogenerada={
+      monto:0,
+      tebs_barcode:consecutivo,
+      machine_sn:serialN,
+      status:"iniciada",
+      moneda:country_code,
+      no_billetes:0,
+      validator_type:note_validator_type
+    }
+      const total_tienda_id = await pool.query("INSERT into remesa_hermes set ?",[remesa_autogenerada]);
+      console.log("Nueva remesa provisionada satisfactoriamente");
+  }else{
+    console.log("Remesa hermes iniciada existente, no hubo cambios");
+  }
+//  console.log(total_tienda_id);//
+  return;
+}
+/////////////////////////////////////////////////////////
 http.listen(3000, function() {
   console.log('Tambox 1.0 Running...');
    on_startup=true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
    console.log("indica que esta en startup");
   // ////////////////////////////////////////////////////
    it.finalizar_pagos_en_proceso();
-
+   tbm.are_synched();
    //it.verifica_coneccion_validador();
 
   // if (global.is_head_online==true){
-      start_tebs_validator();
+      start_tebs_validator();///
+      log("Validador Inicio")
   // }else{
   //   console.log("Cabezal no conectado.");
   // };
 
-// tbm.are_synched();
+
 //testing
   // ////////////////////////////////////////////////////
 //envio_ciclico(poll);

@@ -1,3 +1,4 @@
+const log = require('log-to-file');
 const it = require('./server');
 var aesjs = require('aes-js');
 const chalk=require('chalk');
@@ -84,6 +85,7 @@ port.on('open', function () {
 
 port.on('close', function (err) {
     console.log(chalk.red('port closed', err));
+    global.is_head_online=false;
 });
 
 port.on('error', function(err) {
@@ -152,6 +154,8 @@ function prepare_command_to_be_sent(command){
   single_command = lastFive.toUpperCase();
   //console.log(chalk.cyan('->:' + single_command)); //IMPRIME MENSAJE DE SALIDA LIMPIO
   it.logea(chalk.cyan('->:'),chalk.cyan(single_command));
+  //para el archivo log;
+  log("->:"+single_command);
   var hexiando = "0x" + chunk(command_listo, 2).join('0x');
   hexiando = hexiando.match(/.{1,4}/g);
   formed_command_to_send = hexiando;
@@ -1096,14 +1100,14 @@ exports.handleGetSerialNumber=function(data){
   var number_of_byte = get_count_bytes_received();
   var myData = received_command.substr(2, number_of_byte + 2);
   var firstbyte = myData.substr(0, 2);
-  var serialN = myData.substr(2, 8);
-  serialN = parseInt(serialN, 16);
+  var serialNx = myData.substr(2, 8);
+  global.serialN = parseInt(serialNx, 16);
   //var machine_sn = serialN;
   //exports.machine_sn = machine_sn;
   //numero_de_serie=machine_sn;
-  numero_de_serie=serialN;
+  numero_de_serie=global.serialN;
 
-  console.log(chalk.green("The serial number is:" + serialN));
+  console.log(chalk.green("The serial number is:." + global.serialN));
   //console.log("/////////////////////////////////");
     enable_sending();
 }
@@ -1123,7 +1127,7 @@ exports.handleSetInhivits=function(data){
  }
 ////////////////////////////////////////////////////
 //global.bag_barcode;
-exports.handleGetTebsBarcode=function(data){
+exports.handleGetTebsBarcode=async function (data){
   var number_of_byte = get_count_bytes_received();
   var myData = received_command.substr(2, number_of_byte + 2);
   var pointer = 0;
@@ -1140,6 +1144,12 @@ exports.handleGetTebsBarcode=function(data){
     tebs_barcode = tebs_barcode.concat(i);
   }
   console.log(chalk.green("tebs barcode is:" + tebs_barcode));
+//si ews cero que kle ponga el numero mayor disponible en estatus iniciada
+const ultimo_no_remesa_hermes= await pool.query("SELECT MAX(tebs_barcode) AS ultimo FROM remesa_hermes WHERE validator_type='NV200 spectral'");
+const consecutivo=ultimo_no_remesa_hermes[0].ultimo
+tebs_barcode=consecutivo;
+console.log("el_tebs_calculado_es:"+tebs_barcode);
+
   //var mytebsbarcode = tebs_barcode;
 //  bag_barcode=tebs_barcode;
   //exports.mytebsbarcode = mytebsbarcode;
@@ -1481,7 +1491,8 @@ exports.get_all_levels_value=function (){
   console.log("consultando all levels");
   exports.envio_redundante(get_all_levels)
   .then(data => {
-    console.log(chalk.yellow("<-:"+data));
+    console.log(chalk.yellow("<-:."+data));
+
     exports.enable_sending();
     var poll_responde=data.match(/.{1,2}/g);
   console.log("response length:"+poll_responde[0]);
