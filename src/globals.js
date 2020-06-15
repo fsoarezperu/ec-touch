@@ -1,13 +1,36 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
-global.slave_adress = '10';
+//var seq_bit = 1;
+global.view_log=false;
+global.seq_bit=0;
+global.sync=false;
+global.validator_address = '00';
 global.smart_hopper_address = '10';
+global.device='';
+global.setGenerator="";
+global.pre_set="";
+global.slave_count=0;
 //comands to send on Communication
 global.trash = [0X01, 0XAF];
-global.fail_test = [0X01, 0X06]; //fail test
+//global.fail_test = [0X01, 0X06]; //fail test
 global.synch = [0X01, 0X11];
 global.reset = [0X01, 0X01];
 global.host_protocol_version = [0X02, 0X06, 0X08];
+global.hopper_protocol_version = [0X02, 0X06, 0X07];
+global.set_coin_amount_10c=[0X0A, 0x34, 0x14, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x14 =20 monedas de 10c.
+global.set_coin_amount_20c=[0x0A, 0x34, 0x06, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x06 =6 monedas de 20c.
+global.set_coin_amount_50c=[0x0A, 0x34, 0x04, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x04 =4 monedas de 50c.
+global.set_coin_amount_1s=[0x0A, 0x34, 0x04, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x04 =4 monedas de 1so.
+global.set_coin_amount_2s=[0x0A, 0x34, 0x01, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x01 =1 monedas de 2so.
+global.set_coin_amount_5s=[0x0A, 0x34, 0x01, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x01 =1 monedas de 5so.
+
+global.pay10c=[0X0C, 0x46, 0x01, 0x01, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x14 =20 monedas de 10c.
+global.pay20c=[0x0C, 0x46, 0x01, 0x01, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x06 =6 monedas de 20c.
+global.pay50c=[0x0C, 0x46, 0x01, 0x01, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x04 =4 monedas de 50c.
+ global.pay1s=[0x0C, 0x46, 0x01, 0x01, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x04 =4 monedas de 1so.
+ global.pay2s=[0x0C, 0x46, 0x01, 0x01, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x01 =1 monedas de 2so.
+ global.pay5s=[0x0C, 0x46, 0x01, 0x01, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x01 =1 monedas de 5so.
+
 global.poll = [0X01, 0X07];
 global.get_serial_number = [0X01, 0X0C];
 global.desable = [0X01, 0X09];
@@ -47,7 +70,7 @@ global.float_by_denomination = [0X01, 0X46];
 global.empty_all = [0X01, 0X3F];
 global.set_options = [0X01, 0X50];
 global.get_options = [0X01, 0X51];
-global.coin_mech_global_inhibit = [0X01, 0X49];
+global.coin_mech_global_inhibit = [0X02, 0X49,0x01];
 global.smart_empty = [0X01, 0X52];
 global.cashbox_payout_operation_data = [0X01, 0X53];
 global.get_all_levels = [0X01, 0X22];
@@ -91,6 +114,28 @@ global.payout_amount_by_denomination = [0X01, 0X39];
 global.coin_escrow = [0X01, 0X3A];
 global.slave_reset = [0X01, 0XF1];
 
+//for hopper_
+//for channel_1 - 10soles  [3B][00][0A 00 00 00 ][50 45 4E] al cashbag PEN
+global.send_10_centimos_a_reciclaje = [0x09, 0X3B, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_10_centimos_a_caja =  [0x09, 0X3B, 0X01, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+//for channel_2 - 20soles  [3B][01][14 00 00 00 ][50 45 4E] al payout  PEN
+global.send_20_centimos_a_reciclaje = [0x09, 0X3B, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_20_centimos_a_caja =  [0x09, 0X3B, 0X01, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+//for channel_3 - 50soles  [3B][01][32 00 00 00 ][50 45 4E] al payout  PEN
+global.send_50_centimos_a_reciclaje = [0x09, 0X3B, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_50_centimos_a_caja =  [0x09, 0X3B, 0X01, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+//for channel_4 - 100soles [3B][00][64 00 00 00 ][50 45 4E] al cashbag PEN
+global.send_1_sole_a_reciclaje = [0x09, 0X3B, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_1_sole_a_caja =  [0x09, 0X3B, 0X01, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+//for channel_5 - 200soles [3B][00][C8 00 00 00 ][50 45 4E] al cashbag PEN
+global.send_2_soles_a_reciclaje = [0x09, 0X3B, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_2_soles_a_caja =  [0x09, 0X3B, 0X01, 0X20, 0XC8, 0X00, 0X00, 0X50, 0X45, 0X4E];
+//for channel_5 - 200soles [3B][00][C8 00 00 00 ][50 45 4E] al cashbag PEN
+global.send_5_soles_a_reciclaje = [0x09, 0X3B, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.send_5_soles_a_caja =  [0x09, 0X3B, 0X01, 0X20, 0XF4, 0X01, 0X00, 0X50, 0X45, 0X4E];
+
+////////////////////////////////
+
 //for channel_1 - 10soles  [3B][00][0A 00 00 00 ][50 45 4E] al cashbag PEN
 global.send_10_soles_a_cashbag = [0x09, 0X3B, 0X01, 0XE8, 0X03, 0X00, 0X00, 0X50, 0X45, 0X4E];
 global.send_10_soles_a_payout =  [0x09, 0X3B, 0X00, 0XE8, 0X03, 0X00, 0X00, 0X50, 0X45, 0X4E];
@@ -124,7 +169,7 @@ global.pay_amount= [0x09, 0x33, 0xD0, 0x07, 0x00, 0x00, 0x50, 0x45, 0x4E, 0x58];
 global.on_startup=false;
 global.ready_for_pooling = true;
 global.ready_for_sending = true;
-global.view_log=true;
+
 global.tbm_status=true;
 /////////////////////////////////////////////////////////////////////////////////////
 global.received_cleaned;
@@ -143,16 +188,16 @@ global.set_modulus = 0; //this is populated by GET KEYS function.
 global.request_key_exchange = 0;
 
 global.ecount = "00000000";
-global.numero_de_serie="00000";
+global.numero_de_serie="4545405";
 global.country_code;
 global.tebs_barcode = "";
 
 //cuando envia ordenes al tbm de heroku app publica
-global.tbm_adressx="https://tbm-cloud.herokuapp.com";
-//global.tbm_adressx="http://localhost:4000";
+//global.tbm_adressx="https://tbm-cloud.herokuapp.com";
+global.tbm_adressx="http://192.168.1.7:3000";
 global.release_version="1.0";
-global.machine_ip="192.168.1.18";
-global.machine_port="3000";
+global.machine_ip="192.168.1.16";
+global.machine_port="0000";
 global.machine_developer="EC-HOME AUTOMATION";
 global.machine_support="fsoarez@hotmail.com";
 global.is_head_online=true;

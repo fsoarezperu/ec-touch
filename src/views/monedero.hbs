@@ -26,17 +26,63 @@ $(document).ready(function(){
     to_TBM.emit('agregar',"orden agregar desde tambox");
   });
   $("#test").click( function(){
-    window.location.replace("/test");
+  window.location.replace("/test");
   });
   $("#reset").click( function(){
-   socket.emit('reset',"reseteando validador");
+  socket.emit('reset',"reseteando validador");
   });
   $("#reset_counters").click( function(){
-   socket.emit('reset_counters',"reseteando contador");
+  socket.emit('reset_counters',"reseteando contador");
   });
   $("#update").click( function(){
-    socket.emit('update_requested',"update requested");
+  socket.emit('update_requested',"update requested");
+
   });
+
+  $("#empty_hoppper").click( function(){
+    socket.emit('empty_hoppper',"empty_hoppper");
+  });
+
+  $("#reset_hoppper").click( function(){
+    socket.emit('reset_hoppper',"reset_hoppper");
+  });
+  $("#registradora").click( function(){
+    socket.emit('registradora',"registradora");
+  });
+
+  $("#pay_10c").click( function(){
+    console.log("emiting 10c");
+    socket.emit('pay_10c',"pay_10c");
+  });
+  $("#pay_20c").click( function(){
+    socket.emit('pay_20c',"pay_20c");
+  });
+  $("#pay_50c").click( function(){
+    socket.emit('pay_50c',"pay_50c");
+  });
+  $("#pay_1s").click( function(){
+    socket.emit('pay_1s',"pay_1s");
+  });
+  $("#pay_2s").click( function(){
+    socket.emit('pay_2s',"pay_2s");
+  });
+  $("#pay_5s").click( function(){
+    socket.emit('pay_5s',"pay_5s");
+  });
+
+  $("#niveles_hopper").click( function(){
+    socket.emit('niveles_hopper',"niveles_hopper");
+  });
+  socket.on('niveles_hopper', function(msg){
+    display_message(msg);
+    window.location.replace("/niveles_hopper");
+  });
+
+  socket.on('registradora', function(msg){
+    display_message(msg);
+    window.location.replace("/registradora");
+  });
+
   socket.on('display_message', function(msg){
     display_message(msg);
   });
@@ -44,8 +90,9 @@ $(document).ready(function(){
     display_system_running_indicator();
     online=true;
   });
+
   socket.on('update_requested', function(msg) {
-   //  alert(msg);
+  //  alert(msg);
     window.location.replace("/fin_remesa_hermes");
   });
 // OVERLAY
@@ -145,24 +192,24 @@ function clear_system_running_indicator(){
 
     <div class="titulo">
       <div class="btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
-      <div>Configuración</div>
+      <div>Monedero</div>
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
     </div>
     <div class="grupo">
-      <div></div>
-      <div class="btn" id='cuadre_diario'><i class="far fa-clipboard fa-4x"></i> Cuadre diario</div>
-      <div class="btn" id='montos'><i class="fas fa-chart-bar fa-4x"></i> Cifras Generales</div>
-      <div class="btn" id='remesa_hermes'><i class="fas fa-money-bill-alt fa-4x"></i>Remesa Hermes</div>
-      <div class="btn" id='info'><i class="fas fa-info fa-4x"></i>Información General</div>
-      <!-- <div class="btn" id='sincro'><i class="fab fa-hubspot fa-4x"></i>sincronización Manual</div> -->
-      <div></div>
-      <div></div>
-      <div class="btn" id='test'><i class="fab fa-mixcloud fa-4x"></i>testy</div>
-      <div class="btn" id='reset'><i class="fas fa-random fa-4x"></i>reset</div>
-      <div class="btn" id='reset_counters'><i class="fas fa-random fa-4x"></i>reset Counters</div>
-      <!-- <div class="btn" id='update'><i class="fas fa-random fa-4x"></i>update</div> -->
-      <div class="btn" id='test-over'><i class="fab fa-mixcloud fa-4x"></i>test over</div>
-
+      <div class="btn" id='reset_hoppper'><i class="fas fa-exclamation-triangle fa-4x"></i>Reset Hopper</div>
+      <div class="btn" id='empty_hoppper'><i class="fas fa-exclamation-triangle fa-4x"></i>Empty hopper</div>
+      <!-- <div class="btn" id='vacio'><i class="fas fa-chart-bar fa-4x"></i>Registradora</div> -->
+      <div class="btn" id='registradora'><i class="fas fa-cash-register fa-4x"></i>Registradora</div>
+      <div class="btn" id='niveles_hopper'><i class="fas fa-money-bill-alt fa-4x"></i><br>Niveles</div>
+      <div class="btn" id='vacio3'><i class="fab fa-hubspot fa-4x"></i><br>vacio</div>
+      <div class="btn" id='info'><i class="fas fa-info fa-4x"></i><br>Información General</div>
+      <div ></div>
+      <div class="btn" id='pay_10c'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/0.10</div>
+      <div class="btn" id='pay_20c'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/0.20</div>
+      <div class="btn" id='pay_50c'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/0.50</div>
+      <div class="btn" id='pay_1s'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/1.00</div>
+      <div class="btn" id='pay_2s'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/2.00></div>
+      <div class="btn" id='pay_5s'><i class="fas fa-hand-holding-usd fa-4x"></i><br>S/5.00></div>
     </div>
   </div>
   <div id="message">

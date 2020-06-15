@@ -55,27 +55,63 @@ router.get('/finish/:qty_bill', async (req, res) => {
 
   //la linea de abajo debe solo de aplicar para las REMESAS (ingresos)
   //console.log(chalk.cyan("SOMETHING IS TRIGGERING FINISH WHAT IS IT?"));
-  const remesa = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
+  const remesay = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
 
-  if (remesa === undefined || remesa.length == 0) {
+  if (remesay === undefined || remesay.length == 0) {
     // array empty or does not exist
     console.log("objeto vacio");
   //  res.send("objeto vacio")
     res.render('index');
   } else {
     //console.log("estoy tratando de leer esto de todas maneras");
-    var id_remesa = remesa[0].no_remesa;
+    var id_remesa = remesay[0].no_remesa;
   //  console.log(chalk.cyan("el valor a utilizar como id_remesa:" + id_remesa));
     const calculando_monto = await pool.query("SELECT SUM(monto) AS totalremesa FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
     var monto_total_remesa = calculando_monto[0].totalremesa;
+    // if(monto_total_remesa===NULL){
+    //   monto_total_remesa=0;
+    // }
     const qty_monto = await pool.query("SELECT COUNT(id) AS total_qty_remesa FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
     var qty_result=qty_monto[0].total_qty_remesa;
     console.log("se encontraron billetes:"+qty_result);
   //  console.log(chalk.cyan("se va a guardar con el monto:" + monto_total_remesa));
     //actualizar la tabal remesas, incluyendo el monto calculado total y cambiar estatus a "terminado"
-    await pool.query("UPDATE remesas SET monto=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa, id_remesa]);
+    await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa,qty_result, id_remesa]);
     //actualizar todas las filas de creditos donde tengan el numero cambiando "processing" por "procesed"
     await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [id_remesa]);
+    ////////////////////////////actualizando la remesa hermes para que refleje el nuevo monto de remesa ingresado
+    const no_billetes= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+    const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+    const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+    const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
+    console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes[0].total_billetes);
+
+    await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes[0].total_billetes]);
+
+    var tbm_adress=tbm_adressx;
+    var fix= "/sync_remesa";
+    var tienda_id=remesay[0].tienda_id;
+    var no_caja=remesay[0].no_caja;
+    var codigo_empleado=remesay[0].codigo_empleado;
+    var no_remesax=remesay[0].no_remesa;
+    var fecha=remesay[0].fecha;
+    var hora=remesay[0].hora;
+    var monto=remesay[0].monto;
+    var moneda=remesay[0].moneda;
+    var status=remesay[0].status;
+    var rms_status=remesay[0].rms_status;
+    var tipo=remesay[0].tipo;
+    var status_hermes=remesay[0].status_hermes;
+    var tebs_barcode=remesay[0].tebs_barcode;
+    var machine_sn=remesay[0].machine_sn;
+
+    const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn
+    console.log("url:"+url);
+    /////////////////
+    const Http= new XMLHttpRequest();
+  //  const url= 'http://192.168.1.12:4000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+    Http.open("GET",url);
+    Http.send();
 
     try {
       var {qty_bill}=req.params;
@@ -96,6 +132,8 @@ router.get('/finish/:qty_bill', async (req, res) => {
     }
   }
 })
+
+
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/cancelling', (req, res) => {
   res.redirect('/');
@@ -406,6 +444,39 @@ router.get('/test', async (req, res) => {
 //  console.log("probando");
  //res.send ("ok1");
   res.render('test');
+})
+///////////////////////////////////////////////////////////////////////////////
+router.get('/deposito', async (req, res) => {
+  console.log("deposito");
+  res.render('depositox');
+})
+///////////////////////////////////////////////////////////////////////////////
+router.get('/cerrar_remesa_hermes', async (req, res) => {
+  console.log("cerrar_remesa_hermes");
+  await pool.query("UPDATE remesa_hermes SET status='terminada' WHERE status='iniciada'");
+  await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
+  console.log("Disparando provisiona remesa");
+  io.provisiona_remesa2()
+  res.redirect('/');
+})
+///////////////////////////////////////////////////////////////////////////////
+
+router.get('/monedero', async (req, res) => {
+//  console.log("probando");
+ //res.send ("ok1");
+  res.render('monedero');
+})
+///////////////////////////////////////////////////////////////////////////////
+router.get('/registradora', async (req, res) => {
+//  console.log("probando");
+ //res.send ("ok1");
+  res.render('registradora');
+})
+///////////////////////////////////////////////////////////////////////////////
+router.get('/niveles_hopper', async (req, res) => {
+//  console.log("probando");
+ //res.send ("ok1");
+  res.render('niveles_hopper');
 })
 ///////////////////////////////////////////////////////////////////////////////
 module.exports = router;
