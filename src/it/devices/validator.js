@@ -8,13 +8,13 @@
 //    ssp.sync_and_stablish_presence_of(validator_address);
 // }
 // ///////////////////////////////////////////////////////////
-const ssp = require('./it/ssp');
-const server = require('./server');
+const ssp = require('./../ssp');
+const server = require('./../../server');
 const it = require('./tambox');
-const sp = require('./serial_port');
-const enc = require('./it/encryption');
+const sp = require('./../serial_port');
+const enc = require('./../encryption');
 const chalk=require('chalk');
-const glo = require('./globals');
+const glo = require('./../globals');
 ///////////////////////////////////////////////////////////
 function start_validator() {
   return new Promise( async function(resolve, reject) {

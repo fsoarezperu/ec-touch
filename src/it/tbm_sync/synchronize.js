@@ -5,8 +5,8 @@
 //Guardarlo en base de dstos
 //consultarlo y popular variable en inicializacion
 const chalk = require('chalk');
-const pool= require ('../database');
-const io = require("../server.js");
+const pool= require ('../../database');
+const io = require("../../server.js");
 //const glo = require('./globals');
 
 var machine_sn=numero_de_serie;

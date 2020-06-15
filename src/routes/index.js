@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const io = require("../server.js");
-const tambox = require("../tambox.js");
+const tambox = require("../it/devices/tambox.js");
 const chalk = require('chalk');
 var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;

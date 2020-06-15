@@ -4,15 +4,15 @@
 //Protocol Used: Smiley Secured Protocol
 //Date: Nov 2018
 /////////////////////////////////////////////////////////////////////////////////////
-const tebs = require('./tebs');
-const va = require('./validator');
-const it = require('./tambox');
-const sh = require('./smart_hopper');
+const tebs = require('./it/devices/tebs');
+const va = require('./it/devices/validator');
+const it = require('./it/devices/tambox');
+const sh = require('./it/devices/smart_hopper');
 const ssp = require('./it/ssp');
-const sp = require('./serial_port');
+const sp = require('./it/serial_port');
 const enc = require('./it/encryption');
-const glo = require('./globals');
-const tbm = require('./tbm_sync/synchronize');
+const glo = require('./it/globals');
+const tbm = require('./it/tbm_sync/synchronize');
 const pool = require('./database');
 const chalk = require('chalk');
 const mysql_store = require('express-mysql-session');

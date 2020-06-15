@@ -1,11 +1,11 @@
-const ssp = require('./it/ssp');
-const encryption = require('./it/encryption');
-const sp = require('./serial_port');
+const ssp = require('./../ssp');
+const encryption = require('./../encryption');
+const sp = require('./../serial_port');
 const sh = require('./smart_hopper');
-const it = require('./server');
+const it = require('./../../server');
 const chalk=require('chalk');
-const pool = require('./database');
-const io = require("./server.js");
+const pool = require('./../../database');
+const io = require("./../../server.js");
 
 
 function verifica_coneccion_validador(){

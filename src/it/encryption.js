@@ -4,7 +4,7 @@ var Big_Number = require('big-number');
 const BigNumber = require('bignumber.js');
 const ssp = require('./ssp');
 const chalk=require('chalk');
-const glo = require('./../globals');
+const glo = require('./globals');
 ///////////////////////////////////////////////////
 var acomodando2,acomodando,hexiando,hexiado;
 //var slave_count;

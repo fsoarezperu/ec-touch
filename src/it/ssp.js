@@ -1,9 +1,9 @@
 const server = require('./../server');
 const chalk=require('chalk');
-const sp = require('./../serial_port');
+const sp = require('./serial_port');
 const enc = require('./encryption');
 const io = require("./../server.js");
-const sh = require("./../smart_hopper");
+const sh = require("./devices/smart_hopper");
 /////////////////////////////
 //var sync = false;
 //var seq_bit = 1;

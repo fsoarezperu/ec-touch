@@ -1,10 +1,10 @@
-const ssp = require('./it/ssp');
-const server = require('./server');
+const ssp = require('./../ssp');
+const server = require('./../../server');
 const it = require('./tambox');
-const sp = require('./serial_port');
-const enc = require('./it/encryption');
+const sp = require('./../serial_port');
+const enc = require('./../encryption');
 const chalk=require('chalk');
-const glo = require('./globals');
+const glo = require('./../globals');
 ///////////////////////////////////////////////////////////
 function start_smart_hopper() {
   return new Promise( async function(resolve, reject) {
@@ -20,17 +20,18 @@ function start_smart_hopper() {
                  if (step4=="OK") {
                    var step5= await ssp.setup_request_command(smart_hopper_address);
                    if (step5=="OK") {
-                     //var step6= await set_hopper_routing(smart_hopper_address);
-                     //if (step6=="OK") {
-                        // var step7=await enable_hopper(smart_hopper_address);
-                      //    if (step7=="OK") {
-                            var step8=await hopperpoll(smart_hopper_address);
+                     var step6= await set_hopper_routing(smart_hopper_address);
+                     if (step6=="OK") {
+                         var step7=await enable_hopper(smart_hopper_address);
+                          if (step7=="OK") {
+                            var step8=await hopperpoll_loop(smart_hopper_address);
+
                             console.log(step8);
-                        //  }
+                          }
                          //var step7= await get_all_levels_hopper(smart_hopper_address);
           //             //
 
-                     //}
+                     }
                    }
                  }
                }
@@ -78,15 +79,30 @@ return  new Promise(async function(resolve, reject) {
     var step1= await ssp.envia_encriptado(receptor,global.poll);
     if(step1.length>0){
       await handle_poll_hopper(step1);
+
+      return resolve("OK");
+    }else {
+      return reject(step1);
+    }
+  });
+} //hace consulta de poll pero no hace bucle
+////////////////////////////////////////////////////////
+function hopperpoll_loop(receptor) {
+return  new Promise(async function(resolve, reject) {
+    var step1= await ssp.envia_encriptado(receptor,global.poll);
+    if(step1.length>0){
+      await handle_poll_hopper(step1);
       setTimeout(async function () {
-        await hopperpoll(receptor)
+        await hopperpoll_loop(receptor)
       }, 800);
       return resolve("OK");
     }else {
       return reject(step1);
     }
   });
-}
+}// hace consulta de poll y reinicia ciclicamente.
+////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////
 function handle_poll_hopper(data){
   var passingby=data;
@@ -166,119 +182,6 @@ function handle_poll_hopper(data){
   });
 }
 module.exports.handle_poll_hopper=handle_poll_hopper;
-////////////////////////////////////////////////////////
-function get_all_levels_hopper(receptor){
-  return new Promise(async function(resolve, reject) {
-  //  var here=await handle_all_levels_hopper(await ssp.envia_encriptado(receptor,get_all_levels));
-    var here=await ssp.envia_encriptado(receptor,get_all_levels);
-    var here2=await handle_all_levels_hopper();
-    console.log("here:"+here2);
-    return resolve("OK");
-  });
-
-}
-////////////////////////////////////////////////////////
-function handle_all_levels_hopper(receptor){
-return new Promise(async function(resolve, reject) {
-  var pol1=await transmite(receptor,set_coin_amount_10c);
-  console.log("pol1:"+pol1);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_20c);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_50c);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_1s);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_2s);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_5s);
-  return resolve("OK");
-});
-
-
-  // console.log("handling all levels hopper");
-  // sp.canal_liberado();
-  // // poll_hopper(receptor);
-  // super_comando(receptor,set_coin_amount_10c)
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   server.logea("//////////////////////////////////////////");
-  //   return enc.promise_handleEcommand(data)
-  // })
-  // .then(data => {
-  // //server.logea(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  // console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  // server.logea("RESULT:"+data);
-  // return super_comando(receptor,set_coin_amount_20c)
-  // })
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   return enc.promise_handleEcommand(data)
-  // //  return super_comando(receptor,set_coin_amount_50c)
-  // })
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   return super_comando(receptor,set_coin_amount_1s)
-  // })
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   return super_comando(receptor,set_coin_amount_2s)
-  // })
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   return super_comando(receptor,set_coin_amount_5s)
-  // })
-  // .then(data =>{
-  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //
-  // })
-  // .catch(function(error) {console.log(error);sp.retrial(error);});
-}
-////////////////////////////////////////////////////////
-// function poll_hopper(receptor){
-//   //setTimeout(function () {
-//     ssp.ensureIsSet().then(async function() {
-//         server.io.emit('system_running_indicator'); //indica el punto intermitente en interface para notar que el programa esta corriendo adecuadamente.
-//         //  io.emit('tog_validator');
-//
-//         if (ready_for_sending) {
-//             server.logea(chalk.green('ready for sending is:'),chalk.green(ready_for_sending));
-//           if (ready_for_pooling) {
-//              server.logea(chalk.cyan('ready for pooling is:'),chalk.green(ready_for_pooling));
-//             server.logea(chalk.magentaBright("HOPPER POLL"));
-//             // logea(chalk.magentaBright('POLL command sent'));
-//             clearTimeout(sp.timer2);
-//             //console.log(chalk.red("justo antes de supercomando, poll tiene el valor de:"+poll));
-//              super_comando(receptor,global.poll)
-//             .then(data =>{
-//               server.logea(chalk.yellow("and also from here"+device+'<-:'), chalk.yellow(data));
-//               sp.canal_liberado();
-//               //poll_hopper(receptor);
-//               setTimeout(function(){
-//                 poll_hopper(receptor);}, 800);
-//             })
-//                   .catch(function(error) {console.log(error);sp.retrial(error);});
-//           } else {
-//             console.log("poll 1 disabled");
-//             //  ready_for_pooling=true; // este lo calmbie al ultimo billete perdido
-//           } // end of if
-//         } else {
-//           console.log("ready for sending is off");
-//         }
-//       //  global.polltimer = setTimeout(poll_hopper(receptor), 300); //auto renew the poll trigger;
-//       }) //fin del promise
-//       .catch(function(error) {console.log(error);sp.retrial(error);});
-//   //}, 1000);
-// }
-////////////////////////////////////////////////////////
-function super_comando(receptorx,poll){
-return new Promise(function(resolve, reject) {
-  //  pollx[0]=parseInt(receptorx) ;
-    toSend = enc.prepare_Encryption(poll);
-    sp.transmision_insegura(receptorx,toSend)
-      .then(data =>{return enc.promise_handleEcommand(data)})
-      .then(data =>{server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return handle_poll_hopper(data)})
-      .then(data=>{return resolve(data);})
-      .catch(function(error) {console.log(error);sp.retrial(error);});
-});
-}
-module.exports.super_comando=super_comando;
-////////////////////////////////////////////////////////
 function promise_handlePoll(data){
    console.log("iniciando handlePoll");
   return new Promise((resolve,reject)=>{
@@ -368,6 +271,122 @@ function promise_handlePoll(data){
 }
 module.exports.promise_handlePoll=promise_handlePoll;
 ////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////
+function get_all_levels_hopper(receptor){
+  return new Promise(async function(resolve, reject) {
+  //  var here=await handle_all_levels_hopper(await ssp.envia_encriptado(receptor,get_all_levels));
+    var here=await ssp.envia_encriptado(receptor,get_all_levels);
+    var here2=await handle_all_levels_hopper();
+    console.log("here:"+here2);
+    return resolve("OK");
+  });
+
+}
+function handle_all_levels_hopper(receptor){
+return new Promise(async function(resolve, reject) {
+  var pol1=await transmite(receptor,set_coin_amount_10c);
+  console.log("pol1:"+pol1);
+  // await ssp.envia_encriptado(receptor,set_coin_amount_20c);
+  // await ssp.envia_encriptado(receptor,set_coin_amount_50c);
+  // await ssp.envia_encriptado(receptor,set_coin_amount_1s);
+  // await ssp.envia_encriptado(receptor,set_coin_amount_2s);
+  // await ssp.envia_encriptado(receptor,set_coin_amount_5s);
+  return resolve("OK");
+});
+
+
+  // console.log("handling all levels hopper");
+  // sp.canal_liberado();
+  // // poll_hopper(receptor);
+  // super_comando(receptor,set_coin_amount_10c)
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //   server.logea("//////////////////////////////////////////");
+  //   return enc.promise_handleEcommand(data)
+  // })
+  // .then(data => {
+  // //server.logea(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  // console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  // server.logea("RESULT:"+data);
+  // return super_comando(receptor,set_coin_amount_20c)
+  // })
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //   return enc.promise_handleEcommand(data)
+  // //  return super_comando(receptor,set_coin_amount_50c)
+  // })
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //   return super_comando(receptor,set_coin_amount_1s)
+  // })
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //   return super_comando(receptor,set_coin_amount_2s)
+  // })
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //   return super_comando(receptor,set_coin_amount_5s)
+  // })
+  // .then(data =>{
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  //
+  // })
+  // .catch(function(error) {console.log(error);sp.retrial(error);});
+}
+////////////////////////////////////////////////////////
+
+
+// function poll_hopper(receptor){
+//   //setTimeout(function () {
+//     ssp.ensureIsSet().then(async function() {
+//         server.io.emit('system_running_indicator'); //indica el punto intermitente en interface para notar que el programa esta corriendo adecuadamente.
+//         //  io.emit('tog_validator');
+//
+//         if (ready_for_sending) {
+//             server.logea(chalk.green('ready for sending is:'),chalk.green(ready_for_sending));
+//           if (ready_for_pooling) {
+//              server.logea(chalk.cyan('ready for pooling is:'),chalk.green(ready_for_pooling));
+//             server.logea(chalk.magentaBright("HOPPER POLL"));
+//             // logea(chalk.magentaBright('POLL command sent'));
+//             clearTimeout(sp.timer2);
+//             //console.log(chalk.red("justo antes de supercomando, poll tiene el valor de:"+poll));
+//              super_comando(receptor,global.poll)
+//             .then(data =>{
+//               server.logea(chalk.yellow("and also from here"+device+'<-:'), chalk.yellow(data));
+//               sp.canal_liberado();
+//               //poll_hopper(receptor);
+//               setTimeout(function(){
+//                 poll_hopper(receptor);}, 800);
+//             })
+//                   .catch(function(error) {console.log(error);sp.retrial(error);});
+//           } else {
+//             console.log("poll 1 disabled");
+//             //  ready_for_pooling=true; // este lo calmbie al ultimo billete perdido
+//           } // end of if
+//         } else {
+//           console.log("ready for sending is off");
+//         }
+//       //  global.polltimer = setTimeout(poll_hopper(receptor), 300); //auto renew the poll trigger;
+//       }) //fin del promise
+//       .catch(function(error) {console.log(error);sp.retrial(error);});
+//   //}, 1000);
+// }
+
+
+////////////////////////////////////////////////////////
+function super_comando(receptorx,poll){
+return new Promise(function(resolve, reject) {
+  //  pollx[0]=parseInt(receptorx) ;
+    toSend = enc.prepare_Encryption(poll);
+    sp.transmision_insegura(receptorx,toSend)
+      .then(data =>{return enc.promise_handleEcommand(data)})
+      .then(data =>{server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return handle_poll_hopper(data)})
+      .then(data=>{return resolve(data);})
+      .catch(function(error) {console.log(error);sp.retrial(error);});
+});
+}
+module.exports.super_comando=super_comando;
 function transmite(a_quien, orden){
 
       return  new Promise(async function(resolve, reject) {

@@ -1,9 +1,9 @@
-const server = require('./server');
-const ssp = require('./it/ssp');
+const server = require('./../server');
+const ssp = require('./ssp');
 const glo = require('./globals');
 const chalk=require('chalk');
-const it = require('./tambox');
-const sh = require('./smart_hopper');
+const it = require('./devices/tambox');
+const sh = require('./devices/smart_hopper');
 const SerialPort = require('serialport')
 const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
 const port = new SerialPort('/dev/ttyUSB0')
