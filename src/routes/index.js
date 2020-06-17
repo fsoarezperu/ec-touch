@@ -464,7 +464,7 @@ router.get('/cerrar_remesa_hermes', async (req, res) => {
 router.get('/monedero', async (req, res) => {
 //  console.log("probando");
  //res.send ("ok1");
-  res.render('monedero');
+  res.render('hopper/monedero');
 })
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/registradora', async (req, res) => {
@@ -476,7 +476,7 @@ router.get('/registradora', async (req, res) => {
 router.get('/niveles_hopper', async (req, res) => {
 //  console.log("probando");
  //res.send ("ok1");
-  res.render('niveles_hopper');
+  res.render('hopper/niveles_hopper');
 })
 ///////////////////////////////////////////////////////////////////////////////
 module.exports = router;

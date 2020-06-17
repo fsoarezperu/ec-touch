@@ -143,12 +143,12 @@ function send_byte_stuffing(command){
 
 function received_byte_stuffing(command){
   return new Promise(function(resolve, reject) {
-  //  console.log("received command to be evaluted:"+command);
+    console.log("received command to be evaluted:"+command);
     var accumulated_chart="";
     var toggy=true;
     var current_char="";
     const thelength=command.length/2;
-
+    console.log("the length used for byte stuffing:"+thelength);
     for (var i=0;i<thelength;i++){
            current_char=command.substr(i*2,2);
           //console.log("current_char:"+current_char);
@@ -166,7 +166,7 @@ function received_byte_stuffing(command){
             }
       accumulated_chart=accumulated_chart+current_char;
       };
-    //console.log(chalk.cyan("----------------Receive Stuffed:"+accumulated_chart));
+    console.log(chalk.cyan("----------------Receive Stuffed:"+accumulated_chart));
     return resolve(accumulated_chart);
   });
 
@@ -203,8 +203,8 @@ async function handlepoll(data){
 //console.log(poll_responde);
 if(poll_responde == undefined || poll_responde.length < 1){
   console.log("ERROR Receiving data");
-  ready_for_sending=false;
-  ready_for_pooling=false; //este lo comente para ver si deja de tragar billetes
+  //ready_for_sending=false;
+  //ready_for_pooling=false; //este lo comente para ver si deja de tragar billetes
   return;
 }else{
   if(poll_responde[1] == "F0"){
@@ -1468,12 +1468,18 @@ module.exports.handlepoll3=handlepoll3;
 /////////////////////////////////////////////////////////
 function ensureIsSet() {
     return new Promise(function (resolve, reject) {
-        (function waitForFoo(){
-            if (ready_for_sending) return resolve();
+      //console.log("la orden aqui es:"+receiver+" "+command);
+      console.log("aqui ready for sending llego:"+ready_for_sending);
+        function waitForFoo(){
+            if (ready_for_sending){
+              //console.log("la orden es:"+receiver+" "+command);
+               return resolve("OK");
+            }
             clearTimeout(timerout);
             setTimeout(waitForFoo, 30);
-        })();
-        var timerout= setTimeout(()=>{reject("sending_not_ready:"+ready_for_sending)},1000);
+      };
+          waitForFoo();
+         var timerout= setTimeout(()=>{reject("sending_not_ready:"+ready_for_sending)},1000);
     });
 };
 module.exports.ensureIsSet=ensureIsSet;

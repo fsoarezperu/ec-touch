@@ -362,8 +362,10 @@ function prepare_Encryption(datax) {
   }
    //Al trasmitir 17 bytes es necesario ponerlo como HEX en la cadena de envio es decir 17dec=11hex
   //  var the_length = (encrypted_data.length / 2) + 1;
-  //  var finalizando_envio=last_length+"7E"+encrypted_data;
-    var finalizando_envio = "217E" + encrypted_data;
+  //  var finalizando_envio=last_length+"7E"+encrypted_data; // se usa este valor cuando se va a utilizar 16 bytes para transmision
+    var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 32 bytes para transmision
+  //  var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 48 bytes para transmision
+
     finalizando_envio = finalizando_envio.toUpperCase();
     server.logea(chalk.green("_encrypt2send:"+finalizando_envio));
     var to_send = "0x" + ssp.chunk(finalizando_envio, 2).join('0x');

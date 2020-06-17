@@ -63,13 +63,13 @@ module.exports.transmision_insegura=transmision_insegura;
 //////////////////////////////////////////////////////////////////////////
 function canal_ocupado(){
   ready_for_sending=false;
-  ready_for_pooling=false;
+  //ready_for_pooling=false;
 server.logea("Canal ocupado");
 }
 //////////////////////////////////////////////////////////////////////////
 function canal_liberado(){
   ready_for_sending=true;
-  ready_for_pooling=true;
+//  ready_for_pooling=true;
 server.logea("Canal liberado");
 }
 module.exports.canal_liberado=canal_liberado;
@@ -86,12 +86,16 @@ server.logea("enabling hopper_pooling");
 }
 module.exports.enable_hopper_pooling=enable_hopper_pooling;
 //////////////////////////////////////////////////////////////////////////
-function hacer_consulta_serial(receiver,command){
+async function hacer_consulta_serial(receiver,command){
+  console.log("ready_for_sending:"+ready_for_sending);
+  var go=await ssp.ensureIsSet()
+if(go="OK"){
   return new Promise((resolve,reject)=>{
   //   console.log(chalk.cyan("BLOCK SENDING"));
         canal_ocupado();
         const command_ready =ssp.prepare_command_to_be_sent(receiver,command);
         //setTimeout(()=>{port.write(command_ready, function(err) {if (err) {return console.log('Error on write: ', err.message)}});},20);
+        server.io.emit("system_running_indicator","system_running_indicator")
         port.write(command_ready, function(err) {if (err) {return console.log('Error on write: ', err.message)}});
         var mytime=setTimeout(()=>{const error= "timeout reintentar...";reject(error);},7000);
 
@@ -115,6 +119,10 @@ function hacer_consulta_serial(receiver,command){
             //////////////////////////////
             if(received_command.length>0){
             //  setTimeout(function () {
+            ready_for_sending=true;
+            console.log("ready_for_sending:"+ready_for_sending);
+            console.log("ready_for_pooling:"+ready_for_pooling);
+
               return resolve(received_command);
             //  }, 20);
             }else{
@@ -128,6 +136,12 @@ function hacer_consulta_serial(receiver,command){
       });
 
   });
+}
+//   .then(function(){
+//
+// }).catch(err => {
+//   console.log(chalk.bold.red(err));
+// })
 };
 //////////////////////////////////////////////////////////////////////////
 exports.retrial=function(command_ready){

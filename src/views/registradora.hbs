@@ -56,6 +56,13 @@ $(document).ready(function(){
   $("#testy").click(function() {
     $('#overlay, #overlay-back').fadeOut(500);
   });
+  $("#pagar").click(function() {
+  //  var value_incents_inhex=document.getElementById('#total_amount').text();
+    var value_incents_inhex = $('#total_amount').html();
+    value_incents_inhex=value_incents_inhex*100;
+    socket.emit('pay_value',value_incents_inhex);
+  //  alert(value_incents_inhex*100);
+  });
 });
 function display_message(mes_to_display){
   document.getElementById("message").innerHTML=mes_to_display;
@@ -73,6 +80,44 @@ function clear_system_running_indicator(){
       $("#system_running_indicator").hide();
   //  document.getElementById("system_running_indicator").innerHTML="";
   };
+
+  var app = angular.module("DemoApp", ["FBAngular"]);
+  function MainCtrl($scope) {
+     /**
+      * DRAG event handler
+      */
+     $scope.onDrag = function(value) {
+        $scope.currentRotation = value;
+          $('#total_amount').html((Math.round(value/4) / 100).toFixed(1));
+          console.log ("DRAGGING", value)
+        //  setTimeout(function () {
+          //  $('#total_amount').html="";
+
+        //  }, 100);
+
+     }
+
+     /**
+      * DRAG END event handler
+      */
+     $scope.onDragEnd = function(value) {
+
+        $scope.currentRotation = value;
+        console.log ("DRAG_END", value)
+      //  alert("drag stopped");
+     }
+  }
+
+  window.onload = function () {
+  //  alert("yoool im here");
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "http://www.telize.com/jsonip?callback=DisplayIP";
+        document.getElementsByTagName("head")[0].appendChild(script);
+    };
+    function DisplayIP(response) {
+        document.getElementById("ipaddress").innerHTML = "Your IP Address is " + response.ip;
+    }
 </script>
 <style media="screen">
   /* html, body {
@@ -126,7 +171,7 @@ function clear_system_running_indicator(){
     }
 </style>
 
-<body  oncontextmenu="return false">
+<body  oncontextmenu="return false" ng-app="DemoApp">
   <div class="wrapper">
 
               <div class="popup">
@@ -156,7 +201,19 @@ function clear_system_running_indicator(){
   <div></div>
 </div> -->
 <div class="graph">
-  <div class="chart">
+  <div ng-controller="MainCtrl">
+
+<!-- <h3>Loops: {{! currentRotation/360 | number:0}} - Steps: {{! currentRotation | number:0}}</h3> -->
+
+<img tmax-knob
+src="img/knob.png"
+width="205" height="205"
+on-drag-end="onDragEnd(rotation)"
+on-drag="onDrag(rotation)"
+style="-webkit-user-select: none;">
+
+  </div>
+  <!-- <div class="chart">
     <section>  <canvas id="myChart" width="100" height="100"></canvas> </section>
   <script>
       var ctx = document.getElementById("myChart").getContext('2d');
@@ -195,7 +252,7 @@ function clear_system_running_indicator(){
         }
       });
   </script>
-  </div>
+  </div> -->
 </div>
 <div class="keypad">
   <a href="#" class="btn" id='lock'>+</a>
@@ -206,11 +263,13 @@ function clear_system_running_indicator(){
     <div class="resumen">
     <div class="subtitle">Total:</div>
     <div class="amount" id="total_amount">S/.000.00</div>
-    <a href="#" class="btn" id='actualizar'>Pagar</a>
+    <a href="#" class="btn" id='pagar'>Pagar</a>
   </div>
   </div>
 <div class="footer">
-  Elaborado por EC-HOME AUTOMATION PERU S.A.C
+  Elaborado por EC-HOME AUTOMATION PERU S.A.C <div id="ipaddress">
+
+  </div>
 
     <!-- </div>
     <div id="message">

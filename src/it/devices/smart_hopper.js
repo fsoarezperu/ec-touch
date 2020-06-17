@@ -24,9 +24,9 @@ function start_smart_hopper() {
                      if (step6=="OK") {
                          var step7=await enable_hopper(smart_hopper_address);
                           if (step7=="OK") {
-                            var step8=await hopperpoll_loop(smart_hopper_address);
-
-                            console.log(step8);
+                          //  await carga_monedas_al_hopper(smart_hopper_address);
+                           var step8=await hopperpoll_loop(smart_hopper_address);
+                           console.log(step8);
                           }
                          //var step7= await get_all_levels_hopper(smart_hopper_address);
           //             //
@@ -87,22 +87,33 @@ return  new Promise(async function(resolve, reject) {
   });
 } //hace consulta de poll pero no hace bucle
 ////////////////////////////////////////////////////////
-function hopperpoll_loop(receptor) {
-return  new Promise(async function(resolve, reject) {
-    var step1= await ssp.envia_encriptado(receptor,global.poll);
-    if(step1.length>0){
-      await handle_poll_hopper(step1);
-      setTimeout(async function () {
-        await hopperpoll_loop(receptor)
-      }, 800);
-      return resolve("OK");
-    }else {
-      return reject(step1);
-    }
-  });
+async function hopperpoll_loop(receptor) {
+  await ensureIsReadyForPolling()
+  if (ready_for_pooling==true) {
+    ready_for_pooling=false;
+    return  new Promise(async function(resolve, reject) {
+        var step1= await ssp.envia_encriptado(receptor,global.poll);
+        if(step1.length>0){
+          await handle_poll_hopper(step1);
+          setTimeout(async function () {
+            await hopperpoll_loop(receptor)
+          }, 200);
+          ready_for_pooling=true;
+          return resolve("OK");
+        }else {
+          return reject(step1);
+        }
+      });
+
+  }else {
+    console.log("ready for polling NOT READY");
+  }
 }// hace consulta de poll y reinicia ciclicamente.
 ////////////////////////////////////////////////////////
-
+function spread(mensaje) {
+  console.log(chalk.cyan(mensaje));
+  server.io.emit(mensaje, mensaje);
+}
 ////////////////////////////////////////////////////////
 function handle_poll_hopper(data){
   var passingby=data;
@@ -149,18 +160,31 @@ function handle_poll_hopper(data){
                   // //value dispensed:
                   // io.io.emit('Smart_emptied', "Smart emptied");
                   // break;
-                  // case("C2"):
-                  // console.log(chalk.cyan("emptying"));
-                  // io.io.emit('emptying', "emptying");
-                  // break;
-                  // case("C3"):
-                  // console.log(chalk.cyan("emptied"));
-                  // io.io.emit('emptied', "emptied");
-                  // break;
-                  // case("C9"):
-                  // console.log(chalk.cyan("Note Transfered to Stacker"));
-                  // io.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
-                  // break;
+                  case("C2"):
+                  console.log(chalk.cyan("emptying"));
+                  server.io.emit('emptying', "emptying");
+                  break;
+                  case("C3"):
+                  console.log(chalk.cyan("emptied"));
+                  server.io.emit('emptied', "emptied");
+                  break;
+                  case("D3"):
+                  console.log(chalk.cyan("Pocas Monedas"));
+                  server.io.emit('pocas_monedas', "pocas_monedas");
+                  break;
+                  case("D5"):
+                  console.log(chalk.cyan("Atorado"));
+                  server.io.emit('atorado', "atorado");
+                  break;
+                  case("DC"):
+                  console.log(chalk.cyan("Pago Incompleto"));
+                  server.io.emit('pago_incompleto', "pago_incompleto");
+                  break;
+                  //traduce("DC","pago_incompleto");
+                   case("DF"):
+                  spread("moneda_agregada")
+                   break;
+
                   case("E8"):
                    console.log(chalk.red(device+" Disabled"));
                   break;
@@ -169,7 +193,7 @@ function handle_poll_hopper(data){
                   break;
 
                   case("F5"):
-                  console.log(chalk.green("NO FUNCIONA"));
+                  console.log(chalk.green("No puede ser procesado"));
                   break;
                 }//switch closing
               }//switch closing
@@ -226,14 +250,14 @@ function promise_handlePoll(data){
               // //value dispensed:
               // io.io.emit('Smart_emptied', "Smart emptied");
               // break;
-              // case("C2"):
-              // console.log(chalk.cyan("emptying"));
-              // io.io.emit('emptying', "emptying");
-              // break;
-              // case("C3"):
-              // console.log(chalk.cyan("emptied"));
-              // io.io.emit('emptied', "emptied");
-              // break;
+              case("C2"):
+              console.log(chalk.cyan("emptying"));
+              io.io.emit('emptying', "emptying");
+              break;
+              case("C3"):
+              console.log(chalk.cyan("emptied"));
+              io.io.emit('emptied', "emptied");
+              break;
               // case("C9"):
               // console.log(chalk.cyan("Note Transfered to Stacker"));
               // io.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
@@ -252,7 +276,7 @@ function promise_handlePoll(data){
                   var centena=2
                   var decena=1
                   var cantidad_en_hex=(poll_responde[i+(puntero+centena)]+poll_responde[i+(puntero+decena)]);
-                  var cantidad_en_dec=hex_to_dec(cantidad_en_hex);
+                  var cantidad_en_dec=ssp.hex_to_dec(cantidad_en_hex);
                   // console.log(cantidad_en_hex);
                   // var cantidad_en_bin=ssp.ConvertBase.hex2bin(cantidad_en_hex);
                   // console.log(cantidad_en_bin);
@@ -277,22 +301,22 @@ function get_all_levels_hopper(receptor){
   return new Promise(async function(resolve, reject) {
   //  var here=await handle_all_levels_hopper(await ssp.envia_encriptado(receptor,get_all_levels));
     var here=await ssp.envia_encriptado(receptor,get_all_levels);
-    var here2=await handle_all_levels_hopper();
+  //  var here2=await carga_monedas_al_hopper();
     console.log("here:"+here2);
     return resolve("OK");
   });
 
 }
-function handle_all_levels_hopper(receptor){
+function carga_monedas_al_hopper(receptor){
 return new Promise(async function(resolve, reject) {
   var pol1=await transmite(receptor,set_coin_amount_10c);
   console.log("pol1:"+pol1);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_20c);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_50c);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_1s);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_2s);
-  // await ssp.envia_encriptado(receptor,set_coin_amount_5s);
-  return resolve("OK");
+   await ssp.envia_encriptado(receptor,set_coin_amount_20c);
+   await ssp.envia_encriptado(receptor,set_coin_amount_50c);
+   await ssp.envia_encriptado(receptor,set_coin_amount_1s);
+   await ssp.envia_encriptado(receptor,set_coin_amount_2s);
+   await ssp.envia_encriptado(receptor,set_coin_amount_5s);
+   return resolve("OK");
 });
 
 
@@ -391,9 +415,9 @@ function transmite(a_quien, orden){
 
       return  new Promise(async function(resolve, reject) {
         sp.disable_hopper_pooling();
-        var dato=await sh.super_comando(a_quien,orden)
+        var dato=await super_comando(a_quien,orden)
         console.log("dato:"+dato);
-        var pol=await sh.promise_handlePoll(dato);
+        var pol=await promise_handlePoll(dato);
         console.log("pol:"+pol);
         sp.enable_hopper_pooling();
         return resolve(pol);
@@ -401,3 +425,30 @@ function transmite(a_quien, orden){
 }
 module.exports.transmite=transmite;
 /////////////////////////////////////////////////////////
+function ensureIsReadyForPolling() {
+    return new Promise(function (resolve, reject) {
+      //console.log("la orden aqui es:"+receiver+" "+command);
+      console.log("aqui ready for polling llego:"+ready_for_pooling);
+        function waitForFoo(){
+            if (ready_for_pooling){
+              //console.log("la orden es:"+receiver+" "+command);
+               return resolve("OK");
+            }
+            clearTimeout(timerout3);
+            setTimeout(waitForFoo, 30);
+      };
+          waitForFoo();
+         var timerout3= setTimeout(()=>{reject("ready for pooling:"+ready_for_pooling)},1000);
+    });
+};
+module.exports.ensureIsReadyForPolling=ensureIsReadyForPolling;
+/////////////////////////////////////////////////////////
+function mandate_al_hopper(esto) {
+  return new Promise(function(resolve, reject) {
+    sp.disable_hopper_pooling();
+    super_comando(smart_hopper_address,esto).then(data =>{return enc.promise_handleEcommand();}).then(data =>{return ssp.handlepoll(data);})
+    .then(data =>{console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));sp.enable_hopper_pooling();return resolve(data)})
+  });
+}
+module.exports.mandate_al_hopper= mandate_al_hopper;
+//////////////////////////////////////////////////////////

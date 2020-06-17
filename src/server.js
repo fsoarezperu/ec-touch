@@ -369,9 +369,50 @@ io.on('connection', function(socket) {
      io.emit('actualizar_niveles', levels);
     console.log("data final:"+levels);
   });
-  socket.on('add_coins', function(msg) {
+  socket.on('add_coins',async  function(msg) {
      console.log(chalk.green(msg));
+     switch (msg) {
+      case "add_0.1":
+      console.log(chalk.green(msg));
+      await  sh.mandate_al_hopper(set_coin_amount_10c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_0.2":
+      await  sh.mandate_al_hopper(set_coin_amount_20c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_0.5":
+      await  sh.mandate_al_hopper(set_coin_amount_50c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_1":
+      await  sh.mandate_al_hopper(set_coin_amount_1s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_2":
+      await  sh.mandate_al_hopper(set_coin_amount_2s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_5":
+      await  sh.mandate_al_hopper(set_coin_amount_5s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "vaciar":
+      var quefue=await  sh.mandate_al_hopper(empty_all)
+      console.log("quefue"+quefue);
+    //  setTimeout(function () {
+          io.emit('actualiza_grafico', "actualiza_grafico");
+    //  }, 30000);
+      break;
+       default:
 
+     }
+  });
+  socket.on('pay_value', async function(msg) {
+    payout_amount[2]=msg;
+    console.log("pay_amount"+payout_amount);
+    await  sh.mandate_al_hopper(payout_amount);
+    //io.emit('pay_value',"pay_value");
   });
 });
 /////////////////////////////////////////////////////////
