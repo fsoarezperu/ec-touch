@@ -8,42 +8,49 @@ const glo = require('./../globals');
 ///////////////////////////////////////////////////////////
 function start_smart_hopper() {
   return new Promise( async function(resolve, reject) {
-    server.logea(chalk.green("starting_smart_hopper"));
-    server.logea("/////////////////////////////////");
-    var stat=await ssp.sync_and_stablish_presence_of(smart_hopper_address);
-    if (stat=="OK") {
-      var step2=await ssp.negociate_encryption(smart_hopper_address);
-           if (step2=="OK") {
-              var step3= await hopperpoll(smart_hopper_address);
-               if (step3=="OK") {
-                 var step4= await ssp.set_protocol_version(smart_hopper_address,hopper_protocol_version);
-                 if (step4=="OK") {
-                   var step5= await ssp.setup_request_command(smart_hopper_address);
-                   if (step5=="OK") {
-                     var step6= await set_hopper_routing(smart_hopper_address);
-                     if (step6=="OK") {
-                         var step7=await enable_hopper(smart_hopper_address);
-                          if (step7=="OK") {
-                          //  await carga_monedas_al_hopper(smart_hopper_address);
-                           var step8=await hopperpoll_loop(smart_hopper_address);
-                           console.log(step8);
-                          }
-                         //var step7= await get_all_levels_hopper(smart_hopper_address);
-          //             //
+    try {
+      server.logea(chalk.green("starting_smart_hopper"));
+      server.logea("/////////////////////////////////");
+      var stat=await ssp.sync_and_stablish_presence_of(smart_hopper_address);
+      if (stat=="OK") {
+        var step2=await ssp.negociate_encryption(smart_hopper_address);
+             if (step2=="OK") {
+                var step3= await hopperpoll(smart_hopper_address);
+                 if (step3=="OK") {
+                   var step4= await ssp.set_protocol_version(smart_hopper_address,hopper_protocol_version);
+                   if (step4=="OK") {
+                     var step5= await ssp.setup_request_command(smart_hopper_address);
+                     if (step5=="OK") {
+                       var step6= await set_hopper_routing(smart_hopper_address);
+                       if (step6=="OK") {
+                           var step7=await enable_hopper(smart_hopper_address);
+                            if (step7=="OK") {
+                            //  await carga_monedas_al_hopper(smart_hopper_address);
+                             var step8=await hopperpoll_loop(smart_hopper_address);
+                             console.log(step8);
+                            }
+                           //var step7= await get_all_levels_hopper(smart_hopper_address);
+            //             //
 
+                       }
                      }
                    }
                  }
-               }
-          //   console.log("Sale por aqui sin problema")
-          //     return resolve("OK");
-           }else {
-                 reject(step2)
-               }
+            //   console.log("Sale por aqui sin problema")
+            //     return resolve("OK");
+             }else {
+                   reject(step2)
+                 }
 
-    }else {
-      reject(stat)
+      }else {
+        reject(stat)
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      console.log("error2");
     }
+
 
   });
 
@@ -96,8 +103,9 @@ async function hopperpoll_loop(receptor) {
         if(step1.length>0){
           await handle_poll_hopper(step1);
           setTimeout(async function () {
+            console.log(chalk.green("POLLING"));
             await hopperpoll_loop(receptor)
-          }, 200);
+          }, 3000);
           ready_for_pooling=true;
           return resolve("OK");
         }else {
@@ -200,6 +208,8 @@ function handle_poll_hopper(data){
              }//end of FOR loop
 
             // enable_sending();
+      console.log(chalk.green("POLLING END"));
+        console.log(chalk.green("////////////////////////"));
       return resolve(passingby);
 
 
@@ -428,10 +438,11 @@ module.exports.transmite=transmite;
 function ensureIsReadyForPolling() {
     return new Promise(function (resolve, reject) {
       //console.log("la orden aqui es:"+receiver+" "+command);
-      console.log("aqui ready for polling llego:"+ready_for_pooling);
+      //console.log("en ensure is ready for pooling-> ready for polling llego:"+ready_for_pooling);
         function waitForFoo(){
             if (ready_for_pooling){
               //console.log("la orden es:"+receiver+" "+command);
+              //console.log(chalk.yellow("Listo para pooling"));
                return resolve("OK");
             }
             clearTimeout(timerout3);

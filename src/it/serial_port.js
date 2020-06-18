@@ -1,6 +1,8 @@
 const server = require('./../server');
 const ssp = require('./ssp');
 const glo = require('./globals');
+const enc = require('./encryption');
+
 const chalk=require('chalk');
 const it = require('./devices/tambox');
 const sh = require('./devices/smart_hopper');
@@ -87,13 +89,16 @@ server.logea("enabling hopper_pooling");
 module.exports.enable_hopper_pooling=enable_hopper_pooling;
 //////////////////////////////////////////////////////////////////////////
 async function hacer_consulta_serial(receiver,command){
-  console.log("ready_for_sending:"+ready_for_sending);
+  //console.log(chalk.yellow("entro a hacer_consulta_serial con RFS:"+ready_for_sending+"el siguiente paso sera ensureIsSet"));
   var go=await ssp.ensureIsSet()
-if(go="OK"){
+  //console.log(go);
+if(go=="OK"){
+  //console.log("entro en promesa");
   return new Promise((resolve,reject)=>{
   //   console.log(chalk.cyan("BLOCK SENDING"));
         canal_ocupado();
         const command_ready =ssp.prepare_command_to_be_sent(receiver,command);
+      //  console.log("command_ready"+command_ready);
         //setTimeout(()=>{port.write(command_ready, function(err) {if (err) {return console.log('Error on write: ', err.message)}});},20);
         server.io.emit("system_running_indicator","system_running_indicator")
         port.write(command_ready, function(err) {if (err) {return console.log('Error on write: ', err.message)}});
@@ -114,14 +119,15 @@ if(go="OK"){
           ssp.received_byte_stuffing(received_command)
           .then(data =>{
             //console.log("data_received:"+data)
+          //  console.log(chalk.yellow(enc.changeEndianness(global.slave_count)+"-> "+device+'->:'),chalk.yellow(data));
             received_command=data;
             parser.removeAllListeners('data');
             //////////////////////////////
             if(received_command.length>0){
             //  setTimeout(function () {
             ready_for_sending=true;
-            console.log("ready_for_sending:"+ready_for_sending);
-            console.log("ready_for_pooling:"+ready_for_pooling);
+          //  console.log("ready_for_sending:"+ready_for_sending);
+          //  console.log("ready_for_pooling:"+ready_for_pooling);
 
               return resolve(received_command);
             //  }, 20);
@@ -136,12 +142,9 @@ if(go="OK"){
       });
 
   });
+}else {
+  console.log("not sure if it is waiting for ensureIsSet");
 }
-//   .then(function(){
-//
-// }).catch(err => {
-//   console.log(chalk.bold.red(err));
-// })
 };
 //////////////////////////////////////////////////////////////////////////
 exports.retrial=function(command_ready){

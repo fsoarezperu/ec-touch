@@ -3,7 +3,7 @@
 //var seq_bit = 1;
 global.view_log=false;
 global.seq_bit=0;
-global.sync=false;
+global.sync=false;//esto tiene que iniciar en falso para que pueda agenciarse la negociacion de la llave de encriptacion
 global.validator_address = '00';
 global.smart_hopper_address = '10';
 global.device='';

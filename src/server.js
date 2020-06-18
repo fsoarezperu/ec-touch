@@ -452,13 +452,27 @@ http.listen(3000, async function() {
   // }else{
   //   console.log("Cabezal no conectado.");
   // };
+
+  // try {
+  //   thisThrows();
+  // } catch (e) {
+  //   console.log(e);
+  // } finally {
+  //   console.log("manejando el error");
+  // }
   ////////////////////////////////////////////////////////////
   // Inicializando el Smart Hopper
-  var hopper=await sh.start_smart_hopper();
-  if (hopper=="OK") {
-    console.log(chalk.green("Hopper Online"));
-  }else {
-    console.log(chalk.red("No Hopper Found"));
+  try {
+    var hopper=await sh.start_smart_hopper();
+    if (hopper=="OK") {
+      console.log(chalk.green("Hopper Online"));
+    }else {
+      console.log(chalk.red("No Hopper Found"));
+    }
+  } catch (e) {
+    console.log(e);
+  } finally {
+    console.log("aqui se supone que tengo que manejar el error.");
   }
   // var validator= await va.start_validator();
   // if (validator=="OK") {
@@ -469,6 +483,14 @@ http.listen(3000, async function() {
   console.log("idle");
 
 });
+
+// async function thisThrows(){
+//   // return new Promise(function(resolve, reject) {
+//   //   reject();
+//   // });
+//   throw new Error ("Error desde esta funcion")
+// }
+
 /////////////////////////////////////////////////////////
 var counter = 0;
 function envio_ciclico(orden) {

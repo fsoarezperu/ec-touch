@@ -122,14 +122,14 @@ exports.set_modulus=function () {
 }
 ////////////////////////////////////////////////////
 exports.send_request_key_exchange=function () {
-  //console.log("request_key_exchange command sent");
+  console.log("request_key_exchange command sent");
   my_HOST_RND = 999;
   var HostInterKey = 0;
   //console.log("my_HOST_RND:" + my_HOST_RND);
   calc_generator = parseInt(calc_generator, 10);
   calc_modulus = parseInt(calc_modulus, 10);
-  server.logea("my calc_generator:" + calc_generator);
-  server.logea("my calc_modulus:" + calc_modulus);
+  console.log("my calc_generator:" + calc_generator);
+  console.log("my calc_modulus:" + calc_modulus);
   HostInterKey = Big_Number(calc_generator).pow(my_HOST_RND);
   HostInterKey = Big_Number(HostInterKey).mod(calc_modulus);
   if (HostInterKey.lenth < 4) {
@@ -149,7 +149,7 @@ exports.send_request_key_exchange=function () {
   ///////////////////////////////////////////////
   HostInterKey = ssp.ConvertBase.dec2hex(HostInterKey).toUpperCase();
   HostInterKey = pady(HostInterKey, 4);
-  //console.log("HostInterKey to hex:" + HostInterKey);
+  console.log("HostInterKey to hex:" + HostInterKey);
   var pre_set = changeEndianness(String(HostInterKey));
   var acomodando2 = "000000000000";
   pre_set = pre_set.concat(acomodando2);
@@ -270,22 +270,30 @@ function handle_count() {
   ecount = ssp.ConvertBase.dec2hex(ecount);
   ecount= ecount.toUpperCase();
   ecount = pady(ecount, 8);
+  //console.log("Mi Cuenta" + ecount);
+  // console.log(chalk.cyan("lo que asumo que tiene el:" + slave_count));
 
-  console.log(chalk.cyan("Dev Count:" + slave_count));
-  console.log("Hos Count" + ecount);
 
   if(slave_count == ecount){
     //console.log(chalk.green("COINCIDEN"));
+    //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
+    //concuerda.
   }else{
     console.log(chalk.red.inverse("NO COINCIDEN"));
+    //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
+    //creo que tengo que reintentar enviar el dato anterior
   }
   ecount = changeEndianness(ecount);
   //setTimeout(handle_count,1000);
 };
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
-//var padding = Array(29).join('0');
-var padding = Array(61).join('0');
+//if (x.length<=17bytes) {
+  //var padding = Array(29).join('0');//cuando mando 1 solo paquete de 16bytes
+//}
+//if (x.length<=33bytes) {
+  var padding = Array(61).join('0');
+//}
 
 function padx(pad, str, padLeft) {
   server.logea("padding es:"+padding);
@@ -361,9 +369,16 @@ function prepare_Encryption(datax) {
     server.logea("cantidad de bytes:"+encrypted_data.length/2);
   }
    //Al trasmitir 17 bytes es necesario ponerlo como HEX en la cadena de envio es decir 17dec=11hex
-  //  var the_length = (encrypted_data.length / 2) + 1;
-  //  var finalizando_envio=last_length+"7E"+encrypted_data; // se usa este valor cuando se va a utilizar 16 bytes para transmision
-    var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 32 bytes para transmision
+    var the_length = (encrypted_data.length / 2) + 1;
+    console.log("encrypted_data.length:"+encrypted_data.length/2+"Bytes");
+    if (encrypted_data.length/2==16) {
+      the_length=11;
+    }
+    if (encrypted_data.length/2==32) {
+      the_length=21;
+    }
+    var finalizando_envio=the_length+"7E"+encrypted_data; // se usa este valor cuando se va a utilizar 16 bytes para transmision
+//    var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 32 bytes para transmision
   //  var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 48 bytes para transmision
 
     finalizando_envio = finalizando_envio.toUpperCase();
@@ -484,14 +499,15 @@ data_length=parseInt(data_length,10);
 server.logea("data length is:"+data_length);
 var read_ecount=ready.substr(2, 8);
 read_ecount=changeEndianness(read_ecount);
-server.logea("reaD COUNT:"+read_ecount);
+//console.log("reaD COUNT:"+read_ecount);
+console.log(chalk.yellow(read_ecount+"-> "+device+'->:'),chalk.yellow(received_command));
 //read_ecount=parseInt(read_ecount,10);
 slave_count=read_ecount;
 slave_count=pady(slave_count,8);
 //slave_count = parseInt(slave_count, 16);
 //  console.log("slave_read_ecount is:"+slave_count);
 var read_data=ready.substr(10,data_length*2);
-console.log("read_data is:"+read_data);
+//console.log("en promise_handleEcommand read_data is:"+read_data);
 //exports.handleRoutingNotes(read_data);
 handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
 //ssp.handlepoll(handler);

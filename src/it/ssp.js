@@ -5,9 +5,10 @@ const enc = require('./encryption');
 const io = require("./../server.js");
 const sh = require("./devices/smart_hopper");
 /////////////////////////////
-//var sync = false;
-//var seq_bit = 1;
+// var sync = false;
+// var seq_bit = 0;
 function sequencer() {
+//  console.log("sequencer in:"+sync);
   if (sync == true) {
     sync = false;
     seq_bit = 0;
@@ -111,7 +112,7 @@ var device="";
     device="Validator";
   }
 
-  server.logea(chalk.cyan(device+'->:'),chalk.cyan(single_command));
+  console.log(chalk.cyan(enc.changeEndianness(ecount)+"-> "+device+'->:'),chalk.cyan(single_command));
   var hexiando = "0x" + chunk(command_listo, 2).join('0x');
   hexiando = hexiando.match(/.{1,4}/g);
   formed_command_to_send = hexiando;
@@ -140,15 +141,14 @@ function send_byte_stuffing(command){
             //   console.log(chalk.cyan("----------------Send Stuffed:"+thisy2));
              return thisy2;
 };
-
 function received_byte_stuffing(command){
   return new Promise(function(resolve, reject) {
-    console.log("received command to be evaluted:"+command);
+    //console.log("received command to be evaluted:"+command);
     var accumulated_chart="";
     var toggy=true;
     var current_char="";
     const thelength=command.length/2;
-    console.log("the length used for byte stuffing:"+thelength);
+  //  console.log("the length used for byte stuffing:"+thelength);
     for (var i=0;i<thelength;i++){
            current_char=command.substr(i*2,2);
           //console.log("current_char:"+current_char);
@@ -166,7 +166,7 @@ function received_byte_stuffing(command){
             }
       accumulated_chart=accumulated_chart+current_char;
       };
-    console.log(chalk.cyan("----------------Receive Stuffed:"+accumulated_chart));
+  //  console.log(chalk.cyan("----------------Receive Stuffed:"+accumulated_chart));
     return resolve(accumulated_chart);
   });
 
@@ -1469,11 +1469,13 @@ module.exports.handlepoll3=handlepoll3;
 function ensureIsSet() {
     return new Promise(function (resolve, reject) {
       //console.log("la orden aqui es:"+receiver+" "+command);
-      console.log("aqui ready for sending llego:"+ready_for_sending);
+    //  console.log("estoy entrando a ensureIsSet: con RFS:"+ready_for_sending);
+    //  console.log("entrando a ensure is set-> ready for pooling llego:"+ready_for_pooling);
         function waitForFoo(){
             if (ready_for_sending){
-              //console.log("la orden es:"+receiver+" "+command);
                return resolve("OK");
+            }else {
+              console.log(chalk.red("en wait for foo"));
             }
             clearTimeout(timerout);
             setTimeout(waitForFoo, 30);
@@ -1564,9 +1566,6 @@ function handles_coin_mech_inhivits(data){
   }
     enable_sending();
 }
-
-
-
 ////////////////////////////////////////////////////////
 function envia_encriptado(receptorx,orden){
     return new Promise(function(resolve, reject) {
