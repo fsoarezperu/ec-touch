@@ -1,7 +1,12 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
+global.my_resgistered_machine_name="";
+
+global.ECOSVersion="1.0";
+global.last_sent="";
 global.view_log=false;
+global.show_details=false;
 global.seq_bit=0;
 global.sync=false;//esto tiene que iniciar en falso para que pueda agenciarse la negociacion de la llave de encriptacion
 global.validator_address = '00';
@@ -16,6 +21,7 @@ global.trash = [0X01, 0XAF];
 global.synch = [0X01, 0X11];
 global.reset = [0X01, 0X01];
 global.host_protocol_version = [0X02, 0X06, 0X08];
+global.validator_protocol_version = [0X02, 0X06, 0X08];
 global.hopper_protocol_version = [0X02, 0X06, 0X07];
 // global.set_coin_amount_10c=[0X0A, 0x34, 0x14, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x14 =20 monedas de 10c.
 // global.set_coin_amount_20c=[0x0A, 0x34, 0x06, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x06 =6 monedas de 20c.
@@ -175,7 +181,7 @@ global.pay_amount= [0x09, 0x33, 0xD0, 0x07, 0x00, 0x00, 0x50, 0x45, 0x4E, 0x58];
 global.on_startup=false;
 global.ready_for_pooling = true;
 global.ready_for_sending = true;
-
+global.numero_de_packs=0;
 global.tbm_status=true;
 /////////////////////////////////////////////////////////////////////////////////////
 global.received_cleaned;
@@ -194,16 +200,17 @@ global.set_modulus = 0; //this is populated by GET KEYS function.
 global.request_key_exchange = 0;
 
 global.ecount = "00000000";
-global.numero_de_serie="4545405";
+global.numero_de_serie="00000";
 global.country_code;
 global.tebs_barcode = "";
-
+global.note_validator_type="";
 //cuando envia ordenes al tbm de heroku app publica
 //global.tbm_adressx="https://tbm-cloud.herokuapp.com";
-global.tbm_adressx="http://192.168.1.7:3000";
-global.release_version="1.0";
-global.machine_ip="192.168.1.16";
-global.machine_port="0000";
+global.tbm_adressx="http://192.168.1.2:3000";//esto tiene que apuntar a donde esta el servidor de interface API
+global.release_version="1.1";
+global.machine_ip="192.168.1.7";
+global.machine_port="3000";
 global.machine_developer="EC-HOME AUTOMATION";
-global.machine_support="fsoarez@hotmail.com";
+global.machine_support="fsoarez@ec-automation.com";
 global.is_head_online=true;
+global.receptor="";

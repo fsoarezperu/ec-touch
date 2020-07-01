@@ -17,6 +17,8 @@ $(document).ready(function() {
   //  next_page();
   });
   socket.on('finish', function(msg) {
+    window.clearTimeout(counter);
+    window.clearTimeout(counter2);
   window.location.replace("/finish/"+qty_billx);
   });
   //para cancelar el pago de una remesa, solo antes de iniciarse
@@ -75,6 +77,10 @@ socket.on('Note_Stored_in_Payout', function(msg) {
       display_message(msg);
       $("#finish").show();
     });
+
+    socket.on('iniciando', function(msg) {
+      window.location.replace("/");
+      });
 /////////////////////////////////////////////////////
 var depositado = 0;
 function acumular_montos_agregados(monto) {

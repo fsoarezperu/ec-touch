@@ -1,23 +1,23 @@
 <script type="text/javascript">
-
 $(document).ready(function(){
 var socket = io();
-
 update_currency({{calculos.mondeda}});
-
 $("#remesa_ok").click( function(){
   window.location.replace("/");
 });
 check_ok();
 });
 
+socket.on('iniciando', function(msg) {
+  window.location.replace("/");
+  });
+  
 function check_ok(){
   var a="{{calculos.qty}}";
   var b="{{calculos.qty2}}";
-
   if(a==b){
       //alert("LOS BILLETES LEIDOS Y GUARDADOS  CONCIDEN")
-    //document.getElementById(aviso).innerHTML="TODO OK";
+    //document.getElementById(aviso).innerHTML="TO DO OK";
     var link = document.getElementById('remesa_ok');
     setTimeout(function(){
       link.click();
@@ -38,27 +38,31 @@ function update_currency(currency_detected) {
   }
  }
 </script>
-<body  oncontextmenu="return false">
+<body oncontextmenu="return false">
   <div class="wrapper">
     <div class="titulo">
-    <div ></div>
-    <div>Remesa Finalizada</div>
+      <div></div>
+      <div>Remesa Finalizada</div>
     </div>
 
-<div class="grupo2">
-          <!-- <div> </div> -->
-          <div id="currency_val" class="depositado"style="float:left;"></div>
-          <div  class="mensaje"><h2>Se recibió {{calculos.qty}} de {{calculos.qty2}} billetes por el monto de {{calculos.moneda}} {{calculos.remesa.monto}}.00 </h2></div>
-          <!-- para la remesa #{{remesa.no_remesa}} -->
-          <div> </div>
-          <div> </div>
-          <div>
-            <a class="btn" style="width:120px;" id="remesa_ok">Aceptar</a>
-          </div>
+    <div class="grupo2">
+      <!-- <div> </div> -->
+      <div id="currency_val" class="depositado" style="float:left;"></div>
+      <div class="mensaje">
+        <h2>Se recibió {{calculos.qty}} de {{calculos.qty2}} billetes por el monto de {{calculos.moneda}} {{calculos.remesa.monto}}.00 </h2>
+      </div>
+      <!-- para la remesa #{{remesa.no_remesa}} -->
+      <div> </div>
+      <div> </div>
+      <div>
+        <a class="btn" style="width:120px;" id="remesa_ok">Aceptar</a>
+      </div>
 
- </div>
+    </div>
 
   </div>
-  <div id="message"><ol></ol></div>
+  <div id="message">
+    <ol></ol>
+  </div>
 
 </body>

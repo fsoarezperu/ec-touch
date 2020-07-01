@@ -5,6 +5,8 @@ const sp = require('./../serial_port');
 const enc = require('./../encryption');
 const chalk=require('chalk');
 const glo = require('./../globals');
+const va = require('./validator');
+
 ///////////////////////////////////////////////////////////
 function start_smart_hopper() {
   return new Promise( async function(resolve, reject) {
@@ -27,7 +29,7 @@ function start_smart_hopper() {
                             if (step7=="OK") {
                             //  await carga_monedas_al_hopper(smart_hopper_address);
                              var step8=await hopperpoll_loop(smart_hopper_address);
-                             console.log(step8);
+                             console.log("step8:"+step8);
                             }
                            //var step7= await get_all_levels_hopper(smart_hopper_address);
             //             //
@@ -125,17 +127,23 @@ function spread(mensaje) {
 ////////////////////////////////////////////////////////
 function handle_poll_hopper(data){
   var passingby=data;
-//  console.log("data en handle pool es:"+data);
+  console.log("data en handle pool es:"+data);
   return new Promise(function(resolve, reject) {
     var poll_responde=data.match(/.{1,2}/g);
-  //     console.log(poll_responde);
+    var data_length_on_pool=parseInt(poll_responde[0]);
+    data_length_on_pool=data_length_on_pool+1;
+    poll_responde=poll_responde.slice(0,data_length_on_pool);
+    //console.log(data_length_on_pool);
+       console.log(poll_responde);
      if(poll_responde == undefined || poll_responde.length < 1){
        console.log("ERROR Receiving data");
        reject();
            }else{
-             for (var i =1; i< poll_responde.length; i++ )
+             for (var i =1; i<poll_responde.length; i++ )
                 {
+                //  console.log(poll_responde[i]);
                   switch(poll_responde[i])
+
                {
                   // case("90"):
                   // console.log(chalk.red.inverse("Cashbox out of Service"));
@@ -262,11 +270,11 @@ function promise_handlePoll(data){
               // break;
               case("C2"):
               console.log(chalk.cyan("emptying"));
-              io.io.emit('emptying', "emptying");
+              server.io.emit('emptying', "emptying");
               break;
               case("C3"):
               console.log(chalk.cyan("emptied"));
-              io.io.emit('emptied', "emptied");
+              server.io.emit('emptied', "emptied");
               break;
               // case("C9"):
               // console.log(chalk.cyan("Note Transfered to Stacker"));
@@ -281,7 +289,7 @@ function promise_handlePoll(data){
                 var no_denominations=poll_responde[i+puntero];
                 var valores=[];
                 console.log("no_denominations:"+no_denominations);
-                for (var ia = 0; ia < (parseInt(no_denominations)-2); ia++) {
+                for (var ia = 0; ia < (parseInt(no_denominations)); ia++) {
                   console.log("denomination:"+(ia+1));
                   var centena=2
                   var decena=1
@@ -415,7 +423,7 @@ return new Promise(function(resolve, reject) {
     toSend = enc.prepare_Encryption(poll);
     sp.transmision_insegura(receptorx,toSend)
       .then(data =>{return enc.promise_handleEcommand(data)})
-      .then(data =>{server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return handle_poll_hopper(data)})
+      .then(async function(data){server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await va.handle_poll_validator(data)})
       .then(data=>{return resolve(data);})
       .catch(function(error) {console.log(error);sp.retrial(error);});
 });
@@ -427,7 +435,9 @@ function transmite(a_quien, orden){
         sp.disable_hopper_pooling();
         var dato=await super_comando(a_quien,orden)
         console.log("dato:"+dato);
-        var pol=await promise_handlePoll(dato);
+        //var pol=await promise_handlePoll(dato);
+        var pol=await va.handle_poll_validator(dato);
+
         console.log("pol:"+pol);
         sp.enable_hopper_pooling();
         return resolve(pol);
@@ -435,29 +445,10 @@ function transmite(a_quien, orden){
 }
 module.exports.transmite=transmite;
 /////////////////////////////////////////////////////////
-function ensureIsReadyForPolling() {
-    return new Promise(function (resolve, reject) {
-      //console.log("la orden aqui es:"+receiver+" "+command);
-      //console.log("en ensure is ready for pooling-> ready for polling llego:"+ready_for_pooling);
-        function waitForFoo(){
-            if (ready_for_pooling){
-              //console.log("la orden es:"+receiver+" "+command);
-              //console.log(chalk.yellow("Listo para pooling"));
-               return resolve("OK");
-            }
-            clearTimeout(timerout3);
-            setTimeout(waitForFoo, 30);
-      };
-          waitForFoo();
-         var timerout3= setTimeout(()=>{reject("ready for pooling:"+ready_for_pooling)},1000);
-    });
-};
-module.exports.ensureIsReadyForPolling=ensureIsReadyForPolling;
-/////////////////////////////////////////////////////////
 function mandate_al_hopper(esto) {
-  return new Promise(function(resolve, reject) {
+  return new Promise( async function(resolve, reject) {
     sp.disable_hopper_pooling();
-    super_comando(smart_hopper_address,esto).then(data =>{return enc.promise_handleEcommand();}).then(data =>{return ssp.handlepoll(data);})
+    super_comando(smart_hopper_address,esto).then(data =>{return enc.promise_handleEcommand();}).then(async function(data){return await ssp.handlepoll(data);})
     .then(data =>{console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));sp.enable_hopper_pooling();return resolve(data)})
   });
 }

@@ -8,6 +8,7 @@ const pool = require('./../../database');
 const io = require("./../../server.js");
 
 
+
 function verifica_coneccion_validador(){
   port.write("command_ready");
   if(global.is_head_online==true)
@@ -107,11 +108,21 @@ return;
 //  exports.handlepoll(handler);
 
 }
+
 ////////////////////////////////////////////////////
 exports.finalizar_pagos_en_proceso=async function(){
-  console.log("intento dar por finalizado los pagos que esten en proceso");
-await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
-await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
+  return new Promise(async function(resolve, reject) {
+    try {
+      console.log("Finalizando los pagos inconclusos");
+      await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
+      await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
+      return resolve();
+    } catch (e) {
+      return reject(e);
+    } finally {
+      return;
+    }
+  });
 
 }
 ////////////////////////////////////////////////////

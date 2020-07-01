@@ -7,6 +7,7 @@ var once=true;
   var is_cashbox_in_service = true;
   // const pool = require('../database');
   $(document).ready(function() {
+    inicia();
     //  $("#abc").hide();
     $("#abc").css('visibility', 'hidden');
     display_remote_conection();
@@ -45,6 +46,7 @@ var once=true;
       socket.emit('cerrar_remesa_hermes');
       $('#overlay,#overlay2,.overlay-back').fadeOut(500);
     });
+
     socket.on('cerrar_remesa_hermes', function(msg) {
       window.location.replace("/cerrar_remesa_hermes");
     });
@@ -85,12 +87,22 @@ var once=true;
       });
     });
 
+    socket.on('iniciando', function(msg) {
+      console.log("por resetear");
+      setTimeout(function () {
+        window.location.replace("/");
+      }, 5000);
+      });
+
     socket.on('refresh_window', function(msg) {
+      console.log(msg);
       window.location.reload(true);
+    });
+    socket.on('enable_validator', function(msg) {
+      window.location.replace("/iniciar_remesa");
     });
     socket.on('comenzar_remesa', function(msg) {
       socket.emit('enable_validator');
-      window.location.replace("/iniciar_remesa");
     });
     socket.on('retiro_en_proceso', function(msg) {
       window.location.replace("/retiro_en_proceso");
@@ -221,11 +233,22 @@ if(once){
     });
 
   });
+var system_timer;
+function inicia(){
+  system_timer=setTimeout(function () {
+    $('#inicializando_sistema, .overlay-back').fadeIn(500);
+  }, 3000);
 
-
+}
+function borra_inicia(){
+  clearTimeout(system_timer);
+  $('#inicializando_sistema, .overlay-back').fadeOut(500);
+  inicia();
+}
 
   function display_system_running_indicator() {
     $("#system_running_indicator").show();
+    borra_inicia();
     //  document.getElementById("system_running_indicator").css('visibility', 'visible')
     //  document.getElementById("system_running_indicator").innerHTML=".";
     setTimeout(clear_system_running_indicator, 200);
@@ -312,6 +335,18 @@ if(once){
       display: none;
       margin: 0 auto;
     }
+    #inicializando_sistema {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 100%;
+      opacity: 1;
+      z-index: 10;
+      display: none;
+      margin: 0 auto;
+    }
+
     #out_of_service {
       position: absolute;
       top: 10%;
@@ -354,7 +389,7 @@ if(once){
         <!-- <div class="">
           <i class="fas fa-wifi fa-sm"></i>
          </div> -->
-        <div>EC-TOUCH 1.1x</div>
+        <div>{{my_resgistered_machine_name}}</div>
         <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
       </div>
       <div class="grupo2">
@@ -385,20 +420,20 @@ if(once){
             <h3>Solicitud de Retiro en proceso</h3>
             <h4>#:{{retiro.no_remesa}}</h4>
           {{else}}
-            <div class="btn interface_button" id='deposito'><i class="fas fa-cash-register fa-4x"></i><br><div class="interface_label">Deposito</div></div>
-            <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div>
-            <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div>
+            <!-- <div class="btn interface_button" id='deposito'><i class="fas fa-cash-register fa-4x"></i><br><div class="interface_label">Deposito</div></div> -->
+            <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
+            <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
             <!-- <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div> -->
-              <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div>
+              <!-- <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div> -->
               <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
-            <div class="anuncio">
+            <!-- <div class="anuncio"> -->
               <!-- <img src="img/logo_tambo.png" alt="Tambox" width="500" height="300"> -->
               <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
-              <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div>
+              <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
 
               <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
-            </div>
-            <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div>
+            <!-- </div> -->
+            <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
 
           {{/if}}
         {{/if}}
@@ -464,6 +499,28 @@ if(once){
         </div>
 
       </div>
+
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="inicializando_sistema">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Inicializando Sistema</div>
+            <div></div>
+            <div></div>
+            <div>Espere un momento se esta inicializando el sistema</div>
+            <div></div>
+            <div></div>
+            <div id="mensaje_proceso">procesando</div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
   <!--Display -->
