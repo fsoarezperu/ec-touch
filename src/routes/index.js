@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
           retiro: retiro[0]
         });
       } else {
-        console.log("system idle");
+        console.log(chalk.red("loading website"));
         res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
       }
 

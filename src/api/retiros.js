@@ -8,6 +8,7 @@ const ssp = require("../it/ssp");
 const sh = require('./../it/devices/smart_hopper');
 const enc = require('./../it/encryption');
 const glo = require('./../it/globals');
+const server= require('./../server');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////////////////////////////////
 var ConvertBase = function(num) {

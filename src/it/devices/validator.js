@@ -31,8 +31,8 @@ function start_validator() {
              if (step2=="OK") {
                 var step3= await validatorpoll(validator_address);
                  if (step3=="OK") {
-                   //return resolve("OK");
-                   var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
+                   //return resolve("TERMINADO");
+                 var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
                    if (step4=="OK") {
                      var step5= await ssp.setup_request_command(validator_address);
                      if (step5=="OK") {
@@ -41,20 +41,21 @@ function start_validator() {
                                      var step6= await set_validator_routing(validator_address);
                                      if (step6=="OK") {
                                             var regis=await server.is_this_machine_registered();
-                                          //  console.log("resgistered is:"+regis);
+                                            console.log("resgistered is:"+regis);
 
                                         if(regis=='"ok"'||regis=='"maquina registrada"'){
                                           console.log(chalk.green("Registro Aprovado:"+regis));
                                           var my_resgistered_machine=JSON.parse(await server.query_this_machine());
                                           //my_resgistered_machine=my_resgistered_machine[1];
-                                          console.log(chalk.green("query:"+my_resgistered_machine));
+                                          server.logea(chalk.green("query:"+my_resgistered_machine));
                                           console.log(chalk.green("query name:"+my_resgistered_machine.name));
                                           global.my_resgistered_machine_name=my_resgistered_machine.name;
-
+                                            //server.io.emit("iniciando","iniciando sistema");
                                           var step7=await enable_payout(validator_address);
                                            if (step7=="OK") {
                                            //  await carga_monedas_al_hopper(validator_address);
-                                              on_startup=false;
+                                           console.log(chalk.green("payout enabled"));
+                                            on_startup=false;
                                             var step8=await validator_poll_loop(validator_address);
                                             console.log(chalk.green("Inicio poll loop:"+step8));
                                            }
@@ -67,11 +68,11 @@ function start_validator() {
               }
       //  var stat=await ssp.negociate_encryption(smart_hopper_address);
       }else {
-        reject(stat)
+      return  reject("stat")
       }
     } catch (e) {
-      console.log("rejecting here:"+e);
-      reject(e);
+      console.log("No se pudo iniciar el validador:"+e);
+      return reject(e);
     } finally {
       return;
     }
@@ -83,14 +84,23 @@ module.exports.start_validator=start_validator;
 ////////////////////////////////////////////////////////
 function validatorpoll(receptor) {
   return  new Promise(async function(resolve, reject) {
+    try {
+      server.logea("aqui global.poll:"+global.poll);
       var step1= await ssp.envia_encriptado(receptor,global.poll);
       if(step1.length>0){
         //await handle_poll_validator(step1);
         await ssp.handlepoll(step1);
+        server.logea("esto se dispara al recibir handlepoll");
         return resolve("OK");
       }else {
         return reject(step1);
       }
+    } catch (e) {
+      return reject("fallo 0123:"+e);
+    } finally {
+
+    }
+
     });
   } //hace consulta de poll pero no hace bucle
 ////////////////////////////////////////////////////////
@@ -267,7 +277,7 @@ function handle_poll_validator(data){
                  break;
 
                  case("CC"):
-                 console.log(chalk.cyan("Staking"));
+                 console.log(chalk.cyan("Stakingx"));
                  server.io.emit('Staking', "Staking");
                  break;
 
@@ -287,7 +297,7 @@ function handle_poll_validator(data){
                  break;
 
                  case("D2"):
-                 //console.log(chalk.red.inverse("Dispensed"));
+                 console.log(chalk.red.inverse("Dispensed"));
                  //read event data
                  var value_in_hex=data.substr(8,8);
                  value_in_hex=enc.changeEndianness(value_in_hex);
@@ -340,7 +350,7 @@ function handle_poll_validator(data){
                  break;
 
                  case("DA"):
-                 //console.log(chalk.red.inverse("Dispensing"));
+                 console.log(chalk.red.inverse("Dispensing"));
                  //read event data
                  var value_in_hex=data.substr(8,8);
                  value_in_hex=enc.changeEndianness(value_in_hex);

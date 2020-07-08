@@ -7,31 +7,58 @@ const ssp = require("../it/ssp");
 const chalk = require('chalk');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 //const glo = require('./globals');
+function getAsDate(day, time)
+{
+ var hours = Number(time.match(/^(\d+)/)[1]);
+ var minutes = Number(time.match(/:(\d+)/)[1]);
+ var xAMPM = time.match(/\s(.*)$/)[1];
+ if(xAMPM == "pm" && hours<12) hours = hours+12;
+ if(xAMPM == "am" && hours==12) hours = hours-12;
+ var sHours = hours.toString();
+ var sMinutes = minutes.toString();
+ if(hours<10) sHours = "0" + sHours;
+ if(minutes<10) sMinutes = "0" + sMinutes;
+ time = sHours + ":" + sMinutes + ":00";
+ var d = new Date(day);
+ var n = d.toISOString().substring(0,10);
+ var newDate = new Date(n+"T"+time);
+ return newDate;
+}
 
-router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha/:hora',async (req,res)=>{
+router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fechax1/:horax1',async (req,res)=>{
+
+
+         var {no_remesa}=req.params;
   new Promise(async function(resolve, reject) {
     try {
-      console.log(chalk.yellow("iniciando NUEVA REMESA"));
+      console.log(chalk.yellow("iniciando NUEVA REMESA:"+no_remesa));
      if(on_startup==false){
-       var {no_remesa}=req.params;
+
       const number_remesa= await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and no_remesa=?",[no_remesa]);
+      console.log(number_remesa[0].noRemesa);
         if(number_remesa[0].noRemesa>0){
             res.json('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
         }else{
-         const {tienda_id,no_caja,codigo_empleado,no_remesa,fecha,hora}=req.params;
+         const {tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1}=req.params;
+         console.log(fechax1);
+         console.log(horax1);
+         //var tsx=await getAsDate(fechax1,horax1);
+         //console.log(tsx);
+         //console.log("ARREGLANDO TIMESTAMP CREATION:"+tsx);
          if(tienda_id&&no_caja&&codigo_empleado&&no_remesa){
            const nueva_res={
              tienda_id,
              no_caja,
              codigo_empleado,
              no_remesa,
-             fecha,
-             hora,
+             fecha:fechax1,
+             hora:horax1,
              moneda:country_code,
              tebs_barcode:tebs_barcode,
              machine_sn:numero_de_serie,
              tipo:'ingreso',
-             no_billetes:0
+             no_billetes:0//,
+            // ts:tsx
            }
            await pool.query('INSERT INTO remesas set ?', [nueva_res]);
            io.io.emit('comenzar_remesa',"INICIAR REMESA");

@@ -29,7 +29,12 @@
   <script type="text/javascript">
     var socket = io();
     $(document).ready(function() {
-
+      socket.on('iniciando', function(msg) {
+        console.log("por resetear");
+        setTimeout(function () {
+          window.location.replace("/");
+        }, 5000);
+        });
     });
   </script>
 </head>

@@ -79,6 +79,7 @@ module.exports.spectral_crc=spectral_crc
 function prepare_command_to_be_sent(receiver,command){
 return new Promise(function(resolve, reject) {
   try {
+    server.logea("en prepare command to be send:"+command);
     var formed_command_to_send;
     sequencer();
     var seq_bit_hex = ConvertBase.dec2bin(seq_bit); //seq_bit to hex
@@ -126,7 +127,7 @@ return new Promise(function(resolve, reject) {
     hexiando = hexiando.match(/.{1,4}/g);
     formed_command_to_send = hexiando;
     sent_command = formed_command_to_send;
-  //  console.log("SENT COMMAND:"+sent_command);
+    server.logea("SENT COMMAND:"+sent_command);
     return resolve(sent_command);
   } catch (e) {
     console.log("no se pudo preparar el comando para ser enviado");
@@ -398,12 +399,12 @@ return new Promise(async function(resolve, reject) {
                                   break;
 
                                   case("CC"):
-                                  console.log(chalk.cyan("Staking"));
+                                  console.log(chalk.cyan("Staking y"));
                                   io.io.emit('Staking', "Staking");
                                   break;
 
                                   case("CE"):
-                                //  console.log(chalk.cyan("Note Held in Bezel"));
+                                  console.log(chalk.cyan("Note Held in Bezel"));
                                   io.io.emit('note_held_in_bezel', "Retirar Billete");
                                   break;
 
@@ -603,9 +604,9 @@ return new Promise(async function(resolve, reject) {
                                   case("EF"):
                                   console.log(chalk.cyan("Read"));
                                   {
-                                    //var channel=poll_responde[i+1];
-                                    //console.log("channel:"+channel);
-                                  //  console.log("Leyendo billete");
+                                    var channel=poll_responde[i+1];
+                                    console.log("channel:"+channel);
+                                    console.log("Leyendo billete");
                                   }
                                   break;
 
@@ -1559,7 +1560,7 @@ function ensureIsSet() {
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
-        console.log("rejecting:"+e);
+        console.log("rejecting01:"+e);
           return reject(e);
       } finally {
         return
@@ -1594,6 +1595,7 @@ try {
  if (step1.length>0) {
    //console.log("step1:"+step1);
    var step2=await handlesetuprequest(step1);
+   //return resolve("TERMINADO");
    if(step2=="OK"){
      var step3=await envia_encriptado(receptor,get_serial_number) //<-------- get_serial_number
      if (step3.length>0) {
@@ -1733,15 +1735,23 @@ function handles_coin_mech_inhivits(data){
 }
 ////////////////////////////////////////////////////////
 function envia_encriptado(receptorx,orden){
-    return new Promise(function(resolve, reject) {
-    var  toSend = enc.prepare_Encryption(orden);
-      sp.transmision_insegura(receptorx,toSend)
-        .then(data =>{return enc.promise_handleEcommand(data)})
-        .then(data=>{
-        //  console.log("->:"+orden.toString(16)+" se encripto, envio, recivio y desencripto:"+data);
-          return resolve(data);})
-        .catch(function(error) {console.log(error);sp.retrial(error);});
-    });
+    return new Promise(async function(resolve, reject) {
+      try {
+        server.logea("en este punto orden es:"+orden);
+        var  toSend =await enc.prepare_Encryption(orden);
+        server.logea("here to_sed is:"+toSend);
+          sp.transmision_insegura(receptorx,toSend)
+            .then(async function(data){return await enc.promise_handleEcommand(data)})
+            .then(data=>{
+            //  console.log("->:"+orden.toString(16)+" se encripto, envio, recivio y desencripto:"+data);
+              return resolve(data);})
+            .catch(function(error) {console.log(error);sp.retrial(error);});
+      } catch (e) {
+        return reject (e);
+      } finally {
+
+      }
+      });
 }
 module.exports.envia_encriptado=envia_encriptado;
 ////////////////////////////////////////////////////////
@@ -1764,7 +1774,7 @@ function sync_and_stablish_presence_of(receptor) {
                 }
           return resolve("OK")
     } catch (e) {
-      console.log("rejecting:"+e);
+      console.log("rejecting002:"+e);
       reject(e);
     } finally {
       return;
@@ -1852,15 +1862,23 @@ function ensureIsReadyForPolling() {
 };
 module.exports.ensureIsReadyForPolling=ensureIsReadyForPolling;
 /////////////////////////////////////////////////////////
-function transmite_encriptado_y_procesa(receptorx,poll){
+function transmite_encriptado_y_procesa(receptorx,polly){
 return new Promise(async function(resolve, reject) {
-  //  pollx[0]=parseInt(receptorx) ;
-    toSend = enc.prepare_Encryption(poll);
-    sp.transmision_insegura(receptorx,toSend)
-      .then(data =>{return enc.promise_handleEcommand(data)})
-      .then(async function(data){server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return resolve(await handlepoll(data))})
-      .then(data=>{return resolve(data);})
-      .catch(function(error) {console.log(error);sp.retrial(error);});
+  try {
+    //  pollx[0]=parseInt(receptorx) ;
+    var toSend =await enc.prepare_Encryption(polly);
+    console.log("aqui toSend:"+toSend);
+      sp.transmision_insegura(receptorx,toSend)
+        .then(async function(data){return await enc.promise_handleEcommand(data)})
+        .then(async function(data){console.log(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await handlepoll(data)})
+        .then(data=>{return resolve(data);})
+        .catch(function(error) {console.log(error);sp.retrial(error);});
+  } catch (e) {
+    return reject(e);
+  } finally {
+    return
+  }
+
 });
 
 }

@@ -2,7 +2,7 @@
 var once=true;
   var socket = io();
   var tog_validator = true;
-  var remote_TBM = io.connect('http://192.168.1.7:3000');
+  var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
   var is_cashbox_in_service = true;
   // const pool = require('../database');
@@ -11,19 +11,19 @@ var once=true;
     //  $("#abc").hide();
     $("#abc").css('visibility', 'hidden');
     display_remote_conection();
-    socket.on('tog_validator', function() {
-      if (tog_validator) {
-        setTimeout(function() {
-          socket.emit('enable_validator');
-          tog_validator = false;
-        }, 1000);
-      } else {
-        setTimeout(function() {
-          socket.emit('disable_validator');
-          tog_validator = true;
-        }, 1000);
-      }
-    })
+    // socket.on('tog_validator', function() {
+    //   if (tog_validator) {
+    //     setTimeout(function() {
+    //       socket.emit('enable_validator');
+    //       tog_validator = false;
+    //     }, 1000);
+    //   } else {
+    //     setTimeout(function() {
+    //       socket.emit('disable_validator');
+    //       tog_validator = true;
+    //     }, 1000);
+    //   }
+    // })
     $("#config").click(function() {
       window.location.replace("/configuracion");
     });
@@ -53,8 +53,13 @@ var once=true;
 
     $("#iniciar_remesa").click(function() {
       socket.emit('enable_validator');
-      window.location.replace("/iniciar_remesa");
+
     });
+
+    // socket.on('validator_enabled',function(){
+    //   window.location.replace("/iniciar_remesa");
+    // });
+
     socket.on('deposito', function(msg) {
       //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
       //ejecutar via ajax
@@ -89,9 +94,9 @@ var once=true;
 
     socket.on('iniciando', function(msg) {
       console.log("por resetear");
-      setTimeout(function () {
+      //setTimeout(function () {
         window.location.replace("/");
-      }, 5000);
+    //  }, 5000);
       });
 
     socket.on('refresh_window', function(msg) {
@@ -527,24 +532,24 @@ function borra_inicia(){
   <!-- <div id="message"><ol></ol></div> -->
   <script type="text/javascript">
     /////////////////////////////////////////////////////////////
-    var online;
-    function updateStatus(variable) {
-      if (!variable) {
-        document.getElementById('display').style.display = 'none';
-        document.getElementById('loading').style.display = 'inline';
-      } else {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('display').style.display = 'inline';
-      }
-      online = false;
-    }
-    /////////////////////////////////////////////////////////////
-    var tim;
-    function control(variable) {
-      tim = setTimeout(function() {
-        updateStatus(online);
-      }, 5000);
-    }
+    // var online;
+    // function updateStatus(variable) {
+    //   if (!variable) {
+    //     document.getElementById('display').style.display = 'none';
+    //     document.getElementById('loading').style.display = 'inline';
+    //   } else {
+    //     document.getElementById('loading').style.display = 'none';
+    //     document.getElementById('display').style.display = 'inline';
+    //   }
+    //   online = false;
+    // }
+    // /////////////////////////////////////////////////////////////
+    // var tim;
+    // function control(variable) {
+    //   tim = setTimeout(function() {
+    //     updateStatus(online);
+    //   }, 25000);
+    // }
     /////////////////////////////////////////////////////////////
   </script>
 

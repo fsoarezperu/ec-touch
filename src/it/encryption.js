@@ -258,33 +258,42 @@ function decrypt(mensaje) {
 }
 }
 function handle_count() {
-  ecount = changeEndianness(ecount);
-  ecount = parseInt(ecount, 16);
-  if (exports.zerox == true) {
-    ecount = ecount + 1;
-  } else {
-    ecount = ecount;
-    exports.zerox = true;
+  return new Promise(function(resolve, reject) {
+  try {
+    ecount = changeEndianness(ecount);
+    ecount = parseInt(ecount, 16);
+    if (exports.zerox == true) {
+      ecount = ecount + 1;
+    } else {
+      ecount = ecount;
+      exports.zerox = true;
+    }
+    slave_count= pady(slave_count,8)
+    ecount = ssp.ConvertBase.dec2hex(ecount);
+    ecount= ecount.toUpperCase();
+    ecount = pady(ecount, 8);
+    server.logea("Mi Cuenta" + ecount);
+    server.logea(chalk.cyan("lo que asumo que tiene el:" + slave_count));
+    if(slave_count == ecount){
+      //console.log(chalk.green("COINCIDEN"));
+      //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
+      //concuerda.
+      ecount = changeEndianness(ecount);
+      return resolve(ecount);
+    }else{
+      console.log(chalk.red.inverse("NO COINCIDEN"));
+      //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
+      //creo que tengo que reintentar enviar el dato anterior
+      return reject("los paquetes de ecount no coinciden");
+    }
+    //setTimeout(handle_count,1000);
+  } catch (e) {
+  return reject(e);
+  } finally {
+    return (ecount);
   }
-  slave_count= pady(slave_count,8)
-  ecount = ssp.ConvertBase.dec2hex(ecount);
-  ecount= ecount.toUpperCase();
-  ecount = pady(ecount, 8);
-  //console.log("Mi Cuenta" + ecount);
-  // console.log(chalk.cyan("lo que asumo que tiene el:" + slave_count));
+  });
 
-
-  if(slave_count == ecount){
-    //console.log(chalk.green("COINCIDEN"));
-    //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
-    //concuerda.
-  }else{
-    console.log(chalk.red.inverse("NO COINCIDEN"));
-    //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
-    //creo que tengo que reintentar enviar el dato anterior
-  }
-  ecount = changeEndianness(ecount);
-  //setTimeout(handle_count,1000);
 };
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
@@ -339,8 +348,10 @@ function padx(pad, str, padLeft) {
 }
 
 
-function prepare_Encryption(datax) {
-  // server.logea(chalk.cyan("esto es lo que me envian como data total:"+datax));
+async function prepare_Encryption(datax) {
+  return new Promise(async function(resolve, reject) {
+    try {
+ server.logea(chalk.cyan("esto es lo que me envian como data total:"+datax));
   // server.logea("esto tiene datax[0]:"+datax[0]);
   // console.log("esto tiene datax[1]:"+datax[1]);
   // console.log("esto tiene datax[2]:"+datax[2]);
@@ -354,7 +365,9 @@ function prepare_Encryption(datax) {
 //  console.log("////////////////////////////////////////////////////");
   //console.log("-> Length de la DATA que se quiere enviar en bytes:"+datax.length);
   //console.log("DataLength:"+ebuffer+ " Bytes");
-   handle_count();
+
+
+     await handle_count();
    server.logea("DataLength + ecount:"+chalk.green(ebuffer)+ chalk.cyan(ecount) );
    ebuffer = ebuffer.concat(ecount);
 
@@ -365,41 +378,41 @@ function prepare_Encryption(datax) {
         data_line=pady(datax[i].toString(16).toUpperCase(),2);
         data_full_line=data_full_line.concat(data_line);
    }
-   //console.log(chalk.cyan("Orden original:"+data_full_line));
+   server.logea(chalk.cyan("Orden original:"+data_full_line));
    if(data_full_line.length>=0 && data_full_line.length<=9){
-  //console.log(chalk.cyan("el paquete requiere encryptar 16"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 16"));
   numero_de_packs=1;
    }
    if(data_full_line.length>=9 && data_full_line.length<=25){
-  //console.log(chalk.cyan("el paquete requiere encryptar 32"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 32"));
     numero_de_packs=2;
    }
    if(data_full_line.length>=25 && data_full_line.length<=41){
-  //console.log(chalk.cyan("el paquete requiere encryptar 48"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 48"));
     numero_de_packs=3;
    }
    if(data_full_line.length>=41 && data_full_line.length<=57){
-  //console.log(chalk.cyan("el paquete requiere encryptar 64"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 64"));
     numero_de_packs=4;
    }
    if(data_full_line.length>=57 && data_full_line.length<=73){
-  //console.log(chalk.cyan("el paquete requiere encryptar 80"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 80"));
     numero_de_packs=5;
    }
    if(data_full_line.length>=73 && data_full_line.length<=89){
-  //console.log(chalk.cyan("el paquete requiere encryptar 96"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 96"));
     numero_de_packs=6;
    }
    if(data_full_line.length>=89 && data_full_line.length<=105){
-  //console.log(chalk.cyan("el paquete requiere encryptar 112"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 112"));
     numero_de_packs=7;
    }
    if(data_full_line.length>=105 && data_full_line.length<=121){
-  //console.log(chalk.cyan("el paquete requiere encryptar 128"));
+  server.logea(chalk.cyan("el paquete requiere encryptar 128"));
     numero_de_packs=8;
    }
    ebuffer = ebuffer.concat(data_full_line);
-  // console.log("Sin packing tiene:"+ebuffer.length/2+" Bytes");
+  // server.logea("Sin packing tiene:"+ebuffer.length/2+" Bytes");
   // console.log(chalk.yellow("Data Sin Packing:"+ebuffer));
    // if((ebuffer.length/2)/14>1 ){
    //   server.logea("we need to pack more than 1");
@@ -468,7 +481,14 @@ function prepare_Encryption(datax) {
     to_send = to_send.match(/.{1,4}/g);
     //server.logea("to send:"+to_send);
     var full_encrypted_data = to_send; // make this equal to the full legth data encrypted ready to be send
-    return full_encrypted_data;
+  //  return full_encrypted_data;
+    return resolve(full_encrypted_data);
+ } catch (e) {
+    return reject(e);
+ } finally {
+   return
+ }
+});
 }
 module.exports.prepare_Encryption=prepare_Encryption;
 ////////////////////////////////////////////////////
@@ -592,10 +612,11 @@ slave_count=pady(slave_count,8);
 //slave_count = parseInt(slave_count, 16);
 //  console.log("slave_read_ecount is:"+slave_count);
 var read_data=ready.substr(10,ready.length);
-//console.log("en promise_handleEcommand read_data is:"+read_data);
+server.logea("en promise_handleEcommand read_data is:"+read_data);
 //exports.handleRoutingNotes(read_data);
 handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
 //ssp.handlepoll(handler);
+console.log("handler es:"+handler);
 resolve(handler);
     //reject();
 

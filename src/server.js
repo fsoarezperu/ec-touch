@@ -28,6 +28,7 @@ const app = express();
 const router = express.Router();
 const log = require('log-to-file');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var exec = require('child_process').exec;
 /////////////////////////////////////////////////////////////////////////////////////
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -44,6 +45,15 @@ app.use(require(__dirname + '/routes'));
 app.use('/api', require('./api/remesas'));
 app.use('/api/retiro', require('./api/retiros'));
 app.use(session({secret: "echomeautomation",resave: false,saveUninitialized: false,store: new mysql_store(database)}));
+// Configurar cabeceras y cors
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+    next();
+});
+
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'}));
 app.set('view engine', '.hbs');
@@ -62,14 +72,20 @@ function logea(texto, variable) {
   }
 }
 module.exports.logea = logea;
+////////////////////////////////////////////////////////////////////
+// Create shutdown function
+function shutdown(callback){
+    exec('shutdown -r now', function(error, stdout, stderr){ callback(stdout); });
+}
+
 //////////////////////////////////////////////////////////////////////
 var http = require('http').Server(app);
 //var io = require('socket.io', {rememberTransport: false,transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling']})(http);
 var io = require('socket.io', {rememberTransport: false,transports: ['Flash Socket', 'AJAX long-polling']})(http);
 exports.io = io; //this is to be used by other files on the project and be able to send emit by socket io.
 //////////////////////////////////////////////////////////////////////
-//var to_tbm = require("socket.io-client")('http://tambox.ddns.net:4000');
-var to_tbm = require("socket.io-client")('https://tbm-cloud.herokuapp.com');
+var to_tbm = require("socket.io-client")('http://192.168.1.2:3000');
+// var to_tbm = require("socket.io-client")('https://tbm-cloud.herokuapp.com');
 exports.to_tbm = to_tbm;
 to_tbm.on("connect",async function() {
   to_tbm.on('disconnect', function() {
@@ -109,7 +125,10 @@ io.on('connection', function(socket) {
     //  io.emit('reset', "reseting system");
     it.zerox = false;
     ecount = "00000000";
-    await  ssp.transmite_encriptado_y_procesa(validator_address,reset)
+    //await  ssp.transmite_encriptado_y_procesa(validator_address,reset)
+    shutdown(function(output){
+        console.log(output);
+    });
   });
   socket.on('reset_counters', async function(msg) {
     console.log(msg);
@@ -123,12 +142,16 @@ io.on('connection', function(socket) {
       try {
         console.log(chalk.cyan("ENABLE VALIDATOR"));
         //await ssp.ensureIsSet();
-        await ssp.transmite_encriptado_y_procesa(validator_address,enable)
+        var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
+        console.log("respuesta a enable validator es:"+respuesta);
+      //  if(respuesta=="ok"){
+            io.emit('enable_validator', "enable_validator");
+      //  }
         return resolve();
       } catch (e) {
         return reject(e);
       } finally {
-        io.emit('enable_validator', "enable_validator");
+
       }
     });
   });
@@ -410,12 +433,12 @@ function is_os_running() {
 }
 /////////////////////////////////////////////////////////
 http.listen(machine_port, async function() {
-  io.emit("iniciando","iniciando sistema");
-  setTimeout(function () {
-    console.log("ping");
-      io.emit("iniciando","iniciando sistema");
-  //  io.emit("refresh_window","refresh_window");
-  }, 10000);
+//  io.emit("iniciando","iniciando sistema");
+//   setTimeout(function () {
+//     console.log("forznado reinicio de pantallas");
+//       io.emit("iniciando","iniciando sistema");
+//   //  io.emit("refresh_window","refresh_window");
+// }, 1500);
 
   console.log((chalk.yellow('Tambox 1.1 Starting...on port:'+machine_port)));
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
@@ -492,7 +515,7 @@ async function query_this_machine(){
   return new Promise(function(resolve, reject) {
 //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
 try {
-  console.log(chalk.green("Registrando maquina"));
+  console.log(chalk.green("consultando maquina"));
   var tbm_adress=tbm_adressx;
   var fix= "/api/query_machine";
   var machine_sn=global.numero_de_serie;
@@ -501,9 +524,7 @@ try {
   xHttp.responseType = 'json';
   xHttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      console.log(this.responseText);
-      console.log(this.responseType);
-
+      console.log(chalk.green("parametros de Maquina leida de nube: "+this.responseText));
         return resolve(this.responseText);
     }
      }
