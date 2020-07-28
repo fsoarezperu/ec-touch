@@ -17,9 +17,6 @@ $(document).ready(function(){
   socket.on('emptied', function(msg){
    display_message(msg);
   });
-  // socket.on('Smart_emptied', function(msg){
-  //  display_message(msg);
-  // });
   socket.on('Note_Transfered_to_Stacker', function(msg){
    display_message(msg);
   });
@@ -57,7 +54,7 @@ function clear_message(){
       <div></div>
       <div></div>
 
-      <div class="mensaje_monto">monto:S/.{{bolsa.monto}}.00</div>
+      <div class="mensaje_monto">monto:{{bolsa.moneda}}.{{bolsa.monto}}.00</div>
       <div>tebs_barcode:{{bolsa.tebs_barcode}}</div>
       <div>machine_sn:{{bolsa.machine_sn}}</div>
       <div class="mensaje_pequeno_izquierda">

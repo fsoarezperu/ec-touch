@@ -19,7 +19,7 @@ $(document).ready(function() {
   socket.on('finish', function(msg) {
     window.clearTimeout(counter);
     window.clearTimeout(counter2);
-  window.location.replace("/finish/"+qty_billx);
+    window.location.replace("/finish/"+qty_billx);
   });
   //para cancelar el pago de una remesa, solo antes de iniciarse
   $("#cancelling").click(function() {
@@ -111,7 +111,7 @@ function update_in_process(msg){
   var value_read = parseInt(msg, 10);
   acumular_montos_agregados(value_read);
   pintar_valor_en_pantalla();
-  socket.emit('enable_validator');
+  socket.emit('enable_validator'); //no estoy seguro esto porque esta aqui,. probando.
 }
 /////////////////////////////////////////////////////
 function start_timer(){

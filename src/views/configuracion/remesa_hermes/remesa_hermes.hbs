@@ -2,20 +2,21 @@
 var socket = io();
 $(document).ready(function(){
     setTimeout(function(){
-    window.location.replace("/");
+      window.location.replace("/");
     },10000);
-
   $("#config").click(function(){
     window.location.replace("../configuracion");
   });
   $("#smart_empty").click( function(){
     socket.emit('smart_empty',"Smart Empty");
   });
-  socket.on('system_running_indicator', function(msg) {
-    display_system_running_indicator();
-    online=true;
-  });
 });
+
+socket.on('system_running_indicator', function(msg) {
+  display_system_running_indicator();
+  online=true;
+});
+
 socket.on('Smart_emptying', function(msg){
   window.location.replace("/vaciando");
 });

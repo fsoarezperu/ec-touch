@@ -55,10 +55,20 @@ function start_validator() {
                                            if (step7=="OK") {
                                            //  await carga_monedas_al_hopper(validator_address);
                                            console.log(chalk.green("payout enabled"));
-                                            on_startup=false;
-                                            var step8=await validator_poll_loop(validator_address);
-                                            console.log(chalk.green("Inicio poll loop:"+step8));
+                                            // on_startup=false;
+                                            // var step8=await validator_poll_loop(validator_address);
+                                            // console.log(chalk.green("Inicio poll loop:"+step8));
+                                            return resolve("OK");
                                            }
+                                        }else {
+                                        //  global.my_resgistered_machine_name=my_resgistered_machine.name;
+                                            //server.io.emit("iniciando","iniciando sistema");
+                                          var step7=await enable_payout(validator_address);
+                                           if (step7=="OK") {
+                                           //  await carga_monedas_al_hopper(validator_address);
+                                           console.log(chalk.green("payout enabled"));
+                                           return resolve("OK");
+                                            }
                                         }
                                     }
                             }
@@ -103,6 +113,7 @@ function validatorpoll(receptor) {
 
     });
   } //hace consulta de poll pero no hace bucle
+  module.exports.validatorpoll=validatorpoll;
 ////////////////////////////////////////////////////////
 function handle_poll_validator(data){
   var passingby=data;
@@ -647,6 +658,7 @@ async function validator_poll_loop(receptor) {
     console.log("ready for polling NOT READY");
   }
 }// hace consulta de poll y reinicia ciclicamente.
+  module.exports.validator_poll_loop=validator_poll_loop;
 ////////////////////////////////////////////////////////
 async function get_tebs_barcode(receptor) {
     return  new Promise(async function(resolve, reject) {

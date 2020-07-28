@@ -6,6 +6,8 @@ const io = require("./../server.js");
 const sh = require("./devices/smart_hopper");
 const pool = require('./../database');
 const val = require("./devices/validator");
+const tambox = require("./devices/tambox");
+
 const moment=require("moment");
 const glo = require('./globals');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -307,7 +309,7 @@ return new Promise(async function(resolve, reject) {
                                   console.log(chalk.red.inverse("Smart emptying"));
                                     io.io.emit('Smart_emptying', "Smart emptying");
                                   break;
-
+                                  /////////////////////////////////////////////////////////
                                   case("B4"):
                                   console.log(chalk.red.inverse("Smart emptied"));
                                   //read event data
@@ -325,7 +327,7 @@ return new Promise(async function(resolve, reject) {
                                   //value dispensed:
                                   io.io.emit('Smart_emptied', "Smart emptied");
                                   break;
-
+                                  ///////////////////////////////////////////////////////
                                   case("B5"):
                                   console.log(chalk.red("channel disabled"));
                                   break;
@@ -707,7 +709,7 @@ return new Promise(async function(resolve, reject) {
   } catch (e) {
     return reject(e);
   } finally {
-
+    return;
   }
 });
 }
@@ -1555,8 +1557,8 @@ function ensureIsSet() {
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-               return reject("timeout")
-             }, 1000);
+               return reject(chalk.yellow("timeout de ensureIsSet"));
+             }, 5000);
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
@@ -1611,15 +1613,19 @@ try {
                  const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[step5]);
                  if(existe_remesa_hermes[0].RH ===0){
                  //  console.log(existe_remesa_hermes[0].RH);
+                 const this_machine= await pool.query("SELECT * FROM machine");
                    console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+step5));
                    const nueva_res_hermes={
+                     tienda_id:this_machine[0].tienda_id,
                      monto:0,
                      moneda:country_code,
                      status:"iniciada",
                      tebs_barcode:tebs_barcode,
                      machine_sn:numero_de_serie,
-                     fecha:moment().format('YYYY-MM-DD'),
-                     hora:moment().format('h:mm:ss a'),
+                     //fecha:moment().format('YYYY-MM-DD'),
+                     //hora:moment().format('h:mm:ss a'),
+                     fecha:tambox.fecha_actual(),
+                     hora:tambox.hora_actual(),
                      no_billetes:0
                    }
                    await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
@@ -1657,12 +1663,12 @@ try {
 module.exports.setup_request_command=setup_request_command;
 
 function sincroniza_remesa_hermes(res){
-  console.log("iniciando sincornizacion a nube:"+res[0]);
-return new Promise(async function(resolve, reject) {
+console.log("iniciando sincronizacion a nube:"+res);
+ return new Promise(async function(resolve, reject) {
   try {
     var tbm_adress=tbm_adressx;
     var fix= "/sync_remesa_hermes";
-    var tienda_id="012345";
+    var tienda_id=res[0].tienda_id;
     var monto=res[0].monto;
     var moneda=res[0].moneda;
     var status=res[0].status;
@@ -1671,7 +1677,6 @@ return new Promise(async function(resolve, reject) {
     var fecha=res[0].fecha;
     var hora=res[0].hora;
     var no_billetes=res[0].no_billetes;
-
     // var rms_status=remesax[0].rms_status;
     // var tipo=remesax[0].tipo;
     // var status_hermes=remesax[0].status_hermes;
@@ -1690,6 +1695,36 @@ return new Promise(async function(resolve, reject) {
   }
 });
 }
+function sincroniza_remesa_hermes2(res){
+console.log("iniciando actualizacion de remesa hermes:");
+ return new Promise(async function(resolve, reject) {
+  try {
+    var tbm_adress=tbm_adressx;
+    var fix= "/sync_remesa_hermes2";
+    var monto=res[0].monto;
+    var moneda=res[0].moneda;
+    var status=res[0].status;
+    var tebs_barcode=res[0].tebs_barcode;
+    var no_billetes=res[0].no_billetes;
+    // var rms_status=remesax[0].rms_status;
+    // var tipo=remesax[0].tipo;
+    // var status_hermes=remesax[0].status_hermes;
+    const url= tbm_adress+fix+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode+"/"+no_billetes
+    console.log("url:"+url);
+    /////////////////
+    const Http= new XMLHttpRequest();
+  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+    Http.open("GET",url);
+    Http.send();
+    return resolve();
+  } catch (e) {
+    return reject(e);
+  } finally {
+    return;
+  }
+});
+}
+module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;
 /////////////////////////////////////////////////////////
 function set_coin_mech_inhibits(receptor){
   server.logea("set_coin_mech_inhibits sent");
@@ -1809,18 +1844,23 @@ function negociate_encryption(receptor) {
                              server.logea("/////////////////////////////////");
                              server.logea("Request Key Exchange command sent");
                             var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
-                             var step6=await enc.handleRKE(step5);
-                             if(step6.length>0){
-                               server.logea(chalk.green('KEY:'), chalk.green(step6));
-                               console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
-                               server.logea("/////////////////////////////////");
-                               encryptionStatus = true;
-                              return resolve("OK")
+                              var step6;
+                            try {
+                              step6=await enc.handleRKE(step5);
+                            } catch (e) {
+                              return reject(e);
+                            } finally {
+                              if(step6.length>0){
+                                server.logea(chalk.green('KEY:'), chalk.green(step6));
+                                console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
+                                server.logea("/////////////////////////////////");
+                                encryptionStatus = true;
+                               return resolve("OK")
 
-                            }else {
-                              return reject("NO KEY:"+step6)
+                             }else {
+                               return reject("NO KEY:"+step6)
+                             }
                             }
-
                         }else {
                           return reject(step4)
                         }
@@ -1866,13 +1906,26 @@ function transmite_encriptado_y_procesa(receptorx,polly){
 return new Promise(async function(resolve, reject) {
   try {
     //  pollx[0]=parseInt(receptorx) ;
-    var toSend =await enc.prepare_Encryption(polly);
-    console.log("aqui toSend:"+toSend);
-      sp.transmision_insegura(receptorx,toSend)
-        .then(async function(data){return await enc.promise_handleEcommand(data)})
-        .then(async function(data){console.log(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await handlepoll(data)})
-        .then(data=>{return resolve(data);})
-        .catch(function(error) {console.log(error);sp.retrial(error);});
+        // var toSend =await enc.prepare_Encryption(polly);
+        // console.log("aqui toSend:"+toSend);
+        //   sp.transmision_insegura(receptorx,toSend)
+        //     .then(async function(data){return await enc.promise_handleEcommand(data)})
+        //     .then(async function(data){console.log(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await handlepoll(data)})
+        //     .then(data=>{return resolve(data);})
+        //     .catch(function(error) {console.log(error);sp.retrial(error);});
+
+        var toSendw =await enc.prepare_Encryption(polly);
+        console.log("aqui toSend:"+toSendw);
+          var data=await sp.transmision_insegura(receptorx,toSendw);
+          console.log("aqui toSend_response:"+data);
+
+              data=await enc.promise_handleEcommand(data);
+              console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+              data= await handlepoll(data);
+              if (data.length>0) {
+                  return resolve(data);
+              }
+
   } catch (e) {
     return reject(e);
   } finally {

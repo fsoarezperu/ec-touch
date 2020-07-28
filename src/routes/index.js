@@ -43,7 +43,6 @@ router.get('/', async (req, res) => {
   }
 
 })
-
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/no_cabezal', (req, res) => {
   res.render('no_cabezal');
@@ -92,8 +91,8 @@ router.get('/finish/:qty_bill', async (req, res) => {
           const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
           const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
           const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
-          console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes[0].total_billetes);
 
+          console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes[0].total_billetes);
           await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes[0].total_billetes]);
        }
      }
@@ -119,8 +118,8 @@ router.get('/finish/:qty_bill', async (req, res) => {
          var status_hermes=remesay[0].status_hermes;
          var tebs_barcode=remesay[0].tebs_barcode;
          var machine_sn=remesay[0].machine_sn;
-
-         const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn
+         var no_billetes=remesay[0].no_billetes;
+         const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn+"/"+no_billetes
          console.log("url:"+url);
          /////////////////
          const Http= new XMLHttpRequest();
@@ -219,18 +218,25 @@ router.get('/cashbox_unlocked', async (req, res) => {
 router.get('/fin_remesa_hermes', async (req, res) => {
  // GET THE NEW tebs_barcode
 try {
-  tebs_barcode="";
+  tebs_barcodex="";
   console.log("GETTING NEW TEBSBARCODE");
-  var data=ssp.transmite_encriptado_y_procesa(global.receptor,get_tebs_barcode)
-  await va.handleGetTebsBarcode(data);
-  console.log('new tebsbarcode read:'+tebs_barcode);
+  //var data=ssp.transmite_encriptado_y_procesa(global.receptor,get_tebs_barcode)
+
+  var data=await ssp.transmite_encriptado_y_procesa(validator_address,get_tebs_barcode);
+  if (data.length>0) {
+    await va.handleGetTebsBarcode(data);
+    console.log('new tebsbarcode read:'+tebs_barcodex);
+  }else {
+    console.log("Error en la lectura del tebsbarcode.");
+  }
   const new_remesa_hermes = {
     monto:0,
     moneda:country_code,
     fecha:tambox.fecha_actual(),
     hora:tambox.hora_actual(),
-    tebs_barcode: tebs_barcode,
-    machine_sn: numero_de_serie
+    tebs_barcode: tebs_barcodex,
+    machine_sn: numero_de_serie,
+    no_billetes:0
   }
   await pool.query('INSERT INTO remesa_hermes set ?', [new_remesa_hermes]);
   ///////////////////////////////
@@ -239,7 +245,7 @@ try {
  var tbm_adress=tbm_adressx;
  var fix= "/sync_remesa_hermes";
  var monto=remesax[0].monto;
- var tienda_id=000;
+ var tienda_id=remesax[0].tienda_id;
  var moneda=remesax[0].moneda;
  var status=remesax[0].status;
  var tebs_barcodexx=remesax[0].tebs_barcode;

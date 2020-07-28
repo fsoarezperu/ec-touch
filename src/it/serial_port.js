@@ -125,6 +125,7 @@ module.exports.enable_hopper_pooling=enable_hopper_pooling;
 async function hacer_consulta_serial(receiver,command){
   return new Promise(async(resolve,reject)=>{
     try {
+      console.log("en este punto rfs:"+ready_for_sending);
     var go=await ssp.ensureIsSet()
     if(go=="OK"){
           canal_ocupado();
@@ -132,12 +133,13 @@ async function hacer_consulta_serial(receiver,command){
           const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
           server.io.emit("system_running_indicator","system_running_indicator")
         //  console.log("command_ready"+command_ready);
+        console.log("rfs:"+ready_for_sending+ " and rfp:"+ready_for_pooling);
           port.write(command_ready, function(err) {if (err) {return reject(err)}});
-          server.logea("aqui ya se transmitio el dato a puerto");
+          server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
           //console.log(parser);
           var mytime=setTimeout(()=>{const error= "No se recibio respuesta en puerto serial.";
-                                    server.logea("rfs:"+ready_for_sending+ "and rfp:"+ready_for_pooling);
-                                      reject(error);
+                                    console.log("rfs:"+ready_for_sending+ "and rfp:"+ready_for_pooling);
+                                      return reject(error);
                                     },7000);
 
                                 parser.once('data', async function(data){
@@ -151,8 +153,9 @@ async function hacer_consulta_serial(receiver,command){
                                             //console.log(received_command);
                                             var data=await ssp.received_byte_stuffing(received_command)
                                             //.then(data =>{
-                                              //console.log("data_received:"+data)
-                                              server.logea(chalk.yellow(enc.changeEndianness(slave_count)+"-> "+device+'->:'),chalk.yellow(data));
+                                            //  console.log("data_received:"+data)
+                                          //  console.log("global slave_count is:"+slave_count);
+                                            //  console.log(chalk.yellow(slave_count+" -> "+device+'->:'),chalk.yellow(data));
                                               received_command=data;
                                               parser.removeAllListeners('data');
                                               //////////////////////////////
@@ -190,7 +193,9 @@ exports.retrial=async function(command_ready){
 console.log(chalk.yellow("retrial now--------------------------------------------------------------------------"));
 //setTimeout(function(){
   //it.start_tebs_validator();
-
+  zerox=false;
+  ecount="00000000";
+  slave_count=0;
   canal_liberado();
  await va.start_validator();
 //},5000);

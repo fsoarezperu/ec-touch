@@ -280,7 +280,7 @@ li{
   margin:5px;
   font-size: 28px;
 }
-.btn:hover{background-color:orange;}
+/* .btn:hover{background-color:orange;} */
 .btn:focus{background-color:red;}
 .graph{
   grid-column: 1/2;

@@ -27,7 +27,6 @@ var once=true;
     $("#config").click(function() {
       window.location.replace("/configuracion");
     });
-
     $("#deposito").click(function(){
       socket.emit('deposito',"Deposito requerido");
     });
@@ -41,8 +40,16 @@ var once=true;
       alert("ayuda");
     });
 
+    $("#enval").click(function(){
+    socket.emit('enable_validator');
+    });
+
+    $("#desval").click(function(){
+    socket.emit('disable_validator');
+    });
+
     $("#grabar").click(function(){
-    //  alert("grabando");
+      //  alert("grabando");
       socket.emit('cerrar_remesa_hermes');
       $('#overlay,#overlay2,.overlay-back').fadeOut(500);
     });
@@ -55,11 +62,14 @@ var once=true;
       socket.emit('enable_validator');
 
     });
-
+    socket.on('validator_enabled', function(msg) {
+    //  window.location.replace("/iniciar_remesa");
+    display_message("validador habilitado");
+    console.log("validador habilitado");
+    });
     // socket.on('validator_enabled',function(){
     //   window.location.replace("/iniciar_remesa");
     // });
-
     socket.on('deposito', function(msg) {
       //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
       //ejecutar via ajax
@@ -91,22 +101,19 @@ var once=true;
 
       });
     });
-
     socket.on('iniciando', function(msg) {
       console.log("por resetear");
       //setTimeout(function () {
         window.location.replace("/");
-    //  }, 5000);
+        //  }, 5000);
       });
-
     socket.on('refresh_window', function(msg) {
       console.log(msg);
       window.location.reload(true);
     });
-    socket.on('enable_validator', function(msg) {
-      window.location.replace("/iniciar_remesa");
-    });
-    socket.on('comenzar_remesa', function(msg) {
+
+    socket.on('comenzar_remesa2', function(msg) {
+      console.log("orden de comenzar remesa recivida");
       socket.emit('enable_validator');
     });
     socket.on('retiro_en_proceso', function(msg) {
@@ -121,7 +128,6 @@ var once=true;
     });
     socket.on('Cashbox_Removed', function(msg) {
       is_cashbox_in_service = false;
-
 if(once){
         //$('#out_of_service, #overlay-back').fadeIn(500);
         $('#out_of_service, .overlay-back').fadeIn(500);
@@ -158,30 +164,27 @@ if(once){
       //document.getElementById("abc").css('visibility', 'hidden');
       //  $("#abc").css('visibility', 'hidden');
     });
-
     socket.on('no_cabezal', function(msg) {
       window.location.replace("/no_cabezal");
     });
-
     socket.on('location_reload', function(msg) {
-    console.log("reloading...");
-    //location.reload();
-    location.replace("/");
+      console.log("reloading...");
+      //location.reload();
+      location.replace("/");
     });
     socket.on('blocking_pooling', function(msg) {
-    console.log(msg);
-    //location.reload();
+      console.log(msg);
+      //location.reload();
     });
     socket.on('force_serial', function(msg) {
-    console.log(msg);
-    //location.reload();
+      console.log(msg);
+      //location.reload();
     });
     function clear_conection() {
       timer3 = setTimeout(function() {
         is_connected = false;
       }, 10000);
     }
-
     function display_remote_conection() {
       if (is_connected) {
         $("#abc").css('visibility', 'visible');
@@ -207,7 +210,6 @@ if(once){
       $('#overlay, .overlay-back').fadeIn(500);
       console.log("test over click");
     });
-
     $('#monedero').on('click', function() {
       console.log("monedero click");
       window.location.replace("/monedero");
@@ -432,9 +434,12 @@ function borra_inicia(){
               <!-- <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div> -->
               <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
             <!-- <div class="anuncio"> -->
-              <!-- <img src="img/logo_tambo.png" alt="Tambox" width="500" height="300"> -->
+              <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
               <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
               <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
+
+              <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Enable validator</div></div>
+              <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Desable Validator</div></div>
 
               <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
             <!-- </div> -->

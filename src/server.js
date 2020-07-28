@@ -50,7 +50,10 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+    if (req.method === 'OPTIONS') {
+      res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+      return res.status('200') .JSON({});
+    }
     next();
 });
 
@@ -138,33 +141,44 @@ io.on('connection', function(socket) {
     await ssp.transmite_encriptado_y_procesa(validator_address,reset_counters)
   });
   socket.on('enable_validator',async function(msg) {
-    new Promise( async function(resolve, reject) {
+    console.log("enable validator routine requested");
+     return new Promise( async function(resolve, reject) {
+       try {
+         console.log(chalk.cyan("ENABLE VALIDATOR"));
+         await ssp.ensureIsSet();
+         var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
+         console.log("respuesta a enable validator es:"+respuesta);
+         if(respuesta.length>0){
+    //       //  io.emit('enable_validator', "enable_validator");
+    //       //if(respuesta=="ok"){
+             io.emit('validator_enabled', "enable_validator");
+    //       //  ready_for_pooling=true;
+             return resolve();
+           }
+       } catch (e) {
+         return reject(e);
+       } finally {
+    //     //  ready_for_pooling=true;
+    //     //  console.log("termine de procesar la orden,m ahora habilito el pooling");
+           return;
+       }
+     });
+  });
+  socket.on('disable_validator',async function(msg) {
+    return new Promise(async function(resolve, reject) {
       try {
-        console.log(chalk.cyan("ENABLE VALIDATOR"));
-        //await ssp.ensureIsSet();
-        var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
-        console.log("respuesta a enable validator es:"+respuesta);
-      //  if(respuesta=="ok"){
-            io.emit('enable_validator', "enable_validator");
-      //  }
-        return resolve();
+        console.log(chalk.cyan("DISABLE VALIDATOR"));
+        var esto=await  ssp.transmite_encriptado_y_procesa(validator_address,desable)
+        //io.emit('disable_validator', esto);
+        if (esto.length>0) {
+          io.emit('disable_validator', esto);
+          return resolve();
+        }
+
       } catch (e) {
         return reject(e);
       } finally {
 
-      }
-    });
-  });
-  socket.on('disable_validator',async function(msg) {
-    new Promise(async function(resolve, reject) {
-      try {
-        console.log(chalk.cyan("DISABLE VALIDATOR"));
-      //  await ssp.ensureIsSet();
-        await  ssp.transmite_encriptado_y_procesa(validator_address,desable)
-      } catch (e) {
-        return reject(e);
-      } finally {
-        io.emit('disable_validator', "Disabling Validator");
       }
     });
   });
@@ -180,16 +194,20 @@ io.on('connection', function(socket) {
   });
   /////////////////////////////////////////////////////////////
   socket.on('finish', async function(msg) {
-    new Promise(async function(resolve, reject) {
+    return new Promise(async function(resolve, reject) {
       try {
         console.log(chalk.cyan("socket finish"));
         //await ssp.ensureIsSet();
-        await  ssp.transmite_encriptado_y_procesa(validator_address,desable)
+        var t124=await  ssp.transmite_encriptado_y_procesa(validator_address,desable);
+        if (t124.length>0) {
+          io.emit('finish', "finish");
+          return resolve();
+        }
 
       } catch (e) {
         return reject(e);
       } finally {
-        io.emit('finish', "finish");
+        return;
       }
     });
   });
@@ -473,8 +491,12 @@ http.listen(machine_port, async function() {
     var validator= await va.start_validator();
     if (validator=="OK") {
       console.log(chalk.green("Validator Online"));
+      on_startup=false;
+      var step8=await va.validator_poll_loop(validator_address);
+      console.log(chalk.green("Inicio poll loop:"+step8));
     }else {
       console.log(chalk.red("No Validator Found"));
+      return reject();
     }
   } catch (e) {
   console.log("no se pudo completar:"+e);
@@ -498,6 +520,9 @@ try {
   xHttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         return resolve(this.responseText);
+    }else {
+      console.log("no conection to TBM");
+      return resolve();
     }
      }
   xHttp.open("GET",url,true);

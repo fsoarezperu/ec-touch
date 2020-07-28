@@ -173,50 +173,56 @@ module.exports.pady=pady;
 function handleRKE(data){
     return new Promise((resolve,reject)=>{
 //console.log(data);
-var myData;
-var number_of_byte = data.substr(0, 2);
-myData = data.substr(2, number_of_byte + 2);
-//console.log("number_of_byte:" + number_of_byte);
-var firstbyte = myData.substr(0, 2);
-var slaveInterKey = myData.substr(2, 8);
- slaveInterKey = changeEndianness(slaveInterKey);
- var dec_SlaveInterKey = new BigNumber(slaveInterKey, 16);
-  dec_SlaveInterKey = dec_SlaveInterKey.toString(10);
+try {
+  var myData;
+  var number_of_byte = data.substr(0, 2);
+  myData = data.substr(2, number_of_byte + 2);
+  //console.log("number_of_byte:" + number_of_byte);
+  var firstbyte = myData.substr(0, 2);
+  var slaveInterKey = myData.substr(2, 8);
+   slaveInterKey = changeEndianness(slaveInterKey);
+   var dec_SlaveInterKey = new BigNumber(slaveInterKey, 16);
+    dec_SlaveInterKey = dec_SlaveInterKey.toString(10);
 
-  if (firstbyte == "F0") {
-    server.logea("OK received SlaveInterKey RECEIVED");
-    server.logea("SlaveInterKey:" + slaveInterKey);
-    server.logea("SlaveInterKey dec:" + (dec_SlaveInterKey));
-    var final_key = Big_Number(dec_SlaveInterKey).pow(my_HOST_RND);
-    final_key = Big_Number(final_key).mod(calc_modulus);
-    server.logea("Encryption KEY:" + final_key);
-    final_key = ssp.ConvertBase.dec2hex(final_key).toUpperCase();
-    final_key =pady(final_key,4); //para rellenar con 0 a la izqeuirda cuando el hex salga muy pequeño
-  //  console.log("Encryption KEY to hex:" + final_key);
-    final_key = changeEndianness(final_key);
-    var higherpart = "000000000000";
-    var lowerpart =  "0123456701234567";
-    lowerpart = changeEndianness(lowerpart);
-    final_key = final_key.concat(higherpart);
-    full_KEY = lowerpart.concat(final_key);
-  //  console.log(chalk.green("KEY:" + full_KEY));
-  //  ssp.enable_sending();
-    //return full_KEY;
-     return resolve(full_KEY);
-  //  setTimeout(send_poll, 200);
-  }
+    if (firstbyte == "F0") {
+      server.logea("OK received SlaveInterKey RECEIVED");
+      server.logea("SlaveInterKey:" + slaveInterKey);
+      server.logea("SlaveInterKey dec:" + (dec_SlaveInterKey));
+      var final_key = Big_Number(dec_SlaveInterKey).pow(my_HOST_RND);
+      final_key = Big_Number(final_key).mod(calc_modulus);
+      server.logea("Encryption KEY:" + final_key);
+      final_key = ssp.ConvertBase.dec2hex(final_key).toUpperCase();
+      final_key =pady(final_key,4); //para rellenar con 0 a la izqeuirda cuando el hex salga muy pequeño
+    //  console.log("Encryption KEY to hex:" + final_key);
+      final_key = changeEndianness(final_key);
+      var higherpart = "000000000000";
+      var lowerpart =  "0123456701234567";
+      lowerpart = changeEndianness(lowerpart);
+      final_key = final_key.concat(higherpart);
+      full_KEY = lowerpart.concat(final_key);
+    //  console.log(chalk.green("KEY:" + full_KEY));
+    //  ssp.enable_sending();
+      //return full_KEY;
+       return resolve(full_KEY);
+    //  setTimeout(send_poll, 200);
+    }
 
 
-  if (firstbyte == "F8") {
-    console.log(chalk.red("Not Possible to create the Key"));
-  server.logea("/////////////////////////////////");
-    reject("Not Possible to create the Key");
-  }
-  if (firstbyte == "F4") {
-    console.log(chalk.red("Parameter out of range"));
+    if (firstbyte == "F8") {
+      console.log(chalk.red("Not Possible to create the Key"));
     server.logea("/////////////////////////////////");
-      reject("Parameter out of range");
-  }
+      return reject("Not Possible to create the Key");
+    }
+    if (firstbyte == "F4") {
+      console.log(chalk.red("Parameter out of range"));
+      server.logea("/////////////////////////////////");
+      return  reject("Parameter out of range");
+    }
+} catch (e) {
+  return reject(e);
+} finally {
+  return;
+}
 //  ssp.enable_sending();
   });
 }
@@ -225,8 +231,8 @@ module.exports.handleRKE=handleRKE;
 
 ////////////////////////////////////////////////////
 var full_KEY;
-var slave_count=0;
-exports.zerox = false; //to begin countiung from zero;
+//var slave_count=0;
+
 function encrypt(mensaje) {
   var myKey = full_KEY;
   var key = aesjs.utils.hex.toBytes(myKey);
@@ -262,29 +268,32 @@ function handle_count() {
   try {
     ecount = changeEndianness(ecount);
     ecount = parseInt(ecount, 16);
-    if (exports.zerox == true) {
+    if (zerox == true) {
       ecount = ecount + 1;
     } else {
       ecount = ecount;
-      exports.zerox = true;
+      zerox = true;
     }
     slave_count= pady(slave_count,8)
     ecount = ssp.ConvertBase.dec2hex(ecount);
     ecount= ecount.toUpperCase();
     ecount = pady(ecount, 8);
-    server.logea("Mi Cuenta" + ecount);
-    server.logea(chalk.cyan("lo que asumo que tiene el:" + slave_count));
+  //  console.log("Mi Cuenta(ecount):" + ecount);
+  //  console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
     if(slave_count == ecount){
       //console.log(chalk.green("COINCIDEN"));
       //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
       //concuerda.
+      server.logea("slave_count es:"+slave_count+" y ecount:"+ecount);
       ecount = changeEndianness(ecount);
       return resolve(ecount);
     }else{
-      console.log(chalk.red.inverse("NO COINCIDEN"));
+  //    console.log(chalk.red.inverse("NO COINCIDEN"));
       //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
       //creo que tengo que reintentar enviar el dato anterior
-      return reject("los paquetes de ecount no coinciden");
+    //  return reject("los paquetes de ecount no coinciden");
+    ecount = changeEndianness(ecount);
+    return resolve();
     }
     //setTimeout(handle_count,1000);
   } catch (e) {
@@ -367,7 +376,7 @@ async function prepare_Encryption(datax) {
   //console.log("DataLength:"+ebuffer+ " Bytes");
 
 
-     await handle_count();
+   await handle_count();
    server.logea("DataLength + ecount:"+chalk.green(ebuffer)+ chalk.cyan(ecount) );
    ebuffer = ebuffer.concat(ecount);
 
@@ -616,7 +625,9 @@ server.logea("en promise_handleEcommand read_data is:"+read_data);
 //exports.handleRoutingNotes(read_data);
 handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
 //ssp.handlepoll(handler);
-console.log("handler es:"+handler);
+if(show_details){
+  console.log("handler es:"+handler);
+}
 resolve(handler);
     //reject();
 
