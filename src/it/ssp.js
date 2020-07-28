@@ -64,7 +64,7 @@ function chunk(str, n) {
   return ret
 };
 module.exports.chunk=chunk;
-//////////////// crc inplementation ///////////////
+//////////////// crc inplementation //////////////
 const crc = require('node-crc');
 var reverse = require("buffer-reverse");
 function spectral_crc(buffer) {
