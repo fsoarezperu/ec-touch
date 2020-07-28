@@ -155,7 +155,7 @@ async function hacer_consulta_serial(receiver,command){
                                             //.then(data =>{
                                             //  console.log("data_received:"+data)
                                           //  console.log("global slave_count is:"+slave_count);
-                                            //  console.log(chalk.yellow(slave_count+" -> "+device+'->:'),chalk.yellow(data));
+                                          //    console.log(chalk.yellow(slave_count+" -> "+device+'->:'),chalk.yellow(data));
                                               received_command=data;
                                               parser.removeAllListeners('data');
                                               //////////////////////////////
@@ -196,6 +196,7 @@ setTimeout(async function(){
   zerox=!zerox;
   ecount="00000000";
   slave_count=0;
+  request_key_exchange="";
   canal_liberado();
  //await va.start_validator();
 

@@ -1847,13 +1847,13 @@ function negociate_encryption(receptor) {
                        server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step4));
                        if (step4=="OK") {
 
-                             var rKE = enc.send_request_key_exchange();
-                             server.logea("/////////////////////////////////");
-                             server.logea("Request Key Exchange command sent");
+                            //  var step6;
+                            var rKE = enc.send_request_key_exchange();
+                            server.logea("/////////////////////////////////");
+                            server.logea("Request Key Exchange command sent");
                             var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
-                              var step6;
                             try {
-                              step6=await enc.handleRKE(step5);
+                              var step6=await enc.handleRKE(step5);
                               if(step6.length>0){
                                 server.logea(chalk.green('KEY:'), chalk.green(step6));
                                 console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));

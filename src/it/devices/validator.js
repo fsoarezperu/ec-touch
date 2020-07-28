@@ -699,7 +699,7 @@ function handleGetTebsBarcode(data){
         } else {
           i = i;
         }
-        console.log("tebs_barcode current value is:"+tebs_barcode);
+        //console.log("tebs_barcode current value is:"+tebs_barcode);
         tebs_barcode = tebs_barcode.concat(i);
       }
     //  console.log(chalk.green("tebs barcode is:" + tebs_barcode));

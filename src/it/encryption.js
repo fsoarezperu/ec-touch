@@ -125,13 +125,13 @@ exports.set_modulus=function () {
 ////////////////////////////////////////////////////
 exports.send_request_key_exchange=function () {
   //console.log("request_key_exchange command sent");
-  my_HOST_RND = 999;
+  //my_HOST_RND = 999;
   var HostInterKey = 0;
-  //console.log("my_HOST_RND:" + my_HOST_RND);
+  console.log("my_HOST_RND:" + my_HOST_RND);
   calc_generator = parseInt(calc_generator, 10);
   calc_modulus = parseInt(calc_modulus, 10);
-  //console.log("my calc_generator:" + calc_generator);
-  //console.log("my calc_modulus:" + calc_modulus);
+  console.log("my calc_generator:" + calc_generator);
+  console.log("my calc_modulus:" + calc_modulus);
   HostInterKey = Big_Number(calc_generator).pow(my_HOST_RND);
   HostInterKey = Big_Number(HostInterKey).mod(calc_modulus);
   if (HostInterKey.lenth < 4) {
@@ -162,6 +162,7 @@ exports.send_request_key_exchange=function () {
   var hexiado = hexiando;
   request_key_exchange = hexiado;
   //////////////////////////////////////////////
+  console.log(request_key_exchange);
   return request_key_exchange;
 }
 ////////////////////////////////////////////////////
@@ -173,8 +174,8 @@ function pady(n, width, z) {
 module.exports.pady=pady;
 ////////////////////////////////////////////////////
 function handleRKE(data){
-    return new Promise((resolve,reject)=>{
-//console.log(data);
+    return new Promise(async function(resolve,reject){
+      console.log(data);
 try {
   var myData;
   var number_of_byte = data.substr(0, 2);
@@ -202,7 +203,7 @@ try {
       lowerpart = changeEndianness(lowerpart);
       final_key = final_key.concat(higherpart);
       full_KEY = lowerpart.concat(final_key);
-    //  console.log(chalk.green("KEY:" + full_KEY));
+      console.log(chalk.green("KEY:" + full_KEY));
     //  ssp.enable_sending();
       //return full_KEY;
        return resolve(full_KEY);
@@ -211,7 +212,30 @@ try {
 
 
     if (firstbyte == "F8") {
-      console.log(chalk.red("Not Possible to create the Key"));
+        console.log(chalk.red("Not Possible to create the Key"));
+    //  console.log(chalk.green("KEY:" + full_KEY));
+    var rKE = enc.send_request_key_exchange();
+    server.logea("/////////////////////////////////");
+    server.logea("Request Key Exchange command sent");
+    var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
+    try {
+      var step6=await enc.handleRKE(step5);
+      if(step6.length>0){
+        server.logea(chalk.green('KEY:'), chalk.green(step6));
+        console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
+        server.logea("/////////////////////////////////");
+        encryptionStatus = true;
+       return resolve("OK")
+
+     }else {
+       return reject("NO KEY:"+step6)
+     }
+    } catch (e) {
+      return reject(e);
+    } finally {
+      return;
+    }
+
     server.logea("/////////////////////////////////");
     setTimeout(function () {
       sp.retrial();
@@ -235,7 +259,7 @@ module.exports.handleRKE=handleRKE;
 ////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////
-var full_KEY;
+var full_KEY=0;
 //var slave_count=0;
 
 function encrypt(mensaje) {
