@@ -4,15 +4,15 @@
 //Protocol Used: Smiley Secured Protocol
 //Date: Nov 2018
 /////////////////////////////////////////////////////////////////////////////////////
-const tebs = require('./tebs');
-const va = require('./validator');
-const it = require('./tambox');
-const sh = require('./smart_hopper');
+const tebs = require('./it/devices/tebs');
+const va = require('./it/devices/validator');
+const it = require('./it/devices/tambox');
+const sh = require('./it/devices/smart_hopper');
 const ssp = require('./it/ssp');
-const sp = require('./serial_port');
+const sp = require('./it/serial_port');
 const enc = require('./it/encryption');
-const glo = require('./globals');
-const tbm = require('./tbm_sync/synchronize');
+const glo = require('./it/globals');
+const tbm = require('./it/tbm_sync/synchronize');
 const pool = require('./database');
 const chalk = require('chalk');
 const mysql_store = require('express-mysql-session');
@@ -369,9 +369,50 @@ io.on('connection', function(socket) {
      io.emit('actualizar_niveles', levels);
     console.log("data final:"+levels);
   });
-  socket.on('add_coins', function(msg) {
+  socket.on('add_coins',async  function(msg) {
      console.log(chalk.green(msg));
+     switch (msg) {
+      case "add_0.1":
+      console.log(chalk.green(msg));
+      await  sh.mandate_al_hopper(set_coin_amount_10c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_0.2":
+      await  sh.mandate_al_hopper(set_coin_amount_20c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_0.5":
+      await  sh.mandate_al_hopper(set_coin_amount_50c)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_1":
+      await  sh.mandate_al_hopper(set_coin_amount_1s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_2":
+      await  sh.mandate_al_hopper(set_coin_amount_2s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "add_5":
+      await  sh.mandate_al_hopper(set_coin_amount_5s)
+      io.emit('actualiza_grafico', "actualiza_grafico");
+      break;
+      case "vaciar":
+      var quefue=await  sh.mandate_al_hopper(empty_all)
+      console.log("quefue"+quefue);
+    //  setTimeout(function () {
+          io.emit('actualiza_grafico', "actualiza_grafico");
+    //  }, 30000);
+      break;
+       default:
 
+     }
+  });
+  socket.on('pay_value', async function(msg) {
+    payout_amount[2]=msg;
+    console.log("pay_amount"+payout_amount);
+    await  sh.mandate_al_hopper(payout_amount);
+    //io.emit('pay_value',"pay_value");
   });
 });
 /////////////////////////////////////////////////////////

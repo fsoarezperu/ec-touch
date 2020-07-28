@@ -17,12 +17,18 @@ global.synch = [0X01, 0X11];
 global.reset = [0X01, 0X01];
 global.host_protocol_version = [0X02, 0X06, 0X08];
 global.hopper_protocol_version = [0X02, 0X06, 0X07];
-global.set_coin_amount_10c=[0X0A, 0x34, 0x14, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x14 =20 monedas de 10c.
-global.set_coin_amount_20c=[0x0A, 0x34, 0x06, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x06 =6 monedas de 20c.
-global.set_coin_amount_50c=[0x0A, 0x34, 0x04, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x04 =4 monedas de 50c.
-global.set_coin_amount_1s=[0x0A, 0x34, 0x04, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x04 =4 monedas de 1so.
-global.set_coin_amount_2s=[0x0A, 0x34, 0x01, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x01 =1 monedas de 2so.
-global.set_coin_amount_5s=[0x0A, 0x34, 0x01, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x01 =1 monedas de 5so.
+// global.set_coin_amount_10c=[0X0A, 0x34, 0x14, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x14 =20 monedas de 10c.
+// global.set_coin_amount_20c=[0x0A, 0x34, 0x06, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x06 =6 monedas de 20c.
+// global.set_coin_amount_50c=[0x0A, 0x34, 0x05, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x05 =5 monedas de 50c.
+// global.set_coin_amount_1s=[0x0A, 0x34, 0x05, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x05 =5 monedas de 1so.
+// global.set_coin_amount_2s=[0x0A, 0x34, 0x03, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x03 =1 monedas de 2so.
+// global.set_coin_amount_5s=[0x0A, 0x34, 0x02, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E]; // 0x02 =1 monedas de 5so.
+global.set_coin_amount_10c=[0X0A, 0x34, 0x01, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.set_coin_amount_20c=[0x0A, 0x34, 0x01, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.set_coin_amount_50c=[0x0A, 0x34, 0x01, 0X00, 0X32, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.set_coin_amount_1s=[0x0A, 0x34, 0x01, 0X00, 0X64, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.set_coin_amount_2s=[0x0A, 0x34, 0x01, 0X00, 0XC8, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E];
+global.set_coin_amount_5s=[0x0A, 0x34, 0x01, 0X00, 0XF4, 0X01, 0X00, 0X00, 0X50, 0X45, 0X4E];
 
 global.pay10c=[0X0C, 0x46, 0x01, 0x01, 0X00, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x14 =20 monedas de 10c.
 global.pay20c=[0x0C, 0x46, 0x01, 0x01, 0X00, 0X14, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58]; // 0x06 =6 monedas de 20c.
@@ -58,7 +64,7 @@ global.poll_with_ack = [0X01, 0X56];
 global.event_ack = [0X01, 0X57];
 global.set_denomination_route = [0X01, 0X3B];
 global.get_denomination_route = [0X01, 0X3C];
-global.payout_amount = [0X01, 0X33];
+global.payout_amount = [0X09, 0X33, 0X0A, 0X00, 0X00, 0X00, 0X50, 0X45, 0X4E, 0X58];
 global.set_denomination_level = [0X01, 0X34];
 global.get_denomination_level = [0X01, 0X35];
 global.halt_payout = [0X01, 0X38];
@@ -110,7 +116,7 @@ global.commit_escrow_transaction = [0X01, 0X77];
 global.read_escrow_value = [0X01, 0X78];
 global.get_escrow_size = [0X01, 0X79];
 global.set_escrow_size = [0X01, 0X7A];
-global.payout_amount_by_denomination = [0X01, 0X39];
+//global.payout_amount_by_denomination = [0X01, 0X39];
 global.coin_escrow = [0X01, 0X3A];
 global.slave_reset = [0X01, 0XF1];
 

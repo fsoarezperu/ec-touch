@@ -7,7 +7,9 @@
     $('#test').on('click', function() {
       $('#overlay, #overlay-back').fadeIn(500);
     });
-
+    $('#cancelar').on('click', function() {
+      $('#overlay, #overlay-back').fadeOut(500);
+    });
   });
 </script>
 <style media="screen">
@@ -87,6 +89,8 @@
       <div></div>
       <div>
         <h1>Mostrar overlay</h1><a class="btn" style="width:120px;" id="test">Mostrar</a>
+        <h1>Mostrar overlay</h1><a class="btn" style="width:120px;" id="cancelar">cancelar</a>
+
       </div>
 
     </div>

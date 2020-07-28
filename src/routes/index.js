@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const io = require("../server.js");
-const tambox = require("../tambox.js");
+const tambox = require("../it/devices/tambox.js");
 const chalk = require('chalk');
 var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -464,7 +464,7 @@ router.get('/cerrar_remesa_hermes', async (req, res) => {
 router.get('/monedero', async (req, res) => {
 //  console.log("probando");
  //res.send ("ok1");
-  res.render('monedero');
+  res.render('hopper/monedero');
 })
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/registradora', async (req, res) => {
@@ -476,7 +476,7 @@ router.get('/registradora', async (req, res) => {
 router.get('/niveles_hopper', async (req, res) => {
 //  console.log("probando");
  //res.send ("ok1");
-  res.render('niveles_hopper');
+  res.render('hopper/niveles_hopper');
 })
 ///////////////////////////////////////////////////////////////////////////////
 module.exports = router;
