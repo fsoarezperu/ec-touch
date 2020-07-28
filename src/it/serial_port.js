@@ -88,7 +88,7 @@ function transmision_insegura(receiver,command){
        } catch (e) {
         return  reject(e)
        } finally {
-
+         return;
        }
   })
 
@@ -190,14 +190,33 @@ async function hacer_consulta_serial(receiver,command){
 module.exports.hacer_consulta_serial=hacer_consulta_serial;
 //////////////////////////////////////////////////////////////////////////
 exports.retrial=async function(command_ready){
-console.log(chalk.yellow("retrial now--------------------------------------------------------------------------"));
-//setTimeout(function(){
+console.log(chalk.red("Inicializando Sistema automaticamente en 1 Segundos------------------"));
+setTimeout(async function(){
   //it.start_tebs_validator();
-  zerox=false;
+  zerox=!zerox;
   ecount="00000000";
   slave_count=0;
   canal_liberado();
- await va.start_validator();
-//},5000);
+ //await va.start_validator();
+
+ try {
+   console.log("starting validator");
+   var validator= await va.start_validator();
+   console.log("validator variable is:"+validator);
+   if (validator=="OK") {
+     console.log(chalk.green("Validator Online"));
+     on_startup=false;
+     var step8=await va.validator_poll_loop(validator_address);
+     console.log(chalk.green("Inicio poll loop:"+step8));
+   }else {
+     console.log(chalk.red("No Validator Found"));
+     return reject();
+   }
+ } catch (e) {
+ console.log("no se pudo completar:"+e);
+ } finally {
+     console.log("idle");
+ }
+},10000);
 //////////////////////////////////////////////////////////////////////////
 };

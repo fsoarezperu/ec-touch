@@ -1542,7 +1542,7 @@ function ensureIsSet() {
             clearTimeout(timerout);
              return resolve("OK");
           }else {
-            console.log(chalk.red("en wait for foo"));
+            console.log(chalk.yellow("Canal Serial ocupado, estoy esperando"));
           }
         //  clearTimeout(timerout);
           secondtimer=setTimeout(waitForFoo, 100);
@@ -1557,8 +1557,8 @@ function ensureIsSet() {
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-               return reject(chalk.yellow("timeout de ensureIsSet"));
-             }, 5000);
+               return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+             }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
@@ -1606,7 +1606,14 @@ try {
          if(note_validator_type == "TEBS+Payout"){
            //console.log("si es tebs");
              var step5=await sp.hacer_consulta_serial(receptor,get_tebs_barcode) //<-------- get_serial_number
-                 step5=await val.handleGetTebsBarcode(step5)
+             // try {
+               step5=await val.handleGetTebsBarcode(step5)
+             // } catch (e) {
+             //   return reject (e);
+             // } finally {
+             //   //next();
+             // }
+
                  //verifica si existe en la base de datos esa bolsa,
                  tebs_barcode=parseInt(step5);
                  console.log(chalk.yellow("TEBSBarCode es:"+parseInt(step5)));
@@ -1672,7 +1679,7 @@ console.log("iniciando sincronizacion a nube:"+res);
     var monto=res[0].monto;
     var moneda=res[0].moneda;
     var status=res[0].status;
-    var tebs_barcode=res[0].tebs_barcode;
+    var tebs_barcode3=res[0].tebs_barcode;
     var machine_sn=res[0].machine_sn;
     var fecha=res[0].fecha;
     var hora=res[0].hora;
@@ -1680,7 +1687,7 @@ console.log("iniciando sincronizacion a nube:"+res);
     // var rms_status=remesax[0].rms_status;
     // var tipo=remesax[0].tipo;
     // var status_hermes=remesax[0].status_hermes;
-    const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode+"/"+machine_sn+"/"+fecha+"/"+hora+"/"+no_billetes
+    const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode3+"/"+machine_sn+"/"+fecha+"/"+hora+"/"+no_billetes
     console.log("url:"+url);
     /////////////////
     const Http= new XMLHttpRequest();
@@ -1704,12 +1711,12 @@ console.log("iniciando actualizacion de remesa hermes:");
     var monto=res[0].monto;
     var moneda=res[0].moneda;
     var status=res[0].status;
-    var tebs_barcode=res[0].tebs_barcode;
+    var tebs_barcode4=res[0].tebs_barcode;
     var no_billetes=res[0].no_billetes;
     // var rms_status=remesax[0].rms_status;
     // var tipo=remesax[0].tipo;
     // var status_hermes=remesax[0].status_hermes;
-    const url= tbm_adress+fix+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode+"/"+no_billetes
+    const url= tbm_adress+fix+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode4+"/"+no_billetes
     console.log("url:"+url);
     /////////////////
     const Http= new XMLHttpRequest();
@@ -1847,9 +1854,6 @@ function negociate_encryption(receptor) {
                               var step6;
                             try {
                               step6=await enc.handleRKE(step5);
-                            } catch (e) {
-                              return reject(e);
-                            } finally {
                               if(step6.length>0){
                                 server.logea(chalk.green('KEY:'), chalk.green(step6));
                                 console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
@@ -1860,6 +1864,10 @@ function negociate_encryption(receptor) {
                              }else {
                                return reject("NO KEY:"+step6)
                              }
+                            } catch (e) {
+                              return reject(e);
+                            } finally {
+                              return;
                             }
                         }else {
                           return reject(step4)
@@ -1929,7 +1937,7 @@ return new Promise(async function(resolve, reject) {
   } catch (e) {
     return reject(e);
   } finally {
-    return
+    return;
   }
 
 });
