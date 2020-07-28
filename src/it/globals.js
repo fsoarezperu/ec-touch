@@ -194,7 +194,7 @@ global.encryptionStatus = false;
 //to get pre shared key calculation
 global.calc_generator = 0;
 global.calc_modulus = 0;
-global.my_HOST_RND = 0;
+global.my_HOST_RND = 999;
 global.set_generator = 0; //this is populated by GET KEYS function.
 global.set_modulus = 0; //this is populated by GET KEYS function.
 global.request_key_exchange = 0;

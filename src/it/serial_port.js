@@ -125,7 +125,7 @@ module.exports.enable_hopper_pooling=enable_hopper_pooling;
 async function hacer_consulta_serial(receiver,command){
   return new Promise(async(resolve,reject)=>{
     try {
-      console.log("en este punto rfs:"+ready_for_sending);
+    //  console.log("en este punto rfs:"+ready_for_sending);
     var go=await ssp.ensureIsSet()
     if(go=="OK"){
           canal_ocupado();
@@ -133,12 +133,12 @@ async function hacer_consulta_serial(receiver,command){
           const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
           server.io.emit("system_running_indicator","system_running_indicator")
         //  console.log("command_ready"+command_ready);
-        console.log("rfs:"+ready_for_sending+ " and rfp:"+ready_for_pooling);
+      //  console.log("rfs:"+ready_for_sending+ " and rfp:"+ready_for_pooling);
           port.write(command_ready, function(err) {if (err) {return reject(err)}});
           server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
           //console.log(parser);
           var mytime=setTimeout(()=>{const error= "No se recibio respuesta en puerto serial.";
-                                    console.log("rfs:"+ready_for_sending+ "and rfp:"+ready_for_pooling);
+                                  //  console.log("rfs:"+ready_for_sending+ "and rfp:"+ready_for_pooling);
                                       return reject(error);
                                     },7000);
 
