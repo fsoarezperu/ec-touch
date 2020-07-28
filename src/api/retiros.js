@@ -279,11 +279,11 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                   var rms_status=remesax[0].rms_status;
                   var tipo=remesax[0].tipo;
                   var status_hermes=remesax[0].status_hermes;
-                  var tebs_barcode=remesax[0].tebs_barcode;
+                  var tebs_barcode2=remesax[0].tebs_barcode;
                   var machine_sn=remesax[0].machine_sn;
                   var no_billetes=remesax[0].no_billetes;
 
-                  const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn+"/"+no_billetes
+                  const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode2+"/"+machine_sn+"/"+no_billetes
                   console.log("url:"+url);
                   /////////////////
                   const Http= new XMLHttpRequest();

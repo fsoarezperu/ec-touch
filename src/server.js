@@ -273,6 +273,14 @@ io.on('connection', function(socket) {
     console.log(chalk.green("FORCING SERIAL"));
     console.log(chalk.green("ready for sending is:" + ready_for_sending));
     console.log(chalk.green("ready for pooling is:" + ready_for_pooling));
+    ssp.ensureIsSet().then(async function() {
+//      ready_for_sending=!ready_for_sending;
+      ready_for_sending=!ready_for_sending;
+
+      console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
+      io.emit('blocking_sending', "blocking_sending");
+      //it.enable_sending();
+    });
     // ready_for_sending = true;
     // ready_for_pooling = true;
     //
@@ -489,6 +497,7 @@ http.listen(machine_port, async function() {
   try {
     console.log("starting validator");
     var validator= await va.start_validator();
+    console.log("validator variable is:"+validator);
     if (validator=="OK") {
       console.log(chalk.green("Validator Online"));
       on_startup=false;

@@ -116,10 +116,10 @@ router.get('/finish/:qty_bill', async (req, res) => {
          var rms_status=remesay[0].rms_status;
          var tipo=remesay[0].tipo;
          var status_hermes=remesay[0].status_hermes;
-         var tebs_barcode=remesay[0].tebs_barcode;
+         var tebs_barcode5=remesay[0].tebs_barcode;
          var machine_sn=remesay[0].machine_sn;
          var no_billetes=remesay[0].no_billetes;
-         const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn+"/"+no_billetes
+         const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode5+"/"+machine_sn+"/"+no_billetes
          console.log("url:"+url);
          /////////////////
          const Http= new XMLHttpRequest();

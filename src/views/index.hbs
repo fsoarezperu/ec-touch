@@ -41,13 +41,11 @@ var once=true;
     });
 
     $("#enval").click(function(){
-    socket.emit('enable_validator');
+      socket.emit('enable_validator');
     });
-
     $("#desval").click(function(){
-    socket.emit('disable_validator');
+      socket.emit('disable_validator');
     });
-
     $("#grabar").click(function(){
       //  alert("grabando");
       socket.emit('cerrar_remesa_hermes');
@@ -111,7 +109,10 @@ var once=true;
       console.log(msg);
       window.location.reload(true);
     });
-
+    socket.on('disable_validator', function(msg) {
+      display_message(msg);
+      console.log(msg);
+    });
     socket.on('comenzar_remesa2', function(msg) {
       console.log("orden de comenzar remesa recivida");
       socket.emit('enable_validator');
@@ -174,11 +175,13 @@ if(once){
     });
     socket.on('blocking_pooling', function(msg) {
       console.log(msg);
+      display_message(msg);
       //location.reload();
     });
     socket.on('force_serial', function(msg) {
       console.log(msg);
       //location.reload();
+        display_message(msg);
     });
     function clear_conection() {
       timer3 = setTimeout(function() {
@@ -396,7 +399,8 @@ function borra_inicia(){
         <!-- <div class="">
           <i class="fas fa-wifi fa-sm"></i>
          </div> -->
-        <div>{{my_resgistered_machine_name}}</div>
+        <!-- <div>{{!my_resgistered_machine_name}}</div> -->
+          <div id="message"><ol></ol></div>
         <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
       </div>
       <div class="grupo2">
@@ -431,10 +435,10 @@ function borra_inicia(){
             <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
             <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
             <!-- <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div> -->
-              <!-- <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div> -->
+              <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div>
               <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
             <!-- <div class="anuncio"> -->
-              <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
+              <!-- <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200"> -->
               <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
               <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
 
@@ -443,7 +447,7 @@ function borra_inicia(){
 
               <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
             <!-- </div> -->
-            <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
+            <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div>
 
           {{/if}}
         {{/if}}

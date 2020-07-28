@@ -5,6 +5,8 @@ const BigNumber = require('bignumber.js');
 const ssp = require('./ssp');
 const chalk=require('chalk');
 const glo = require('./globals');
+const sp = require('./serial_port');
+
 ///////////////////////////////////////////////////
 var acomodando2,acomodando,hexiando,hexiado;
 //var slave_count;
@@ -211,6 +213,9 @@ try {
     if (firstbyte == "F8") {
       console.log(chalk.red("Not Possible to create the Key"));
     server.logea("/////////////////////////////////");
+    setTimeout(function () {
+      sp.retrial();
+    }, 1000);
       return reject("Not Possible to create the Key");
     }
     if (firstbyte == "F4") {

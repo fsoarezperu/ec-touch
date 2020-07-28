@@ -682,24 +682,34 @@ async function get_tebs_barcode(receptor) {
 }// hace consulta de poll y reinicia ciclicamente.
 ////////////////////////////////////////////////////////
 function handleGetTebsBarcode(data){
+  tebs_barcode="";
   return new Promise(function(resolve, reject) {
-    var number_of_byte = ssp.get_count_bytes_received();
-    var myData = received_command.substr(2, number_of_byte + 2);
-    var pointer = 0;
-    for (var countery = 0; countery < 10; countery++) {
-      pointer = pointer + 2;
-      var i = myData.substr(pointer, 2);
-      i = ssp.ConvertBase.hex2bin(i);
-      i = ssp.ConvertBase.bin2dec(i);
-      if (i < 10) {
-        i = ssp.pad(i);
-      } else {
-        i = i;
+    try {
+      var number_of_byte = ssp.get_count_bytes_received();
+      console.log("number_of_byte:"+number_of_byte);
+      var myData = received_command.substr(2, number_of_byte + 2);
+      var pointer = 0;
+      for (var countery = 0; countery < 10; countery++) {
+        pointer = pointer + 2;
+        var i = myData.substr(pointer, 2);
+        i = ssp.ConvertBase.hex2bin(i);
+        i = ssp.ConvertBase.bin2dec(i);
+        if (i < 10) {
+          i = ssp.pad(i);
+        } else {
+          i = i;
+        }
+        console.log("tebs_barcode current value is:"+tebs_barcode);
+        tebs_barcode = tebs_barcode.concat(i);
       }
-      tebs_barcode = tebs_barcode.concat(i);
+    //  console.log(chalk.green("tebs barcode is:" + tebs_barcode));
+    } catch (e) {
+      return reject(e);
+    } finally {
+        return resolve(tebs_barcode);
     }
-  //  console.log(chalk.green("tebs barcode is:" + tebs_barcode));
-    return resolve(tebs_barcode);
+
+
   });
 }
 module.exports.handleGetTebsBarcode=handleGetTebsBarcode;
