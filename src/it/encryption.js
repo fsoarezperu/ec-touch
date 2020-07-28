@@ -4,7 +4,7 @@ var Big_Number = require('big-number');
 const BigNumber = require('bignumber.js');
 const ssp = require('./ssp');
 const chalk=require('chalk');
-const glo = require('./../globals');
+const glo = require('./globals');
 ///////////////////////////////////////////////////
 var acomodando2,acomodando,hexiando,hexiado;
 //var slave_count;
@@ -225,7 +225,7 @@ module.exports.handleRKE=handleRKE;
 
 ////////////////////////////////////////////////////
 var full_KEY;
-var slave_count=0;
+//var slave_count=0;
 exports.zerox = false; //to begin countiung from zero;
 function encrypt(mensaje) {
   var myKey = full_KEY;
@@ -276,16 +276,24 @@ function handle_count() {
 
   if(slave_count == ecount){
     //console.log(chalk.green("COINCIDEN"));
+    //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
+    //concuerda.
   }else{
     console.log(chalk.red.inverse("NO COINCIDEN"));
+    //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
+    //creo que tengo que reintentar enviar el dato anterior
   }
   ecount = changeEndianness(ecount);
   //setTimeout(handle_count,1000);
 };
 ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////
-//var padding = Array(29).join('0');
-var padding = Array(61).join('0');
+//if (x.length<=17bytes) {
+  //var padding = Array(29).join('0');//cuando mando 1 solo paquete de 16bytes
+//}
+//if (x.length<=33bytes) {
+  var padding = Array(61).join('0');
+//}
 
 function padx(pad, str, padLeft) {
   server.logea("padding es:"+padding);
@@ -362,8 +370,10 @@ function prepare_Encryption(datax) {
   }
    //Al trasmitir 17 bytes es necesario ponerlo como HEX en la cadena de envio es decir 17dec=11hex
   //  var the_length = (encrypted_data.length / 2) + 1;
-  //  var finalizando_envio=last_length+"7E"+encrypted_data;
-    var finalizando_envio = "217E" + encrypted_data;
+  //  var finalizando_envio=last_length+"7E"+encrypted_data; // se usa este valor cuando se va a utilizar 16 bytes para transmision
+    var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 32 bytes para transmision
+  //  var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 48 bytes para transmision
+
     finalizando_envio = finalizando_envio.toUpperCase();
     server.logea(chalk.green("_encrypt2send:"+finalizando_envio));
     var to_send = "0x" + ssp.chunk(finalizando_envio, 2).join('0x');
