@@ -39,7 +39,9 @@ var once=true;
     $("#ayuda").click(function(){
       alert("ayuda");
     });
-
+    $("#envio_serial").click(function(){
+      socket.emit('envio_serial',"envio serial");
+    });
     $("#enval").click(function(){
       socket.emit('enable_validator');
     });
@@ -448,6 +450,7 @@ function borra_inicia(){
               <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
             <!-- </div> -->
             <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div>
+            <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial</div>
 
           {{/if}}
         {{/if}}

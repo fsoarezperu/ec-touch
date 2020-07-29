@@ -258,6 +258,22 @@ io.on('connection', function(socket) {
     console.log(chalk.green(msg));
     io.emit('no_cabezal', "display message from update_requested");
   });
+
+  socket.on('envio_serial', function(msg) {
+    ssp.ensureIsSet().then(async function() {
+  //      ready_for_sending=!ready_for_sending;
+  //    ready_for_pooling=!ready_for_pooling;
+      console.log(chalk.green(msg + "para:"+receptor) );
+      var data=await ssp.transmite_encriptado_y_procesa(receptor,synch);
+      console.log("aqui toSend_response:"+data);
+    //  data=await enc.promise_handleEcommand(data);
+    //  console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+    //  console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
+  //    io.emit('blocking_pooling', "pooling blocked");
+      //it.enable_sending();
+    });
+  });
+
   socket.on('blocking_pooling', function(msg) {
   console.log(chalk.green(msg));
     ssp.ensureIsSet().then(async function() {

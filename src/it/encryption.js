@@ -214,12 +214,12 @@ try {
     if (firstbyte == "F8") {
         console.log(chalk.red("Not Possible to create the Key"));
     //  console.log(chalk.green("KEY:" + full_KEY));
-    var rKE = enc.send_request_key_exchange();
+    var rKE = exports.send_request_key_exchange();
     server.logea("/////////////////////////////////");
     server.logea("Request Key Exchange command sent");
     var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
     try {
-      var step6=await enc.handleRKE(step5);
+      var step6=await handleRKE(step5);
       if(step6.length>0){
         server.logea(chalk.green('KEY:'), chalk.green(step6));
         console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
