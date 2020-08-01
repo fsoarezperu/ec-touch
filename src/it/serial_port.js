@@ -178,7 +178,8 @@ async function hacer_consulta_serial(receiver,command){
                                             });
       }else {
         console.log("not sure if it is waiting for ensureIsSet");
-        return reject(go);
+        //return reject(go);
+        return resolve();
       }
     } catch (e) {
       return reject(e);

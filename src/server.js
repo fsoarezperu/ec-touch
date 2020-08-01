@@ -153,7 +153,10 @@ io.on('connection', function(socket) {
     //       //if(respuesta=="ok"){
              io.emit('validator_enabled', "enable_validator");
     //       //  ready_for_pooling=true;
-             return resolve();
+  //  setTimeout(function () {
+  console.log("dando por finalizado el envio");
+      return resolve();
+  //  }, 200);
            }
        } catch (e) {
          return reject(e);

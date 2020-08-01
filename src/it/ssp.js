@@ -1557,7 +1557,8 @@ function ensureIsSet() {
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-               return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+              // return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+               return resolve("OK");
              }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
 
@@ -1921,18 +1922,25 @@ return new Promise(async function(resolve, reject) {
         //     .then(async function(data){console.log(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await handlepoll(data)})
         //     .then(data=>{return resolve(data);})
         //     .catch(function(error) {console.log(error);sp.retrial(error);});
+if (bypass== false) {
+  var toSendw =await enc.prepare_Encryption(polly);
+  console.log("aqui toSend:"+toSendw);
+    var data=await sp.transmision_insegura(receptorx,toSendw);
+    console.log("aqui toSend_response:"+data);
 
-        var toSendw =await enc.prepare_Encryption(polly);
-        console.log("aqui toSend:"+toSendw);
-          var data=await sp.transmision_insegura(receptorx,toSendw);
-          console.log("aqui toSend_response:"+data);
+        data=await enc.promise_handleEcommand(data);
+        console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+        data= await handlepoll(data);
+        if (data.length>0) {
+            return resolve(data);
+        }
 
-              data=await enc.promise_handleEcommand(data);
-              console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
-              data= await handlepoll(data);
-              if (data.length>0) {
-                  return resolve(data);
-              }
+}else {
+  //setTimeout(function () {
+      return reject("bypassed");
+  //}, 1000);
+
+}
 
   } catch (e) {
     return reject(e);
