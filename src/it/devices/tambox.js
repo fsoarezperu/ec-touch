@@ -113,7 +113,7 @@ return;
 exports.finalizar_pagos_en_proceso=async function(){
   return new Promise(async function(resolve, reject) {
     try {
-      console.log("Finalizando los pagos inconclusos");
+      console.log(chalk.red("Finalizando los pagos inconclusos"));
       await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
       await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
       return resolve();

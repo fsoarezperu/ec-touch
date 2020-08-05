@@ -123,48 +123,59 @@ exports.set_modulus=function () {
   return set_modulus;
 }
 ////////////////////////////////////////////////////
-exports.send_request_key_exchange=function () {
-  //console.log("request_key_exchange command sent");
-  //my_HOST_RND = 999;
-  var HostInterKey = 0;
-  console.log("my_HOST_RND:" + my_HOST_RND);
-  calc_generator = parseInt(calc_generator, 10);
-  calc_modulus = parseInt(calc_modulus, 10);
-  console.log("my calc_generator:" + calc_generator);
-  console.log("my calc_modulus:" + calc_modulus);
-  HostInterKey = Big_Number(calc_generator).pow(my_HOST_RND);
-  HostInterKey = Big_Number(HostInterKey).mod(calc_modulus);
-  if (HostInterKey.lenth < 4) {
-    if (HostInterKey.lenth == 3) {
-      server.logea("prefix");
-      var prefix = "0";
-      HostInterKey = prefix.concat(HostInterKey);
+function send_request_key_exchange() {
+  return new Promise(function(resolve, reject) {
+    try {
+    //  console.log("request_key_exchange command sent");
+      //my_HOST_RND = 999;
+      var HostInterKey = 0;
+      server.logea("my_HOST_RND:" + my_HOST_RND);
+      calc_generator = parseInt(calc_generator, 10);
+      calc_modulus = parseInt(calc_modulus, 10);
+      server.logea("my calc_generator:" + calc_generator);
+      server.logea("my calc_modulus:" + calc_modulus);
+      HostInterKey = Big_Number(calc_generator).pow(my_HOST_RND);
+      HostInterKey = Big_Number(HostInterKey).mod(calc_modulus);
+      if (HostInterKey.lenth < 4) {
+        if (HostInterKey.lenth == 3) {
+          server.logea("prefix");
+          var prefix = "0";
+          HostInterKey = prefix.concat(HostInterKey);
+        }
+        if (HostInterKey.lenth == 2) {
+          server.logea("prefix");
+          var prefix = "00";
+          HostInterKey = prefix.concat(HostInterKey);
+        }
+        server.logea("Host interkey padded");
+      }
+      //console.log("HostInterKey:" + HostInterKey);
+      ///////////////////////////////////////////////
+      HostInterKey = ssp.ConvertBase.dec2hex(HostInterKey).toUpperCase();
+      HostInterKey = pady(HostInterKey, 4);
+      //console.log("HostInterKey to hex:" + HostInterKey);
+      var pre_set = changeEndianness(String(HostInterKey));
+      var acomodando2 = "000000000000";
+      pre_set = pre_set.concat(acomodando2);
+      var acomodando = "094C";
+      acomodando = acomodando.concat(pre_set);
+      var hexiando = "0x" + ssp.chunk(acomodando, 2).join('0x');
+      hexiando = hexiando.match(/.{1,4}/g);
+      var hexiado = hexiando;
+      request_key_exchange = hexiado;
+      //////////////////////////////////////////////
+      server.logea(request_key_exchange);
+    //  console.log("fin de send request key exchange");
+      return resolve(request_key_exchange);
+    } catch (e) {
+        return reject(e);
+    } finally {
+      return;
     }
-    if (HostInterKey.lenth == 2) {
-      server.logea("prefix");
-      var prefix = "00";
-      HostInterKey = prefix.concat(HostInterKey);
-    }
-    server.logea("Host interkey padded");
-  }
-  //console.log("HostInterKey:" + HostInterKey);
-  ///////////////////////////////////////////////
-  HostInterKey = ssp.ConvertBase.dec2hex(HostInterKey).toUpperCase();
-  HostInterKey = pady(HostInterKey, 4);
-  //console.log("HostInterKey to hex:" + HostInterKey);
-  var pre_set = changeEndianness(String(HostInterKey));
-  var acomodando2 = "000000000000";
-  pre_set = pre_set.concat(acomodando2);
-  var acomodando = "094C";
-  acomodando = acomodando.concat(pre_set);
-  var hexiando = "0x" + ssp.chunk(acomodando, 2).join('0x');
-  hexiando = hexiando.match(/.{1,4}/g);
-  var hexiado = hexiando;
-  request_key_exchange = hexiado;
-  //////////////////////////////////////////////
-  console.log(request_key_exchange);
-  return request_key_exchange;
+  });
+
 }
+module.exports.send_request_key_exchange=send_request_key_exchange
 ////////////////////////////////////////////////////
 function pady(n, width, z) {
   z = z || '0';
@@ -175,7 +186,7 @@ module.exports.pady=pady;
 ////////////////////////////////////////////////////
 function handleRKE(data){
     return new Promise(async function(resolve,reject){
-      console.log(data);
+    //  console.log(data);
 try {
   var myData;
   var number_of_byte = data.substr(0, 2);
@@ -203,7 +214,7 @@ try {
       lowerpart = changeEndianness(lowerpart);
       final_key = final_key.concat(higherpart);
       full_KEY = lowerpart.concat(final_key);
-      console.log(chalk.green("KEY:" + full_KEY));
+    //  console.log(chalk.green("KEY:" + full_KEY));
     //  ssp.enable_sending();
       //return full_KEY;
        return resolve(full_KEY);
@@ -214,33 +225,33 @@ try {
     if (firstbyte == "F8") {
         console.log(chalk.red("Not Possible to create the Key"));
     //  console.log(chalk.green("KEY:" + full_KEY));
-    var rKE = exports.send_request_key_exchange();
-    server.logea("/////////////////////////////////");
-    server.logea("Request Key Exchange command sent");
-    var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
-    try {
-      var step6=await handleRKE(step5);
-      if(step6.length>0){
-        server.logea(chalk.green('KEY:'), chalk.green(step6));
-        console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
-        server.logea("/////////////////////////////////");
-        encryptionStatus = true;
-       return resolve("OK")
-
-     }else {
-       return reject("NO KEY:"+step6)
-     }
-    } catch (e) {
-      return reject(e);
-    } finally {
-      return;
-    }
-
-    server.logea("/////////////////////////////////");
-    setTimeout(function () {
-      sp.retrial();
-    }, 1000);
-      return reject("Not Possible to create the Key");
+    // var rKE = exports.send_request_key_exchange();
+    // server.logea("/////////////////////////////////");
+    // server.logea("Request Key Exchange command sent");
+    // var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
+    // try {
+    //   var step6=await handleRKE(step5);
+    //   if(step6.length>0){
+    //     server.logea(chalk.green('KEY:'), chalk.green(step6));
+    //     console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
+    //     server.logea("/////////////////////////////////");
+    //     encryptionStatus = true;
+    //    return resolve("OK")
+    //
+    //  }else {
+    //    return reject("NO KEY:"+step6)
+    //  }
+    // } catch (e) {
+    //   return reject(e);
+    // } finally {
+    //   return;
+    // }
+    //
+    // server.logea("/////////////////////////////////");
+    // setTimeout(function () {
+    //   sp.retrial();
+    // }, 1000);
+       return reject("Not Possible to create the Key");
     }
     if (firstbyte == "F4") {
       console.log(chalk.red("Parameter out of range"));
@@ -636,14 +647,14 @@ for (var i = 0; i < number_of_packets; i++) {
 server.logea(chalk.green("<-:"+ready));
 var data_length = ready.substr(0, 2);
 handler=data_length;
-data_length=parseInt(data_length,10);
+data_length=parseInt(data_length,16);
 server.logea("data length is:"+data_length);
 var read_ecount=ready.substr(2, 8);
 read_ecount=changeEndianness(read_ecount);
 //console.log("reaD COUNT:"+read_ecount);
-if(global.show_details===true){
-  console.log(chalk.yellow(read_ecount+"<-"+device+'<-:'),chalk.yellow(received_command));
-}
+// if(global.show_details===true){
+//   console.log(chalk.yellow(read_ecount+"<-"+device+'<-:'),chalk.yellow(received_command));
+// }
 //read_ecount=parseInt(read_ecount,10);
 slave_count=read_ecount;
 slave_count=pady(slave_count,8);
@@ -652,12 +663,16 @@ slave_count=pady(slave_count,8);
 var read_data=ready.substr(10,ready.length);
 server.logea("en promise_handleEcommand read_data is:"+read_data);
 //exports.handleRoutingNotes(read_data);
+data_length=data_length*2;
+read_data=read_data.substr(0,data_length);
 handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
 //ssp.handlepoll(handler);
 if(show_details){
-  console.log("handler es:"+handler);
+  //console.log("handler es:"+handler);
+  console.log(chalk.yellow(read_ecount+"<-"+device+'<-:')+" "+chalk.red(handler));//,chalk.yellow(received_command));
+  console.log("-----------------------------------");
 }
-resolve(handler);
+  return resolve(handler);
     //reject();
 
   });

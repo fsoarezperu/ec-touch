@@ -56,7 +56,11 @@ function transmision_insegura(receiver,command){
 
     try {
 
-        var step1= await hacer_consulta_serial(receiver,command);
+        try {
+          var step1= await hacer_consulta_serial(receiver,command);
+        } catch (e) {
+          return reject(e);
+        } 
         if (step1.length>0) {
           return resolve(step1);
         }else {
@@ -102,6 +106,7 @@ function canal_ocupado(){
 //  ready_for_pooling=false;
 server.logea("Canal ocupado");
 }
+module.exports.canal_ocupado=canal_ocupado;
 //////////////////////////////////////////////////////////////////////////
 function canal_liberado(){
   ready_for_sending=true;
@@ -126,65 +131,58 @@ async function hacer_consulta_serial(receiver,command){
   return new Promise(async(resolve,reject)=>{
     try {
     //  console.log("en este punto rfs:"+ready_for_sending);
-    var go=await ssp.ensureIsSet()
-    if(go=="OK"){
-          canal_ocupado();
-          server.logea("hasta aqui command es:"+command);
-          const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
-          server.io.emit("system_running_indicator","system_running_indicator")
-        //  console.log("command_ready"+command_ready);
-      //  console.log("rfs:"+ready_for_sending+ " and rfp:"+ready_for_pooling);
-          port.write(command_ready, function(err) {if (err) {return reject(err)}});
-          server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
-          //console.log(parser);
-          var mytime=setTimeout(()=>{const error= "No se recibio respuesta en puerto serial.";
-                                  //  console.log("rfs:"+ready_for_sending+ "and rfp:"+ready_for_pooling);
-                                      return reject(error);
-                                    },7000);
+              await ssp.ensureIsSet()
+              canal_ocupado();
+              server.logea("hasta aqui command es:"+command);
+              const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
+              server.io.emit("system_running_indicator","system_running_indicator")
+              //port.write(command_ready, function(err) {if (err) {return reject(err)}});
+              port.write(command_ready);
+              server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
+              var mytime=setTimeout(()=>{
+                const error= "No se recibio respuesta en puerto serial.";
+                return reject(error);
+                },7000);
 
-                                parser.once('data', async function(data){
-                                            clearTimeout(mytime);
-                                            received_cleaned = new Buffer.from(data, 'hex').toString('hex').toUpperCase();
-                                            var receiver_adress= received_cleaned.slice(2, -8);
-                                              if (receiver_adress=='10' || receiver_adress=='90' ) {device="Hopper";}
-                                              if (receiver_adress=='00' || receiver_adress=='80') {device="Validator";}
-                                              received_command = received_cleaned.slice(4, -4);
-                                            //received_command=ssp.received_byte_stuffing(received_command);
-                                            //console.log(received_command);
-                                            var data=await ssp.received_byte_stuffing(received_command)
-                                            //.then(data =>{
-                                            //  console.log("data_received:"+data)
-                                          //  console.log("global slave_count is:"+slave_count);
-                                          //    console.log(chalk.yellow(slave_count+" -> "+device+'->:'),chalk.yellow(data));
-                                              received_command=data;
-                                              parser.removeAllListeners('data');
-                                              //////////////////////////////
-                                              if(received_command.length>0){
-                                              //  setTimeout(function () {
-                                                ready_for_sending=true;
-                                            //  console.log("ready_for_sending:"+ready_for_sending);
-                                            //  console.log("ready_for_pooling:"+ready_for_pooling);
-                                                return resolve(received_command);
-                                              //  }, 20);
-                                              }else{
-                                                console.log("salgo por aqui1234");
+                  parser.once('data', async function(data){
+                                                clearTimeout(mytime);
+                                                received_cleaned = new Buffer.from(data, 'hex').toString('hex').toUpperCase();
+                                                var receiver_adress= received_cleaned.slice(2, -8);
+                                                  if (receiver_adress=='10' || receiver_adress=='90' ) {device="Hopper";}
+                                                  if (receiver_adress=='00' || receiver_adress=='80') {device="Validator";}
+                                                  received_command = received_cleaned.slice(4, -4);
+                                                //received_command=ssp.received_byte_stuffing(received_command);
+                                                //console.log(received_command);
+                                                var data=await ssp.received_byte_stuffing(received_command)
+                                                //.then(data =>{
+                                                //  console.log("data_received:"+data)
+                                              //  console.log("global slave_count is:"+slave_count);
+                                              //    console.log(chalk.yellow(slave_count+" -> "+device+'->:'),chalk.yellow(data));
+                                                  received_command=data;
+                                                  parser.removeAllListeners('data');
+                                                  //////////////////////////////
+                                                  if(received_command.length>0){
+                                                  //  setTimeout(function () {
+                                                    ready_for_sending=true;
+                                                //  console.log("ready_for_sending:"+ready_for_sending);
+                                                //  console.log("ready_for_pooling:"+ready_for_pooling);
+                                                    return resolve(received_command);
+                                                  //  }, 20);
+                                                  }else{
+                                                    console.log("salgo por aqui1234");
 
-                                                const error= "no respuesta, necesario reintentar...";
-                                                  setTimeout(()=>{return reject(error); retrial(error); },3000);
-                                                }
-                                          //  })
+                                                    const error= "no respuesta, necesario reintentar...";
+                                                      setTimeout(()=>{return reject(error); retrial(error); },3000);
+                                                    }
+                                              //  })
 
-                                          //  .catch(function(error) {console.log(error);sp.retrial(error);});
-                                            });
-      }else {
-        console.log("not sure if it is waiting for ensureIsSet");
-        //return reject(go);
-        return resolve();
-      }
+                                              //  .catch(function(error) {console.log(error);sp.retrial(error);});
+                                                });
+
     } catch (e) {
-      return reject(e);
+      //return reject(e);
     } finally {
-      return
+      return;
     }
   });
 };

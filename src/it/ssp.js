@@ -123,13 +123,17 @@ return new Promise(function(resolve, reject) {
       device="Validator";
     }
     if(global.show_details===true){
-    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(single_command));
+  //  console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(single_command)); //este muestra el valor enviado encriptado
+//    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(clean_command.substr(2, clean_command.length).toUpperCase())); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
+    console.log(chalk.magenta("------------------------------"));
+    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(ultimo_valor_enviado)); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
+
      }
     var hexiando = "0x" + chunk(command_listo, 2).join('0x');
     hexiando = hexiando.match(/.{1,4}/g);
     formed_command_to_send = hexiando;
     sent_command = formed_command_to_send;
-    server.logea("SENT COMMAND:"+sent_command);
+  //  console.log("SENT COMMAND:"+sent_command);
     return resolve(sent_command);
   } catch (e) {
     console.log("no se pudo preparar el comando para ser enviado");
@@ -798,7 +802,7 @@ function handleprotocolversion(data){
       return resolve("OK")
     }else{
         console.log(chalk.red("////////////ERROR/////////////"));
-        reject("////////////ERROR/////////////")
+        return reject("////////////ERROR/////////////")
     }
   });
 //  enable_sending();
@@ -843,7 +847,7 @@ function handlesetuprequest(data){
         break;
       default:
     }
-    console.log(chalk.yellow("Device type:" + note_validator_type));
+    console.log(chalk.magenta("Device type:" + note_validator_type));
 
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
@@ -966,7 +970,7 @@ function handleGetSerialNumber(data){
     //numero_de_serie=machine_sn;
     numero_de_serie=serialN;
 
-    console.log(chalk.yellow("The serial number is:" + serialN));
+    console.log(chalk.magenta("The serial number is:" + serialN));
     //console.log("/////////////////////////////////");
     return resolve(data);
   });
@@ -1022,7 +1026,7 @@ var poll_responde=data.match(/.{1,2}/g);
 
  if(poll_responde == undefined || poll_responde.length < 1){
    console.log("ERROR Receiving data");
-   reject();
+   return reject();
 //   ready_for_sending=true;
 //   ready_for_pooling=true;
 //   return;
@@ -1449,7 +1453,7 @@ var poll_responde=data.match(/.{1,2}/g);
 //  }//end iff
  //}
  console.log("aqui");
- resolve();
+ return resolve();
 // ///////////////////////
 // enable_sending();
 // //ready_for_sending=true;
@@ -1467,7 +1471,7 @@ function handlepoll3(data){
     //  console.log(poll_responde);
        if(poll_responde == undefined || poll_responde.length < 1){
          console.log("ERROR Receiving data");
-         reject();
+         return reject();
              }else{
                for (var i =1; i< poll_responde.length; i++ )
                   {
@@ -1528,7 +1532,7 @@ function handlepoll3(data){
                }//end of FOR loop
 
       // console.log("fin poll_loop3");
-       resolve();
+      return  resolve();
       });
   //    console.log("se esta llamando esto?");
 }
@@ -1542,7 +1546,7 @@ function ensureIsSet() {
             clearTimeout(timerout);
              return resolve("OK");
           }else {
-            console.log(chalk.yellow("Canal Serial ocupado, estoy esperando"));
+            console.log(chalk.magenta("Canal Serial ocupado, estoy esperando"));
           }
         //  clearTimeout(timerout);
           secondtimer=setTimeout(waitForFoo, 100);
@@ -1617,7 +1621,7 @@ try {
 
                  //verifica si existe en la base de datos esa bolsa,
                  tebs_barcode=parseInt(step5);
-                 console.log(chalk.yellow("TEBSBarCode es:"+parseInt(step5)));
+                 console.log(chalk.magenta("TEBSBarCode es:"+parseInt(step5)));
                  const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[step5]);
                  if(existe_remesa_hermes[0].RH ===0){
                  //  console.log(existe_remesa_hermes[0].RH);
@@ -1780,15 +1784,18 @@ function handles_coin_mech_inhivits(data){
 function envia_encriptado(receptorx,orden){
     return new Promise(async function(resolve, reject) {
       try {
-        server.logea("en este punto orden es:"+orden);
+      //  console.log("en este punto orden es:"+orden);
+        ultimo_valor_enviado=orden;
         var  toSend =await enc.prepare_Encryption(orden);
         server.logea("here to_sed is:"+toSend);
-          sp.transmision_insegura(receptorx,toSend)
-            .then(async function(data){return await enc.promise_handleEcommand(data)})
-            .then(data=>{
+          var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
+          data=await enc.promise_handleEcommand(data)
+          return resolve(data);
+            //.then(async function(data){return await enc.promise_handleEcommand(data)})
+        //    .then(data=>{
             //  console.log("->:"+orden.toString(16)+" se encripto, envio, recivio y desencripto:"+data);
-              return resolve(data);})
-            .catch(function(error) {console.log(error);sp.retrial(error);});
+          //    return resolve(data);})
+          //  .catch(function(error) {console.log(error);sp.retrial(error);});
       } catch (e) {
         return reject (e);
       } finally {
@@ -1812,13 +1819,13 @@ function sync_and_stablish_presence_of(receptor) {
                   var step2=await handlesynch(step1);
                      server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step2));
                      if (!step2=="OK") {
-                       reject(step2)
+                       return reject(step2)
                      }
                 }
           return resolve("OK")
     } catch (e) {
       console.log("rejecting002:"+e);
-      reject(e);
+    return  reject(e);
     } finally {
       return;
     }
@@ -1847,9 +1854,8 @@ function negociate_encryption(receptor) {
                     var step4=await enc.handleSetmodulus(step3);
                        server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step4));
                        if (step4=="OK") {
-
                             //  var step6;
-                            var rKE = enc.send_request_key_exchange();
+                            var rKE = await enc.send_request_key_exchange();
                             server.logea("/////////////////////////////////");
                             server.logea("Request Key Exchange command sent");
                             var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
@@ -1874,7 +1880,7 @@ function negociate_encryption(receptor) {
                           return reject(step4)
                         }
                 }else{
-                  reject(step2)
+                return  reject(step2)
                 }
 
   });
@@ -1929,7 +1935,7 @@ if (bypass== false) {
     console.log("aqui toSend_response:"+data);
 
         data=await enc.promise_handleEcommand(data);
-        console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+        //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
         data= await handlepoll(data);
         if (data.length>0) {
             return resolve(data);

@@ -2,7 +2,7 @@
 //global.slave_adress = '00';
 //var seq_bit = 1;
 global.my_resgistered_machine_name="";
-
+global.ultimo_valor_enviado="";
 global.ECOSVersion="1.0";
 global.last_sent="";
 global.view_log=false;

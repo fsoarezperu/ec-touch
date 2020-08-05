@@ -129,7 +129,7 @@ function handle_poll_validator(data){
     //(console.log(poll_responde);
      if(poll_responde == undefined || poll_responde.length < 1){
        console.log("ERROR Receiving data");
-       reject();
+       return reject();
            }else{
              for (var i =1; i<poll_responde.length; i++ )
                 {
@@ -600,7 +600,7 @@ function set_validator_routing(receptor) {
 //   console.log("step5:"+step5);
  //var step6=await ssp.envia_encriptado(receptor,send_5_soles_a_reciclaje);
 //   console.log("step6:"+step6);
-  resolve("OK")
+  return resolve("OK")
   });
 };
 ////////////////////////////////////////////////////////
@@ -608,7 +608,7 @@ function set_channel_inhivits(receptor) {
   server.logea(chalk.yellow("CHANNELS INHIVITs"));
   return new Promise(async function(resolve, reject) {
   await ssp.envia_encriptado(receptor,set_inhivits);
-  resolve("OK")
+  return resolve("OK")
   });
 };
 ////////////////////////////////////////////////////////
@@ -686,7 +686,7 @@ function handleGetTebsBarcode(data){
   return new Promise(function(resolve, reject) {
     try {
       var number_of_byte = ssp.get_count_bytes_received();
-      console.log("number_of_byte:"+number_of_byte);
+      //console.log("number_of_byte:"+number_of_byte);
       var myData = received_command.substr(2, number_of_byte + 2);
       var pointer = 0;
       for (var countery = 0; countery < 10; countery++) {

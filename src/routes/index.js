@@ -97,7 +97,7 @@ router.get('/finish/:qty_bill', async (req, res) => {
        }
      }
      catch (e) {
-        reject(e);
+        return reject(e);
         }
      finally {
        try {
@@ -127,7 +127,7 @@ router.get('/finish/:qty_bill', async (req, res) => {
          Http.open("GET",url);
          Http.send();
        } catch (e) {
-         reject(e);
+         return reject(e);
        } finally {
          try {
            console.log("entrando etapa3");
