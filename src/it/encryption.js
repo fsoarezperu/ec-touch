@@ -274,34 +274,53 @@ var full_KEY=0;
 //var slave_count=0;
 
 function encrypt(mensaje) {
-  var myKey = full_KEY;
-  var key = aesjs.utils.hex.toBytes(myKey);
-  var text = mensaje;
-//  console.log("--message:" + mensaje);
-  var textBytes = aesjs.utils.hex.toBytes(text);
-  var aesEcb = new aesjs.ModeOfOperation.ecb(key);
-  var encryptedBytes = aesEcb.encrypt(textBytes);
-  var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
-// console.log("encripted:" + encryptedHex.toUpperCase() + " and has:" + encryptedHex.length / 2 + "Hex bytes");
-  return encryptedHex;
+return new Promise(function(resolve, reject) {
+  try {
+    var myKey = full_KEY;
+    var key = aesjs.utils.hex.toBytes(myKey);
+    var text = mensaje;
+  //  console.log("--message:" + mensaje);
+    var textBytes = aesjs.utils.hex.toBytes(text);
+    var aesEcb = new aesjs.ModeOfOperation.ecb(key);
+    var encryptedBytes = aesEcb.encrypt(textBytes);
+    var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  // console.log("encripted:" + encryptedHex.toUpperCase() + " and has:" + encryptedHex.length / 2 + "Hex bytes");
+    return resolve(encryptedHex);
+  } catch (e) {
+    return reject(e);
+  } finally {
+    return;
+  }
+});
+
 }
 function decrypt(mensaje) {
 
-  if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128){
-  var key = aesjs.utils.hex.toBytes(full_KEY);
-  var aesEcb = new aesjs.ModeOfOperation.ecb(key);
-  var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
-  var decryptedBytes = aesEcb.decrypt(encryptedBytes);
-  var decryptedText = aesjs.utils.hex.fromBytes(decryptedBytes);
-//  console.log("decrypted:"+decryptedText.toUpperCase());
-  return decryptedText;
-}else{
-  console.log("desencriptado"+mensaje);
-  console.log("mensaje length:"+mensaje.length);
-  console.log(chalk.red("NO SE PUDO DESENCRIPTAR"));
-  //hANDLE pool
-  return "00000000000000000000000000000000";
-}
+  return new Promise(function(resolve, reject) {
+    try {
+      if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128){
+      var key = aesjs.utils.hex.toBytes(full_KEY);
+      var aesEcb = new aesjs.ModeOfOperation.ecb(key);
+      var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
+      var decryptedBytes = aesEcb.decrypt(encryptedBytes);
+      var decryptedText = aesjs.utils.hex.fromBytes(decryptedBytes);
+    //  console.log("decrypted:"+decryptedText.toUpperCase());
+      return resolve(decryptedText);
+    }else{
+      console.log("desencriptado"+mensaje);
+      console.log("mensaje length:"+mensaje.length);
+      console.log(chalk.red("NO SE PUDO DESENCRIPTAR"));
+      //hANDLE pool
+      return "00000000000000000000000000000000";
+    }
+    } catch (e) {
+      return reject(e);
+    } finally {
+      return;
+    }
+  });
+
+
 }
 function handle_count() {
   return new Promise(function(resolve, reject) {
@@ -485,7 +504,7 @@ async function prepare_Encryption(datax) {
     server.logea(chalk.yellow("__+ CRC al final:"+command_listo)+ chalk.cyan(" -->ESTO SE ENCRIPTA!!! ")+command_listo.length+" Bytes");
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////
-    var encrypted_data = encrypt(command_listo);
+    var encrypted_data =await encrypt(command_listo);
     server.logea(chalk.red("_______encrypted:"+encrypted_data.toUpperCase()));
   if ((encrypted_data.length/2)==16) {
     server.logea(chalk.cyan("PAKETE COMPLETO"));
@@ -573,7 +592,7 @@ var ready=[];
    var myData2="";
    myData2=myData.substr(from, 32);
    server.logea("Grupo:"+(i+1)+":"+myData2);
-   var tempo=decrypt(myData2).toUpperCase();
+   var tempo=await decrypt(myData2).toUpperCase();
    ready=ready+tempo;
  }
 //for each
@@ -600,8 +619,8 @@ var ready=[];
 }
 module.exports.handleEcommand=handleEcommand;
 ////////////////////////////////////////////////////
-function promise_handleEcommand(data){
-  return new Promise(function(resolve, reject) {
+async function promise_handleEcommand(data){
+  return new Promise(async function(resolve, reject) {
 // setTimeout(function () {
 //   resolve("yes after 10 seconds");
 // }, 10000);
@@ -638,7 +657,9 @@ for (var i = 0; i < number_of_packets; i++) {
  myData2=myData.substr(from, 32);
  //console.log(myData2);
  server.logea("Grupo:"+(i+1)+":"+myData2);
- var tempo=decrypt(myData2).toUpperCase();
+ //var tempo=await decrypt(myData2).toUpperCase();
+ var tempo=await decrypt(myData);
+ tempo=tempo.toUpperCase();
  ready=ready+tempo;
  //console.log("queda asi"+ready);
 }

@@ -140,33 +140,31 @@ io.on('connection', function(socket) {
     ecount = "00000000";
     await ssp.transmite_encriptado_y_procesa(validator_address,reset_counters)
   });
+
   socket.on('enable_validator',async function(msg) {
-    console.log("enable validator routine requested");
-     return new Promise( async function(resolve, reject) {
+    await ssp.ensureIsSet();
+
+     return new Promise( async function(resolve, reject){
        try {
-         console.log(chalk.cyan("ENABLE VALIDATOR"));
-         await ssp.ensureIsSet();
-         var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
-         console.log("respuesta a enable validator es:"+respuesta);
-         if(respuesta.length>0){
-    //       //  io.emit('enable_validator', "enable_validator");
-    //       //if(respuesta=="ok"){
-             io.emit('validator_enabled', "enable_validator");
-    //       //  ready_for_pooling=true;
-  //  setTimeout(function () {
-  console.log("dando por finalizado el envio");
-      return resolve();
-  //  }, 200);
-           }
+             console.log(chalk.cyan("ENABLE VALIDATOR"));
+             var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
+             console.log("respuesta a enable validator es:"+respuesta);
+                       if(respuesta.length>0){
+                             //io.emit('enable_validator', "enable_validator");
+                             io.emit('validator_enabled', "enable_validator");
+                             console.log("dando por finalizado el envio");
+                             return resolve();
+                           }
        } catch (e) {
          return reject(e);
        } finally {
-    //     //  ready_for_pooling=true;
-    //     //  console.log("termine de procesar la orden,m ahora habilito el pooling");
-           return;
+         return;
        }
+
      });
+
   });
+
   socket.on('disable_validator',async function(msg) {
     return new Promise(async function(resolve, reject) {
       try {
@@ -269,12 +267,14 @@ io.on('connection', function(socket) {
   //      ready_for_sending=!ready_for_sending;
   //    ready_for_pooling=!ready_for_pooling;
       console.log(chalk.green(msg + " para:"+device) );
-        sp.canal_ocupado();
-        
+        //sp.canal_ocupado();
+
 //      var data=await ssp.transmite_encriptado_y_procesa(receptor,synch);
-      setTimeout(function () {
-        sp.canal_liberado();
-      }, 3000);
+    var esto=  await sp.transmision_insegura(receptor,synch);
+    console.log(esto);
+      // setTimeout(function () {
+      //   sp.canal_liberado();
+      // }, 3000);
       //console.log(chalk.red("aqui toSend_response:"+data));
     //  data=await enc.promise_handleEcommand(data);
     //  console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
@@ -527,14 +527,14 @@ http.listen(machine_port, async function() {
     if (validator=="OK") {
       console.log(chalk.green("Validator Online"));
       on_startup=false;
-      var step8=await va.validator_poll_loop(validator_address);
-      console.log(chalk.green("Inicio poll loop:"+step8));
+      //var step8=await va.validator_poll_loop(validator_address);
+      //console.log(chalk.green("Inicio poll loop:"+step8));
     }else {
       console.log(chalk.red("No Validator Found"));
       return reject("validator not found");
     }
   } catch (e) {
-  console.log("no se pudo completar:"+e);
+      console.log("01-sistema operativo:"+e);
   } finally {
       console.log("idle");
   }

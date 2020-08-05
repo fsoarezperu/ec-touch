@@ -53,14 +53,14 @@ function transmision_insegura(receiver,command){
 //  console.log("command to be send is:"+command);
 
   return new Promise(async (resolve,reject)=>{
-
+    //return reject("03-transmision_insegura");
     try {
 
-        try {
+    //    try {
           var step1= await hacer_consulta_serial(receiver,command);
-        } catch (e) {
-          return reject(e);
-        } 
+    //    } catch (e) {
+      //    return reject(e);
+    //    }
         if (step1.length>0) {
           return resolve(step1);
         }else {
@@ -90,7 +90,7 @@ function transmision_insegura(receiver,command){
          //.catch(err =>{  });
          ////////////////////////////
        } catch (e) {
-        return  reject(e)
+        return reject(e);
        } finally {
          return;
        }
@@ -129,6 +129,7 @@ module.exports.enable_hopper_pooling=enable_hopper_pooling;
 //////////////////////////////////////////////////////////////////////////
 async function hacer_consulta_serial(receiver,command){
   return new Promise(async(resolve,reject)=>{
+  //  return reject("04-hacer_consulta_serial failed");
     try {
     //  console.log("en este punto rfs:"+ready_for_sending);
               await ssp.ensureIsSet()
@@ -140,9 +141,9 @@ async function hacer_consulta_serial(receiver,command){
               port.write(command_ready);
               server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
               var mytime=setTimeout(()=>{
-                const error= "No se recibio respuesta en puerto serial.";
+                const error= "05-No se recibio respuesta en puerto serial.";
                 return reject(error);
-                },7000);
+              },3000);
 
                   parser.once('data', async function(data){
                                                 clearTimeout(mytime);
@@ -180,7 +181,7 @@ async function hacer_consulta_serial(receiver,command){
                                                 });
 
     } catch (e) {
-      //return reject(e);
+      return reject(e);
     } finally {
       return;
     }

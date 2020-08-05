@@ -1,99 +1,117 @@
 <script type="text/javascript">
-var once=true;
+  var system_timer;
+  var timer3;
+  var once = true;
   var socket = io();
   var tog_validator = true;
   var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
   var is_cashbox_in_service = true;
-  // const pool = require('../database');
+
   $(document).ready(function() {
-    inicia();
+    inicia(); //esto habilita el fade de inicializacion
+
     //  $("#abc").hide();
     $("#abc").css('visibility', 'hidden');
+
     display_remote_conection();
-    // socket.on('tog_validator', function() {
-    //   if (tog_validator) {
-    //     setTimeout(function() {
-    //       socket.emit('enable_validator');
-    //       tog_validator = false;
-    //     }, 1000);
-    //   } else {
-    //     setTimeout(function() {
-    //       socket.emit('disable_validator');
-    //       tog_validator = true;
-    //     }, 1000);
-    //   }
-    // })
+
     $("#config").click(function() {
       window.location.replace("/configuracion");
     });
-    $("#deposito").click(function(){
-      socket.emit('deposito',"Deposito requerido");
+    $("#deposito").click(function() {
+      socket.emit('deposito', "Deposito requerido");
     });
-    $("#recibir_pago").click(function(){
+    $("#recibir_pago").click(function() {
       alert("recibir_pago");
     });
-    $("#cambio_moneda").click(function(){
+    $("#cambio_moneda").click(function() {
       alert("cambio_moneda");
     });
-    $("#ayuda").click(function(){
+    $("#ayuda").click(function() {
       alert("ayuda");
     });
-    $("#envio_serial").click(function(){
-      socket.emit('envio_serial',"envio serial");
+    $("#envio_serial").click(function() {
+      socket.emit('envio_serial', "envio serial");
     });
-    $("#enval").click(function(){
+    $("#enval").click(function() {
       socket.emit('enable_validator');
     });
-    $("#desval").click(function(){
+    $("#desval").click(function() {
       socket.emit('disable_validator');
     });
-    $("#grabar").click(function(){
+    $("#grabar").click(function() {
       //  alert("grabando");
       socket.emit('cerrar_remesa_hermes');
       $('#overlay,#overlay2,.overlay-back').fadeOut(500);
     });
-
+    $("#iniciar_remesa").click(function() {
+      socket.emit('enable_validator');
+    });
+    $("#force_serial").click(function() {
+      socket.emit('force_serial');
+    });
+    $("#blocking_pooling").click(function() {
+      socket.emit('blocking_pooling', "blocking pooling");
+    });
+    $('#Overlay-test').on('click', function() {
+      $('#overlay, .overlay-back').fadeIn(500);
+      console.log("test over click");
+    });
+    $('#monedero').on('click', function() {
+      console.log("monedero click");
+      window.location.replace("/monedero");
+    });
+    $("#testy2").click(function() {
+      $('#overlay, .overlay-back').fadeOut(500);
+      console.log("testy2");
+    });
+    $("#opc12").click(function() {
+      $('#overlay').fadeOut(500);
+      $('#overlay2, .overlay-back').fadeIn(500);
+    });
+    $("#cancel").click(function() {
+      $('#overlay2').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      //  $('#overlay, #overlay-back').fadeOut(500);
+    });
+    ////////////////////////////////////////////////////
+    remote_TBM.on('machine', function(data) {
+      console.log("ticking...");
+    });
+    ////////////////////////////////////////////////////
     socket.on('cerrar_remesa_hermes', function(msg) {
       window.location.replace("/cerrar_remesa_hermes");
     });
-
-    $("#iniciar_remesa").click(function() {
-      socket.emit('enable_validator');
-
-    });
     socket.on('validator_enabled', function(msg) {
-    //  window.location.replace("/iniciar_remesa");
-    display_message("validador habilitado");
-    console.log("validador habilitado");
+      //  window.location.replace("/iniciar_remesa");
+      display_message("validador habilitado");
+      console.log("validador habilitado");
     });
-    // socket.on('validator_enabled',function(){
-    //   window.location.replace("/iniciar_remesa");
-    // });
     socket.on('deposito', function(msg) {
       //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
       //ejecutar via ajax
-      var no_remesa=randomString(8,'#');
+      var no_remesa = randomString(8, '#');
       //var hora_creacion="12:00:00";
       var today = new Date();
-      var objToday= new Date();
+      var objToday = new Date();
       var dd = String(today.getDate()).padStart(2, '0');
       var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
       var yyyy = today.getFullYear();
-      today = yyyy+'-'+mm+'-' +dd;
-      var fecha_creacion=today;
+      today = yyyy + '-' + mm + '-' + dd;
+      var fecha_creacion = today;
 
       var curHour = objToday.getHours()
-      var	curMinute = objToday.getMinutes()
-	    var curSeconds = objToday.getSeconds()
-      var hora_creacion = curHour+':'+curMinute+':' +curSeconds;
+      var curMinute = objToday.getMinutes()
+      var curSeconds = objToday.getSeconds()
+      var hora_creacion = curHour + ':' + curMinute + ':' + curSeconds;
       $.ajax({
-        url: '/api/nueva_remesa/999/001/12345/'+no_remesa+'/'+ fecha_creacion +'/'+hora_creacion,
+        url: '/api/nueva_remesa/999/001/12345/' + no_remesa + '/' + fecha_creacion + '/' + hora_creacion,
         contentType: "application/json",
         dataType: 'json',
         type: "GET",
         success: function(data) {
-          console.log("Dato guardado via AJAX",data);
+          console.log("Dato guardado via AJAX", data);
         },
         error: function(e) {
           console.log(e.message);
@@ -104,9 +122,9 @@ var once=true;
     socket.on('iniciando', function(msg) {
       console.log("por resetear");
       //setTimeout(function () {
-        window.location.replace("/");
-        //  }, 5000);
-      });
+      window.location.replace("/");
+      //  }, 5000);
+    });
     socket.on('refresh_window', function(msg) {
       console.log(msg);
       window.location.reload(true);
@@ -126,18 +144,15 @@ var once=true;
       display_system_running_indicator();
       online = true;
     });
-    remote_TBM.on('machine', function(data) {
-      console.log("ticking...");
-    });
     socket.on('Cashbox_Removed', function(msg) {
       is_cashbox_in_service = false;
-if(once){
+      if (once) {
         //$('#out_of_service, #overlay-back').fadeIn(500);
         $('#out_of_service, .overlay-back').fadeIn(500);
 
-        once=false;
-}
-    //  $('#overlay, #overlay-back').fadeIn(500);
+        once = false;
+      }
+      //  $('#overlay, #overlay-back').fadeIn(500);
 
       //  display_message(msg);
     });
@@ -145,11 +160,10 @@ if(once){
       is_cashbox_in_service = true;
       $('#out_of_service').fadeOut(500);
       $('#overlay').fadeIn(500);
-      once=true;
+      once = true;
       muestra_consulta();
       //  display_message(msg);
     });
-    var timer3;
     socket.on('show_connected', function(msg) {
       is_connected = true;
       //  $("#abc").show();
@@ -183,8 +197,22 @@ if(once){
     socket.on('force_serial', function(msg) {
       console.log(msg);
       //location.reload();
-        display_message(msg);
+      display_message(msg);
     });
+    socket.on('tog_validator', function() {
+      if (tog_validator) {
+        setTimeout(function() {
+          socket.emit('enable_validator');
+          tog_validator = false;
+        }, 1000);
+      } else {
+        setTimeout(function() {
+          socket.emit('disable_validator');
+          tog_validator = true;
+        }, 1000);
+      }
+    })
+    ////////////////////////////////////////////////////
     function clear_conection() {
       timer3 = setTimeout(function() {
         is_connected = false;
@@ -193,71 +221,36 @@ if(once){
     function display_remote_conection() {
       if (is_connected) {
         $("#abc").css('visibility', 'visible');
-
       } else {
         $("#abc").css('visibility', 'hidden');
-
       }
       setTimeout(function() {
         display_remote_conection();
       }, 5000);
     }
 
-    $("#force_serial").click(function() {
-      socket.emit('force_serial');
-    });
-
-    $("#blocking_pooling").click(function() {
-      socket.emit('blocking_pooling',"blocking pooling");
-    });
-    // OVERLAY
-    $('#Overlay-test').on('click', function() {
-      $('#overlay, .overlay-back').fadeIn(500);
-      console.log("test over click");
-    });
-    $('#monedero').on('click', function() {
-      console.log("monedero click");
-      window.location.replace("/monedero");
-    });
-
     // $("#testy1").click(function() {
     //   $('#out_of_service, #overlay-back').fadeOut(500);
     //   console.log("testy1");
     // });
 
-    $("#testy2").click(function() {
-      $('#overlay, .overlay-back').fadeOut(500);
-      console.log("testy2");
-    });
-
     // $("#opc11").click(function() {
     //   $('#out_of_service,#overlay-back').fadeOut(500);
     //   //$('#overlay2, #overlay-back').fadeIn(500);
     // });
-    $("#opc12").click(function() {
-      $('#overlay').fadeOut(500);
-      $('#overlay2, .overlay-back').fadeIn(500);
-    });
-    $("#cancel").click(function() {
-      $('#overlay2').fadeOut(500);
-      $('#overlay').fadeIn(500);
-      //  $('#overlay, #overlay-back').fadeOut(500);
-    });
-
   });
-var system_timer;
-function inicia(){
-  system_timer=setTimeout(function () {
-    $('#inicializando_sistema, .overlay-back').fadeIn(500);
-  }, 3000);
 
-}
-function borra_inicia(){
-  clearTimeout(system_timer);
-  $('#inicializando_sistema, .overlay-back').fadeOut(500);
-  inicia();
-}
+  function inicia() {
+    system_timer = setTimeout(function() {
+      $('#inicializando_sistema, .overlay-back').fadeIn(500);
+    }, 3000);
 
+  }
+  function borra_inicia() {
+    clearTimeout(system_timer);
+    $('#inicializando_sistema, .overlay-back').fadeOut(500);
+    inicia();
+  }
   function display_system_running_indicator() {
     $("#system_running_indicator").show();
     borra_inicia();
@@ -265,18 +258,15 @@ function borra_inicia(){
     //  document.getElementById("system_running_indicator").innerHTML=".";
     setTimeout(clear_system_running_indicator, 200);
   };
-
   function clear_system_running_indicator() {
     $("#system_running_indicator").hide();
     //  document.getElementById("system_running_indicator").css('visibility', 'hidden')
     //  document.getElementById("system_running_indicator").innerHTML="";
   };
-
   function display_message(mes_to_display) {
     document.getElementById("message").innerHTML = mes_to_display;
     setTimeout(clear_message, 1000);
   };
-
   function clear_message() {
     document.getElementById("message").innerHTML = ""
   };
@@ -298,96 +288,101 @@ function borra_inicia(){
     var result = '';
     for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
     return result;
-}
-
+  }
 </script>
 <style media="screen">
-    /* html, body {
+  /* html, body {
     width  : 100%;
     height : 100%;
   } */
-    .wrapper {
-      position: relative;
-    }
-    /* .popup{
+  .wrapper {
+    position: relative;
+  }
+
+  /* .popup{
     position: relative;
   } */
-    .overlay-back {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000000;
-      border-radius: 15px;
-      opacity: 0.6;
-      filter: alpha(opacity=60);
-      z-index: 5;
-      display: none;
-    }
-    #overlay {
-      position: absolute;
-      top: 10%;
-      left: 10%;
-      width: 80%;
-      height: 100%;
-      opacity: 1;
-      z-index: 10;
-      display: none;
-      margin: 0 auto;
-    }
-    #overlay2 {
-      position: absolute;
-      top: 10%;
-      left: 10%;
-      width: 80%;
-      height: 100%;
-      opacity: 1;
-      z-index: 10;
-      display: none;
-      margin: 0 auto;
-    }
-    #inicializando_sistema {
-      position: absolute;
-      top: 10%;
-      left: 10%;
-      width: 80%;
-      height: 100%;
-      opacity: 1;
-      z-index: 10;
-      display: none;
-      margin: 0 auto;
-    }
+  .overlay-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: 15px;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 5;
+    display: none;
+  }
 
-    #out_of_service {
-      position: absolute;
-      top: 10%;
-      left: 10%;
-      width: 80%;
-      height: 100%;
-      opacity: 1;
-      z-index: 10;
-      display: none;
-      margin: 0 auto;
-    }
-    .grupo3 {
-      /* grid-column: 1/5; */
-      min-height: 350px;
-      width: 100%;
-      max-width: 700px;
-      /*grid-row: auto; */
-      background-color: rgba(60, 60, 60, 1);
-      /* background-image: url("../img/bg_image4.jpg"); */
-      color: white;
-      border: 4.5px solid white;
-      border-radius: 15px;
-      padding: 5px;
-      text-align: center;
-      display: grid;
-      grid-template-columns: 0.5fr auto 0.5fr;
-      grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
-    }
+  #overlay {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #overlay2 {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #inicializando_sistema {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #out_of_service {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  .grupo3 {
+    /* grid-column: 1/5; */
+    min-height: 350px;
+    width: 100%;
+    max-width: 700px;
+    /*grid-row: auto; */
+    background-color: rgba(60, 60, 60, 1);
+    /* background-image: url("../img/bg_image4.jpg"); */
+    color: white;
+    border: 4.5px solid white;
+    border-radius: 15px;
+    padding: 5px;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 0.5fr auto 0.5fr;
+    grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
+  }
 </style>
+
 <body oncontextmenu="return false">
   <div id="loading" style="display:none">Error:<br />El servidor esta paralizado.</div>
   <div id="display">
@@ -402,7 +397,9 @@ function borra_inicia(){
           <i class="fas fa-wifi fa-sm"></i>
          </div> -->
         <!-- <div>{{!my_resgistered_machine_name}}</div> -->
-          <div id="message"><ol></ol></div>
+        <div id="message">
+          <ol></ol>
+        </div>
         <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
       </div>
       <div class="grupo2">
@@ -437,17 +434,21 @@ function borra_inicia(){
             <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
             <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
             <!-- <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div> -->
-              <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>forzar fallo</div>
-              <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
+            <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div>
+            <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
             <!-- <div class="anuncio"> -->
-              <!-- <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200"> -->
-              <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
-              <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
+            <!-- <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200"> -->
+            <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
+            <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
 
-              <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Enable validator</div></div>
-              <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Desable Validator</div></div>
+            <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i>
+              <div class="interface_label">Enable validator</div>
+            </div>
+            <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i>
+              <div class="interface_label">Desable Validator</div>
+            </div>
 
-              <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
+            <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
             <!-- </div> -->
             <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div>
             <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial</div>

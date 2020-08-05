@@ -18,10 +18,7 @@ const glo = require('./../globals');
 const pool = require('./../../database');
 ///////////////////////////////////////////////////////////
 function start_validator() {
-  //console.log("validator started");
-
   return new Promise( async function(resolve, reject) {
-
     server.logea(chalk.green("starting_validator"));
     server.logea("/////////////////////////////////");
     try {
@@ -81,7 +78,6 @@ function start_validator() {
       return  reject("stat")
       }
     } catch (e) {
-      console.log("No se pudo iniciar el validador:"+e);
       return reject(e);
     } finally {
       return;
@@ -108,7 +104,7 @@ function validatorpoll(receptor) {
     } catch (e) {
       return reject("fallo 0123:"+e);
     } finally {
-
+      return;
     }
 
     });

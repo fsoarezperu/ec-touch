@@ -1610,7 +1610,7 @@ try {
        if (step4="OK") {
          if(note_validator_type == "TEBS+Payout"){
            //console.log("si es tebs");
-             var step5=await sp.hacer_consulta_serial(receptor,get_tebs_barcode) //<-------- get_serial_number
+             var step5=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
              // try {
                step5=await val.handleGetTebsBarcode(step5)
              // } catch (e) {
@@ -1808,6 +1808,7 @@ module.exports.envia_encriptado=envia_encriptado;
 function sync_and_stablish_presence_of(receptor) {
 
   return new Promise(async function(resolve, reject) {
+
     try {
           server.logea("/////////////////////////////////");
           server.logea(chalk.green("sync_and_stablish_presence_of:"+device));

@@ -38,7 +38,7 @@ if(poll_responde[0] == "F4"){
 return;
 }
 ////////////////////////////////////////////////////
-exports.handlepayoutvalue=function(){
+exports.handlepayoutvalue=async function(){
   var handler="";
   var myData;
   var number_of_byte = received_command.substr(0, 2);
@@ -53,7 +53,8 @@ if(myData.length>32){
   myData=myData.substr(0, 32);
   console.log(chalk.red.inverse("Cutted length:"+myData));
 }
-  var ready=decrypt(myData).toUpperCase();
+  var ready=await decrypt(myData);
+  ready=ready.toUpperCase();
   //el log de abajo muestra la info recivida decryptada
   //console.log(chalk.green("<-:"+ready));
   var data_length = ready.substr(0, 2);
