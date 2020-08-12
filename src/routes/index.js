@@ -9,6 +9,7 @@ const chalk = require('chalk');
 const glo = require('./../it/globals');
 const ssp = require('./../it/ssp');
 const enc = require('./../it/encryption');
+const rem = require('./../api/remesas');
 
 var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -48,6 +49,44 @@ router.get('/no_cabezal', (req, res) => {
   res.render('no_cabezal');
 })
 ///////////////////////////////////////////////////////////////////////////////
+function actualizar_remesa_enTBM(remesax){
+  return new Promise(function(resolve, reject) {
+try {
+  var tbm_adress=tbm_adressx;
+  var fix= "/sync_remesa";
+  var tienda_id=remesax[0].tienda_id;
+  var no_caja=remesax[0].no_caja;
+  var codigo_empleado=remesax[0].codigo_empleado;
+  var no_remesax=remesax[0].no_remesa;
+  var fecha=remesax[0].fecha;
+  var hora=remesax[0].hora;
+  var monto=remesax[0].monto;
+  var moneda=remesax[0].moneda;
+  var status=remesax[0].status;
+  var rms_status=remesax[0].rms_status;
+  var tipo=remesax[0].tipo;
+  var status_hermes=remesax[0].status_hermes;
+  var tebs_barcode1=remesax[0].tebs_barcode;
+  var machine_sn=remesax[0].machine_sn;
+  var no_billetes1=remesax[0].no_billetes;
+
+  const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode1+"/"+machine_sn+"/"+no_billetes1
+  console.log("url:"+url);
+  /////////////////
+  const Http= new XMLHttpRequest();
+//  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+  Http.open("GET",url);
+  Http.send();
+  return resolve();
+} catch (e) {
+  return reject(e);
+} finally {
+  //return;
+}
+  });
+};
+
+module.exports.actualizar_remesa_enTBM=actualizar_remesa_enTBM;
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////////// REMESAS ///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,99 +101,96 @@ router.get('/finish/:qty_bill', async (req, res) => {
     var remesay;
     var id_remesa;
     try {
-      console.log("entrando etapa1");
+         console.log("Detectando remesa a finalizar");
          remesay = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
         if (remesay === undefined || remesay.length == 0) {
-          // array empty or does not exist
-          console.log("objeto vacio");
-        //  res.send("objeto vacio")
-          res.render('index');
+            console.log("no remesa en status iniciada");
+            res.render('index');
+            return reject("no remesa en status iniciada")
         } else {
-          //console.log("estoy tratando de leer esto de todas maneras");
           id_remesa = remesay[0].no_remesa;
           console.log(chalk.cyan("el valor a utilizar como id_remesa:" + id_remesa));
-          const calculando_monto = await pool.query("SELECT SUM(monto) AS totalremesa FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
-          var monto_total_remesa = calculando_monto[0].totalremesa;
-          // if(monto_total_remesa===NULL){
-          //   monto_total_remesa=0;
+          const calculando_monto = await pool.query("SELECT SUM(monto) AS monto_acumulado_creditos_en_proceso FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+          var monto_total_remesa_en_proceso = calculando_monto[0].monto_acumulado_creditos_en_proceso;
+          // if(monto_total_remesa_en_proceso===NULL){
+          //   monto_total_remesa_en_proceso=0;
           // }
-          const qty_monto = await pool.query("SELECT COUNT(id) AS total_qty_remesa FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
-          var qty_result=qty_monto[0].total_qty_remesa;
-          console.log("se encontraron billetes:"+qty_result);
-        //  console.log(chalk.cyan("se va a guardar con el monto:" + monto_total_remesa));
-          //actualizar la tabal remesas, incluyendo el monto calculado total y cambiar estatus a "terminado"
-          await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa,qty_result, id_remesa]);
+          const no_billetes_credito = await pool.query("SELECT COUNT(id) AS cantidad_billetes FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+          var no_billetes_en_remesa=no_billetes_credito[0].cantidad_billetes;
+          console.log("se encontraron billetes:"+no_billetes_en_remesa);
+        //  console.log(chalk.cyan("se va a guardar con el monto:" + monto_total_remesa_en_proceso));
+          //actualizar la tabla remesas, incluyendo el monto calculado total y cambiar estatus a "terminado"
+          await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa_en_proceso,no_billetes_en_remesa, id_remesa]);
           //actualizar todas las filas de creditos donde tengan el numero cambiando "processing" por "procesed"
           await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [id_remesa]);
           ////////////////////////////actualizando la remesa hermes para que refleje el nuevo monto de remesa ingresado
-          const no_billetes= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+          const no_billetes_totales= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
           const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
           const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
           const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
-
-          console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes[0].total_billetes);
-          await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes[0].total_billetes]);
+          console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes_totales[0].total_billetes);
+          await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes_totales[0].total_billetes]);
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          await actualizar_remesa_enTBM(remesay);
+        //   console.log("Sincronizando remesa");
+        //   var tbm_adress=tbm_adressx;
+        //   var fix= "/sync_remesa";
+        //   var tienda_id=remesay[0].tienda_id;
+        //   var no_caja=remesay[0].no_caja;
+        //   var codigo_empleado=remesay[0].codigo_empleado;
+        //   var no_remesax=remesay[0].no_remesa;
+        //   var fecha=remesay[0].fecha;
+        //   var hora=remesay[0].hora;
+        //   var monto=remesay[0].monto;
+        //   var moneda=remesay[0].moneda;
+        //   var status=remesay[0].status;
+        //   var rms_status=remesay[0].rms_status;
+        //   var tipo=remesay[0].tipo;
+        //   var status_hermes=remesay[0].status_hermes;
+        //   var tebs_barcode=remesay[0].tebs_barcode;
+        //   var machine_sn=remesay[0].machine_sn;
+        //   var no_billetes=remesay[0].no_billetes;
+        //   const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode+"/"+machine_sn+"/"+no_billetes
+        //   console.log("url:"+url);
+        //   /////////////////
+        //   const Http= new XMLHttpRequest();
+        // //  const url= 'http://192.168.1.12:4000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+        //   Http.open("GET",url);
+        //   Http.send();
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          console.log("Aqui debo de sincronizar la remesa hermes tambien.");
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////
+          console.log("obteniendo numeros finales");
+          //aqui consulta la cantidad de billetes guardados en la base de datos en esa remesa
+          var {qty_bill}=req.params;
+          console.log("voy a consultar para popular finish con el id:" + id_remesa);
+          const remesax = await pool.query("SELECT * FROM remesas WHERE status='terminado' and no_remesa=?", [id_remesa]);
+          var calculos={
+            remesa: remesax[0],
+            qty:no_billetes_en_remesa,
+            qty2:qty_bill,
+            moneda:country_code
+          }
+          console.log("por imprimir calculos...");
+          return resolve(res.render('remesas/remesa_completada', {calculos}));
+          //res.render('remesas/remesa_completada');
        }
+
      }
      catch (e) {
-        return reject(e);
+         return reject(e);
         }
      finally {
-       try {
-         console.log("entrando etapa2");
-         var tbm_adress=tbm_adressx;
-         var fix= "/sync_remesa";
-         var tienda_id=remesay[0].tienda_id;
-         var no_caja=remesay[0].no_caja;
-         var codigo_empleado=remesay[0].codigo_empleado;
-         var no_remesax=remesay[0].no_remesa;
-         var fecha=remesay[0].fecha;
-         var hora=remesay[0].hora;
-         var monto=remesay[0].monto;
-         var moneda=remesay[0].moneda;
-         var status=remesay[0].status;
-         var rms_status=remesay[0].rms_status;
-         var tipo=remesay[0].tipo;
-         var status_hermes=remesay[0].status_hermes;
-         var tebs_barcode5=remesay[0].tebs_barcode;
-         var machine_sn=remesay[0].machine_sn;
-         var no_billetes=remesay[0].no_billetes;
-         const url= tbm_adress+fix+"/"+tienda_id+"/"+no_caja+"/"+codigo_empleado+"/"+no_remesax+"/"+fecha+"/"+hora+"/"+monto+"/"+moneda+"/"+status+"/"+rms_status+"/"+tipo+"/"+status_hermes+"/"+tebs_barcode5+"/"+machine_sn+"/"+no_billetes
-         console.log("url:"+url);
-         /////////////////
-         const Http= new XMLHttpRequest();
-       //  const url= 'http://192.168.1.12:4000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
-         Http.open("GET",url);
-         Http.send();
-       } catch (e) {
-         return reject(e);
-       } finally {
-         try {
-           console.log("entrando etapa3");
-           //aqui consulta la cantidad de billetes guardados en la base de datos en esa remesa
-           var {qty_bill}=req.params;
-           console.log("voy a consultar para popular finish con el id:" + id_remesa);
-           const remesax = await pool.query("SELECT * FROM remesas WHERE status='terminado' and no_remesa=?", [id_remesa]);
-           var calculos={
-             remesa: remesax[0],
-             qty:qty_result,
-             qty2:qty_bill,
-             moneda:country_code
-           }
-           console.log("por imprimir calculos...");
-           return resolve(res.render('remesas/remesa_completada', {calculos}));
-           //res.render('remesas/remesa_completada');
-         } catch(e) {
-           console.log("Error al leer el resultado de la remesa ingresada");
-           return reject(e);
-         }finally{
-           return;
-         }//finally3
-       }//fianly2
-     }//finally 1
-
+          //return;
+             }
   });
-//}
+
 });
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/cancelling', (req, res) => {
@@ -198,14 +234,14 @@ router.get('/smart_empty', async (req, res) => {
       console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes);
   await pool.query("UPDATE remesa_hermes SET monto=? WHERE status='iniciada'",[monto_remesa_hermes]);
   //await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
-  const bolsa = {
-    monto: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
-    tebs_barcode: tebs_barcode,
-    machine_sn: numero_de_serie,
-    fecha_inicial: '2019-10-01',
-    fecha_final: '2019-10-07',
-    dias_acumulados: '7'
-  }
+      const bolsa = {
+        monto: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
+        tebs_barcode: current_tebs_barcode,
+        machine_sn: numero_de_serie,
+        fecha_inicial: '2019-10-01',
+        fecha_final: '2019-10-07',
+        dias_acumulados: '7'
+      }
     //finaliza la remesa de la bolsa que se fue!
     await pool.query("UPDATE remesa_hermes SET status='finalizada' WHERE status='iniciada'");
   res.render('configuracion/remesa_hermes/smart_empty', {bolsa});

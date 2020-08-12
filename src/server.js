@@ -140,48 +140,55 @@ io.on('connection', function(socket) {
     ecount = "00000000";
     await ssp.transmite_encriptado_y_procesa(validator_address,reset_counters)
   });
-
   socket.on('enable_validator',async function(msg) {
-    await ssp.ensureIsSet();
+   await ssp.ensureIsSet();
+  return  new Promise(async function(resolve, reject) {
+     try {
+       console.log(chalk.green("disparo de enable_validator"));
+       var data=await ssp.envia_encriptado(validator_address,enable);
+       if (data=="01F0") {
+       //  console.log(chalk.green(data));
+         console.log(chalk.cyan("ENABLE VALIDATOR"));
 
-     return new Promise( async function(resolve, reject){
-       try {
-             console.log(chalk.cyan("ENABLE VALIDATOR"));
-             var respuesta=await ssp.transmite_encriptado_y_procesa(validator_address,enable);
-             console.log("respuesta a enable validator es:"+respuesta);
-                       if(respuesta.length>0){
-                             //io.emit('enable_validator', "enable_validator");
-                             io.emit('validator_enabled', "enable_validator");
-                             console.log("dando por finalizado el envio");
-                             return resolve();
-                           }
-       } catch (e) {
-         return reject(e);
-       } finally {
-         return;
+        return resolve();
+       }else {
+         reject("el validador no se habilito");
        }
 
-     });
+     } catch (e) {
+       return reject(chalk.red("error en socket:")+e);
+     } finally {
+     io.emit('validator_enabled', "validator_enabled");
+     }
+         });
+  });
 
+  socket.on('habilita_validador',async function(msg) {
+    await ssp.ensureIsSet();
+    return new Promise(async function(resolve, reject) {
+    try {
+      var data=await ssp.envia_encriptado(validator_address,enable);
+      if (data=="01F0") {
+      //  console.log(chalk.green(data));
+        console.log(chalk.cyan("ENABLE VALIDATOR"));
+        io.emit('validator_enabled', "validator_enabled");
+        return resolve();
+      }else {
+        reject("el validador no se habilito");
+      }
+
+    } catch (e) {
+      return reject(chalk.red("error en socket:")+e);
+    } finally {
+
+    }
+        });
   });
 
   socket.on('disable_validator',async function(msg) {
-    return new Promise(async function(resolve, reject) {
-      try {
-        console.log(chalk.cyan("DISABLE VALIDATOR"));
-        var esto=await  ssp.transmite_encriptado_y_procesa(validator_address,desable)
-        //io.emit('disable_validator', esto);
-        if (esto.length>0) {
-          io.emit('disable_validator', esto);
-          return resolve();
-        }
-
-      } catch (e) {
-        return reject(e);
-      } finally {
-
-      }
-    });
+     await ssp.ensureIsSet();
+     await ssp.envia_encriptado(validator_address,desable);
+     console.log(chalk.cyan("DISABLE VALIDATOR"));
   });
   socket.on('lock_cashbox', async function(msg) {
     io.emit('lock_cashbox', "locking cashbox");
@@ -195,20 +202,20 @@ io.on('connection', function(socket) {
   });
   /////////////////////////////////////////////////////////////
   socket.on('finish', async function(msg) {
+    await  ssp.ensureIsSet();
     return new Promise(async function(resolve, reject) {
       try {
-        console.log(chalk.cyan("socket finish"));
-        //await ssp.ensureIsSet();
+        console.log(chalk.cyan("Finalizando remesa"));
         var t124=await  ssp.transmite_encriptado_y_procesa(validator_address,desable);
         if (t124.length>0) {
-          io.emit('finish', "finish");
+          io.emit('finishy', "finishy");
           return resolve();
         }
 
       } catch (e) {
         return reject(e);
       } finally {
-        return;
+      //  return;
       }
     });
   });
@@ -259,65 +266,40 @@ io.on('connection', function(socket) {
     console.log(chalk.green(msg));
     io.emit('no_cabezal', "display message from update_requested");
   });
-
   socket.on('envio_serial', async function(msg) {
-  //  ssp.ensureIsSet().then(async function() {
-      await ssp.ensureIsSet();//.then(async function() {
-
-  //      ready_for_sending=!ready_for_sending;
-  //    ready_for_pooling=!ready_for_pooling;
-      console.log(chalk.green(msg + " para:"+device) );
-        //sp.canal_ocupado();
-
-//      var data=await ssp.transmite_encriptado_y_procesa(receptor,synch);
-    var esto=  await sp.transmision_insegura(receptor,synch);
-    console.log(esto);
-      // setTimeout(function () {
-      //   sp.canal_liberado();
-      // }, 3000);
-      //console.log(chalk.red("aqui toSend_response:"+data));
-    //  data=await enc.promise_handleEcommand(data);
-    //  console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
-    //  console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
-  //    io.emit('blocking_pooling', "pooling blocked");
-      //it.enable_sending();
-    //});
+    ssp.ensureIsSet2();
+    console.log(chalk.green(msg +" para:"+device) );
+    var esto=await sp.transmision_insegura(validator_address,poll);
+    esto=await ssp.handlepoll(esto);
+    console.log(chalk.green(esto));
+    console.log("--------------------------");
   });
-
+  socket.on('envio_serial_seguro', async function(msg) {
+      console.log(chalk.green(msg +" para:"+device) );
+      esto();
+      console.log("--------------------------");
+    });
+  function esto(){
+    setTimeout(async function () {
+          await ssp.envia_encriptado(validator_address,poll);
+          esto();
+    }, 800);
+    }
   socket.on('blocking_pooling', function(msg) {
   console.log(chalk.green(msg));
-    ssp.ensureIsSet().then(async function() {
-//      ready_for_sending=!ready_for_sending;
+    ssp.ensureIsSet2();
       ready_for_pooling=!ready_for_pooling;
-
       console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
       io.emit('blocking_pooling', "pooling blocked");
-      //it.enable_sending();
-    });
   });
   socket.on('force_serial', function(msg) {
     console.log(chalk.green("FORCING SERIAL"));
     console.log(chalk.green("ready for sending is:" + ready_for_sending));
     console.log(chalk.green("ready for pooling is:" + ready_for_pooling));
-    ssp.ensureIsSet().then(async function() {
-//      ready_for_sending=!ready_for_sending;
+    ssp.ensureIsSet2()
       ready_for_sending=!ready_for_sending;
-
       console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
       io.emit('blocking_sending', "blocking_sending");
-      //it.enable_sending();
-    });
-    // ready_for_sending = true;
-    // ready_for_pooling = true;
-    //
-    // it.ensureIsSet().then(async function() {
-    //   it.envio_redundante(poll)
-    //     .then(data => {
-    //       logea(chalk.yellow('<-:'), chalk.yellow(data));
-    //     //  it.enable_sending();
-    //       logea("/////////////////////////////////");
-    //     })
-    // })
   });
   socket.on('empty_hoppper', function(msg) {
     console.log(chalk.green(msg));
@@ -468,7 +450,7 @@ async function tambox_manager_ping() {
     } catch (e) {
       return reject(e);
     } finally {
-      return;
+    //  return;
     }
   });
 
@@ -485,7 +467,7 @@ function is_os_running() {
 }
 /////////////////////////////////////////////////////////
 http.listen(machine_port, async function() {
-//  io.emit("iniciando","iniciando sistema");
+  io.emit("iniciando","refrescando homepage");
 //   setTimeout(function () {
 //     console.log("forznado reinicio de pantallas");
 //       io.emit("iniciando","iniciando sistema");
@@ -534,11 +516,12 @@ http.listen(machine_port, async function() {
       return reject("validator not found");
     }
   } catch (e) {
-      console.log("01-sistema operativo:"+e);
+      console.log(chalk.cyan("01-Starting Validator->")+e);
   } finally {
       console.log("idle");
   }
   ////////////////////////////////////////////////////////////////
+  console.log("ultima linea");
 });
 /////////////////////////////////////////////////////////
 async function is_this_machine_registered(){
@@ -565,7 +548,7 @@ try {
 } catch (e) {
   return reject(e);
 } finally {
-  return;
+  //return;
 }
   });
 }
@@ -593,7 +576,7 @@ try {
 } catch (e) {
   return reject(e);
 } finally {
-  return;
+  //return;
 }
   });
 }

@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  var socket = io();
+//  var socket = io();
   var counter;
   var counter2;
  var message_timer;
@@ -10,17 +10,8 @@ $(document).ready(function() {
     socket.emit('finish', "finalizando remesa");
     window.clearTimeout(counter);
     window.clearTimeout(counter2);
-    //window.location.replace("/finish/"+qty_billx);
-  //  socket.emit('finish');
-    //window.location.href("/finish/"+qty_billx);
-  //  window.location.replace("/finish");
-  //  next_page();
   });
-  socket.on('finish', function(msg) {
-    window.clearTimeout(counter);
-    window.clearTimeout(counter2);
-    window.location.replace("/finish/"+qty_billx);
-  });
+
   //para cancelar el pago de una remesa, solo antes de iniciarse
   $("#cancelling").click(function() {
     socket.emit('disable_validator');
@@ -28,11 +19,21 @@ $(document).ready(function() {
   });
   update_in_process({{remesa.monto}});
   start_timer();
-});
+
 /////////////////////////////////////////////////////
+socket.on('finishy', function(msg) {
+  window.clearTimeout(counter);
+  window.clearTimeout(counter2);
+  window.location.replace("/finish/"+qty_billx);
+});
+
 socket.on('system_running_indicator', function(msg) {
   display_system_running_indicator()
 });
+function display_system_running_indicator(){
+  $("#system_running_indicator").show();
+    setTimeout(clear_system_running_indicator,200);
+  };
 
 /////////////////////////////////////////////////////
 //cuando el validador detecta un billete y lo guarda en su base de datos, pinta en pantalla el monto
@@ -51,13 +52,17 @@ socket.on('nuevo_billete_recivido', function(msg) {
   window.clearTimeout(counter2);
   console.log("timmer stopped");
   start_timer();
-
-});
+  });
 /////////////////////////////////////////////////////
 socket.on('Staking', function(msg) {
     display_message("Leyendo Billete");
       $("#finish").hide();
   });
+
+  socket.on('rejecting', function(msg) {
+      display_message("billete denegado");
+      //  $("#finish").hide();
+    });
 /////////////////////////////////////////////////////
 socket.on('Staked', function(msg) {
     display_message("Billete Almacenado");
@@ -81,6 +86,8 @@ socket.on('Note_Stored_in_Payout', function(msg) {
     socket.on('iniciando', function(msg) {
       window.location.replace("/");
       });
+
+});      
 /////////////////////////////////////////////////////
 var depositado = 0;
 function acumular_montos_agregados(monto) {
@@ -107,14 +114,12 @@ function update_in_process(msg){
     msg=0;
   }
   $("#cancelling").hide();
-//  display_message(msg);
   var value_read = parseInt(msg, 10);
   acumular_montos_agregados(value_read);
   pintar_valor_en_pantalla();
-  socket.emit('enable_validator'); //no estoy seguro esto porque esta aqui,. probando.
 }
 /////////////////////////////////////////////////////
-function start_timer(){
+   function start_timer(){
      console.log("starting timer");
      var link = document.getElementById('finish');
      counter2=window.setTimeout(function(){
@@ -125,21 +130,15 @@ function start_timer(){
      link.click();
      console.log("timer DONE");
      },300000); //5 min= 300000
-   }
-   function display_system_running_indicator(){
-     $("#system_running_indicator").show();
-       //document.getElementById("system_running_indicator").innerHTML="." ;
-       setTimeout(clear_system_running_indicator,200);
-     };
+      }
    function clear_system_running_indicator(){
        $("#system_running_indicator").hide();
-    //   document.getElementById("system_running_indicator").innerHTML="";
      };
-     function pintar_qty_bill_en_pantalla() {
+   function pintar_qty_bill_en_pantalla() {
        document.getElementById('qty_bill').innerHTML =qty_billx;
      };
      /////////////////////////////////////////////////////
-     function update_currency(currency_detected) {
+   function update_currency(currency_detected) {
       // alert(currency_detected);
        if(currency_detected=="USD"){
          document.getElementById("currency_val").innerHTML = "$";
@@ -148,16 +147,8 @@ function start_timer(){
       //   alert ("si fue pen");
          document.getElementById("currency_val").innerHTML = "S/.";
        }
-
-
     };
-    // function  next_page(){
-    //   const Http = new XMLHttpRequest();
-    //   const url='http://192.168.1.18:3000/finish/'+qty_billx;
-    //   Http.open("GET", url);
-    //   Http.send();
-    //   window.location.replace("/finish");
-    // };
+
 </script>
 
 <body oncontextmenu="return false">

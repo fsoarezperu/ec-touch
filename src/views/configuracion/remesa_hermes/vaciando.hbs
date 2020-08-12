@@ -7,6 +7,33 @@ $(document).ready(function(){
   socket.on('Note_Transfered_to_Stacker', function(msg){
     display_message(msg);
   });
+  socket.on('Cashbox_lock_enable', function(msg){
+   display_message(msg);
+  });
+  socket.on('Staking', function(msg){
+   display_message(msg);
+  });
+  socket.on('emptied', function(msg){
+   display_message(msg);
+  });
+  socket.on('Staked', function(msg){
+   display_message(msg);
+  });
+  socket.on('Read', function(msg){
+   display_message(msg);
+  });
+  socket.on('emptying', function(msg){
+   display_message(msg);
+  });
+  socket.on('emptied', function(msg){
+   display_message(msg);
+  });
+  socket.on('Note_Transfered_to_Stacker', function(msg){
+   display_message(msg);
+  });
+  socket.on('jam_recovery', function(msg){
+   display_message(msg);
+  });
   socket.on('jam_recovery', function(msg){
     display_message(msg);
   });
@@ -23,15 +50,15 @@ function clear_message(){
 <body  oncontextmenu="return false">
   <div class="wrapper">
     <div class="titulo">
-      <div>Procesando...</div>
+      <div id="message">Procesando...</div>
     </div>
 
     <div class="remesa_hermes">
       <div class="mensaje_centrado">Un momento Por Favor, Estamos acomodando los billetes en la bolsa</div>
     </div>
   </div>
-  <div id="message">
+  <!-- <div id="message">
     <ol></ol>
-  </div>
+  </div> -->
 
 </body>

@@ -17,6 +17,22 @@ socket.on('system_running_indicator', function(msg) {
   online=true;
 });
 
+socket.on('Cashbox_lock_enable', function(msg){
+ display_message(msg);
+});
+socket.on('emptying', function(msg){
+ display_message(msg);
+});
+socket.on('emptied', function(msg){
+ display_message(msg);
+});
+socket.on('Note_Transfered_to_Stacker', function(msg){
+ display_message(msg);
+});
+socket.on('jam_recovery', function(msg){
+ display_message(msg);
+});
+
 socket.on('Smart_emptying', function(msg){
   window.location.replace("/vaciando");
 });

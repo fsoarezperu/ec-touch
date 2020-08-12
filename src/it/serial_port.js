@@ -11,30 +11,11 @@ const va = require('./devices/validator');
 const SerialPort = require('serialport')
 const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
 const port = new SerialPort('/dev/ttyUSB0')
-// var port;
-// try {
-//   // return new Promise(function(resolve, reject) {
-//   //     const port = new SerialPort('/dev/ttyUSB0')
-//   //     if(port){
-//   //       return port;
-//   //       return resolve(port)
-//   //     }else {
-//   //       return reject("puerto faltanse");
-//   //     }});
-//   port = new SerialPort('/dev/ttyUSB0');
-//  return  port;
-// } catch (e) {
-//   const port="";
-//   return ("puerto no encontrado:"+e);
-// } finally {
-//   console.log(port);
-//   console.log("puerto com encontrado");
-//   return;
-// }
-
 module.exports.port=port;
+
 const parser = port.pipe(new InterByteTimeout({interval: 80})); //este valor era 30 pero fallaba intermitentemente.
 module.exports.parser=parser;
+
 port.on('open', function () {
     //console.log(chalk.red('port open'));
     global.is_head_online=true;
@@ -49,55 +30,43 @@ port.on('error', function(err) {
 })
 var error_retrial_times=5;
 var i;
+
 function transmision_insegura(receiver,command){
-//  console.log("command to be send is:"+command);
 
   return new Promise(async (resolve,reject)=>{
-    //return reject("03-transmision_insegura");
-    try {
 
-    //    try {
-          var step1= await hacer_consulta_serial(receiver,command);
-    //    } catch (e) {
-      //    return reject(e);
-    //    }
-        if (step1.length>0) {
-          return resolve(step1);
-        }else {
-          console.log(chalk.bold.red("error de send:"+step1));
-           if(error_retrial_times>0){
-               setTimeout( async function(){
-                              //   console.log("ready_for_sending1:",ready_for_sending);
-                              //   console.log("ready_for_pooling1:",ready_for_pooling);
-                              //   ready_for_sending=true;
-                              //   ready_for_pooling=true;
-                                 console.log("retrial:",error_retrial_times);
-                                // it.to_tbm.emit('retrialing',numero_de_serie);
-                                 return await transmision_insegura(command);
-                                 //hacer_consulta_serial(command);
-                                //exports.retrial();
-                              },200);
-            error_retrial_times=error_retrial_times-1;
-           }else{
-             error_retrial_times=5;
-             return reject("no conection found");
-           }
-        //  reject(step1)
-        }
-         ////////////////////////////
-         //.then(recivido =>{resolve (recivido)})
-         ////////////////////////////
-         //.catch(err =>{  });
-         ////////////////////////////
+    try {
+              var step1= await hacer_consulta_serial(receiver,command);
+              if (step1.length>0) {
+                return resolve(step1);
+              }else {
+                console.log(chalk.bold.red("error de send:"+step1));
+                 if(error_retrial_times>0){
+                     setTimeout( async function(){
+                                    //   console.log("ready_for_sending1:",ready_for_sending);
+                                    //   console.log("ready_for_pooling1:",ready_for_pooling);
+                                    //   ready_for_sending=true;
+                                    //   ready_for_pooling=true;
+                                       console.log("retrial:",error_retrial_times);
+                                      // it.to_tbm.emit('retrialing',numero_de_serie);
+                                       return await transmision_insegura(command);
+                                       //hacer_consulta_serial(command);
+                                      //exports.retrial();
+                                    },200);
+                  error_retrial_times=error_retrial_times-1;
+                 }else{
+                   error_retrial_times=5;
+                   return reject("no conection found");
+                 }
+              //  reject(step1)
+              }
+
        } catch (e) {
-        return reject(e);
+        return  reject(chalk.cyan("04-Error en transmision_insegura:")+e);
        } finally {
-         return;
+        // return;
        }
   })
-
-
-
 };
 module.exports.transmision_insegura=transmision_insegura;
 //////////////////////////////////////////////////////////////////////////
@@ -117,35 +86,37 @@ module.exports.canal_liberado=canal_liberado;
 //////////////////////////////////////////////////////////////////////////
 function disable_hopper_pooling(){
   ready_for_pooling=false;
-server.logea("disabling hopper_pooling");
+  server.logea("disabling hopper_pooling");
 }
 module.exports.disable_hopper_pooling=disable_hopper_pooling;
 //////////////////////////////////////////////////////////////////////////
 function enable_hopper_pooling(){
   ready_for_pooling=true;
-server.logea("enabling hopper_pooling");
+  server.logea("enabling hopper_pooling");
 }
 module.exports.enable_hopper_pooling=enable_hopper_pooling;
 //////////////////////////////////////////////////////////////////////////
 async function hacer_consulta_serial(receiver,command){
+  await ssp.ensureIsSet();
   return new Promise(async(resolve,reject)=>{
-  //  return reject("04-hacer_consulta_serial failed");
+
     try {
     //  console.log("en este punto rfs:"+ready_for_sending);
-              await ssp.ensureIsSet()
               canal_ocupado();
               server.logea("hasta aqui command es:"+command);
               const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
               server.io.emit("system_running_indicator","system_running_indicator")
               //port.write(command_ready, function(err) {if (err) {return reject(err)}});
-              port.write(command_ready);
-              server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
-              var mytime=setTimeout(()=>{
-                const error= "05-No se recibio respuesta en puerto serial.";
-                return reject(error);
-              },3000);
+              await port.write(command_ready);
 
-                  parser.once('data', async function(data){
+              server.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
+
+              var mytime=setTimeout(()=>{
+                const error= "No se recibio respuesta en puerto serial.";
+                return reject(error);
+                },7000);
+
+              parser.once('data', async function(data){
                                                 clearTimeout(mytime);
                                                 received_cleaned = new Buffer.from(data, 'hex').toString('hex').toUpperCase();
                                                 var receiver_adress= received_cleaned.slice(2, -8);
@@ -181,9 +152,9 @@ async function hacer_consulta_serial(receiver,command){
                                                 });
 
     } catch (e) {
-      return reject(e);
+      return reject(chalk.cyan("05-Error en hacer_consulta_serial:")+e);
     } finally {
-      return;
+    //  return;
     }
   });
 };

@@ -80,6 +80,7 @@ module.exports.spectral_crc=spectral_crc
 
 function prepare_command_to_be_sent(receiver,command){
 return new Promise(function(resolve, reject) {
+
   try {
     server.logea("en prepare command to be send:"+command);
     var formed_command_to_send;
@@ -136,10 +137,9 @@ return new Promise(function(resolve, reject) {
   //  console.log("SENT COMMAND:"+sent_command);
     return resolve(sent_command);
   } catch (e) {
-    console.log("no se pudo preparar el comando para ser enviado");
-    return reject(e);
+    return reject(chalk.cyan("06-no se pudo preparar el comando para ser enviado->")+e);
   } finally {
-    return;
+  //  return;
   }
 });
 
@@ -198,7 +198,7 @@ try {
 } catch (e) {
   return reject(e);
 } finally {
-  return;
+  //return;
 }
   });
 };
@@ -713,7 +713,7 @@ return new Promise(async function(resolve, reject) {
   } catch (e) {
     return reject(e);
   } finally {
-    return;
+  //  return;
   }
 });
 }
@@ -1544,9 +1544,12 @@ function ensureIsSet() {
       function waitForFoo(){
           if (ready_for_sending){
             clearTimeout(timerout);
+          //  console.log("Saliendo de ensure is set con RFS:"+ready_for_sending);
+          //  console.log("saliendo a ensure is set-> ready for pooling llego:"+ready_for_pooling);
              return resolve("OK");
           }else {
-            console.log(chalk.magenta("Canal Serial ocupado, estoy esperando"));
+          //  console.log(chalk.magenta("Canal Serial ocupado, estoy esperando"));
+          //    console.log("con RFS:"+ready_for_sending);
           }
         //  clearTimeout(timerout);
           secondtimer=setTimeout(waitForFoo, 100);
@@ -1555,27 +1558,65 @@ function ensureIsSet() {
 
       try {
         //console.log("la orden aqui es:"+receiver+" "+command);
-      //  console.log("estoy entrando a ensureIsSet: con RFS:"+ready_for_sending);
-      //  console.log("entrando a ensure is set-> ready for pooling llego:"+ready_for_pooling);
+        //console.log("estoy entrando a ensureIsSet: con RFS:"+ready_for_sending);
+        //console.log("entrando a ensure is set-> ready for pooling llego:"+ready_for_pooling);
             waitForFoo();
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-              // return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
-               return resolve("OK");
-             }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
+               return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+              // return resolve("OK");
+             }, 4000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
         console.log("rejecting01:"+e);
           return reject(e);
       } finally {
-        return
+      //  return
       }
 
     });
 };
 module.exports.ensureIsSet=ensureIsSet;
+
+
+
+function ensureIsSet2() {
+  var secondtimer,timerout;
+  function waitForFoo(){
+        secondtimer=setTimeout(waitForFoo, 1000);
+        console.log("sigo en wait for foo");
+      if (ready_for_sending){
+          console.log(chalk.green("Canal liberado"));
+        //  console.log(secondtimer);
+        //  console.log(timerout);
+         clearTimeout(timerout);
+         //
+      //   return;
+
+      }else {
+        console.log(chalk.magenta("XXXXXXXXXXXXXXXXXXXXXXXXXX"));
+
+        //return
+      }
+      clearTimeout(secondtimer);
+    //  clearTimeout(timerout);
+    //  console.log("wait for foo was set on second timer");
+  //  return;
+  };
+    waitForFoo();
+    timerout= setTimeout(function () {
+        clearTimeout(secondtimer);
+      //  console.log("Timeout reached");
+    //   return; // reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+      // return resolve("OK");
+     }, 4000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
+    // console.log("hasta aqui llegue seteando timers.");
+
+  //  return;
+};
+module.exports.ensureIsSet2=ensureIsSet2;
 /////////////////////////////////////////////////////////
 function set_protocol_version(receptor,version_de_receptor) {
   return new Promise( async function(resolve, reject) {
@@ -1600,7 +1641,7 @@ try {
   server.logea("setup_request sent");
  var step1= await envia_encriptado(receptor,setup_request) //<---- setup_request
  if (step1.length>0) {
-   //console.log("step1:"+step1);
+  // console.log("step1:"+step1);
    var step2=await handlesetuprequest(step1);
    //return resolve("TERMINADO");
    if(step2=="OK"){
@@ -1611,38 +1652,38 @@ try {
          if(note_validator_type == "TEBS+Payout"){
            //console.log("si es tebs");
              var step5=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
-             // try {
                step5=await val.handleGetTebsBarcode(step5)
-             // } catch (e) {
-             //   return reject (e);
-             // } finally {
-             //   //next();
-             // }
-
                  //verifica si existe en la base de datos esa bolsa,
                  tebs_barcode=parseInt(step5);
-                 console.log(chalk.magenta("TEBSBarCode es:"+parseInt(step5)));
-                 const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[step5]);
-                 if(existe_remesa_hermes[0].RH ===0){
-                 //  console.log(existe_remesa_hermes[0].RH);
-                 const this_machine= await pool.query("SELECT * FROM machine");
-                   console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+step5));
-                   const nueva_res_hermes={
-                     tienda_id:this_machine[0].tienda_id,
-                     monto:0,
-                     moneda:country_code,
-                     status:"iniciada",
-                     tebs_barcode:tebs_barcode,
-                     machine_sn:numero_de_serie,
-                     //fecha:moment().format('YYYY-MM-DD'),
-                     //hora:moment().format('h:mm:ss a'),
-                     fecha:tambox.fecha_actual(),
-                     hora:tambox.hora_actual(),
-                     no_billetes:0
-                   }
-                   await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
-                   await sincroniza_remesa_hermes([nueva_res_hermes]);
-                   step5="OK";
+                 if (tebs_barcode==1000000000000000000) {
+                   console.log(chalk.red("NO HAY BOLSA DETECTADA"));
+                   return resolve("OK");
+                 }else {
+                   console.log(chalk.magenta("TEBSBarCode es:"+tebs_barcode));
+                   const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[step5]);
+                   if(existe_remesa_hermes[0].RH ===0){
+                   //  console.log(existe_remesa_hermes[0].RH);
+                   const this_machine= await pool.query("SELECT * FROM machine");
+                     console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+step5));
+                     const nueva_res_hermes={
+                       tienda_id:this_machine[0].tienda_id,
+                       monto:0,
+                       moneda:country_code,
+                       status:"iniciada",
+                       tebs_barcode:tebs_barcode,
+                       machine_sn:numero_de_serie,
+                       //fecha:moment().format('YYYY-MM-DD'),
+                       //hora:moment().format('h:mm:ss a'),
+                       fecha:tambox.fecha_actual(),
+                       hora:tambox.hora_actual(),
+                       no_billetes:0
+                     }
+                     await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                     await sincroniza_remesa_hermes([nueva_res_hermes]);
+                     step5="OK";
+                 }
+              }
+// }
                  }else {
                  //  console.log("RH si existe en db");
                    step5="OK";
@@ -1654,21 +1695,21 @@ try {
                //  console.log(step5);
                  return resolve("OK");
              }else {
-               reject("NO tebsbarcode")
+               return reject("NO tebsbarcode")
              }
 
          }else {
            return resolve("OK");
-
          }
+
        }
      }
    }
- }
+ //}
 } catch (e) {
   return reject(e);
 } finally {
-  return;
+  //return;
 }
   });
 };
@@ -1732,7 +1773,7 @@ console.log("iniciando actualizacion de remesa hermes:");
   } catch (e) {
     return reject(e);
   } finally {
-    return;
+    //return;
   }
 });
 }
@@ -1784,22 +1825,18 @@ function handles_coin_mech_inhivits(data){
 function envia_encriptado(receptorx,orden){
     return new Promise(async function(resolve, reject) {
       try {
-      //  console.log("en este punto orden es:"+orden);
         ultimo_valor_enviado=orden;
         var  toSend =await enc.prepare_Encryption(orden);
         server.logea("here to_sed is:"+toSend);
           var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
+          //console.log(data);
           data=await enc.promise_handleEcommand(data)
           return resolve(data);
-            //.then(async function(data){return await enc.promise_handleEcommand(data)})
-        //    .then(data=>{
-            //  console.log("->:"+orden.toString(16)+" se encripto, envio, recivio y desencripto:"+data);
-          //    return resolve(data);})
-          //  .catch(function(error) {console.log(error);sp.retrial(error);});
-      } catch (e) {
-        return reject (e);
-      } finally {
 
+      } catch (e) {
+        return reject(chalk.red("error 0054:")+e);
+      } finally {
+          return;
       }
       });
 }
@@ -1810,25 +1847,26 @@ function sync_and_stablish_presence_of(receptor) {
   return new Promise(async function(resolve, reject) {
 
     try {
+
           server.logea("/////////////////////////////////");
           server.logea(chalk.green("sync_and_stablish_presence_of:"+device));
           server.logea("/////////////////////////////////");
           server.logea("SYNCH command sent to:"+device);
                 for (var i = 0; i < 3; i++) {
+                  ultimo_valor_enviado="synch";
                   var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
                     server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                   var step2=await handlesynch(step1);
-                     server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+                     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
                      if (!step2=="OK") {
                        return reject(step2)
                      }
                 }
           return resolve("OK")
     } catch (e) {
-      console.log("rejecting002:"+e);
-    return  reject(e);
+    return  reject(chalk.cyan("03-Error en sync_and_stablish_presence_of:")+e);
     } finally {
-      return;
+    //  return;
     }
   });
 };
@@ -1837,28 +1875,31 @@ module.exports.sync_and_stablish_presence_of=sync_and_stablish_presence_of;
 function negociate_encryption(receptor) {
   encryptionStatus = false;
   return new Promise( async function(resolve, reject) {
+
            enc.getkeys();
            setGenerator = enc.set_generator_();
            server.logea("/////////////////////////////////");
            server.logea("SET GENERATOR command sent");
-
+            ultimo_valor_enviado="setGenerator";
              var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
                server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
              var step2=await enc.handleSetgenerator(step1);
-                server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+                console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
                 if (step2=="OK") {
                   var setModulus = enc.set_modulus();
                   server.logea("/////////////////////////////////");
                   server.logea("SET MODULUS command sent");
+                              ultimo_valor_enviado="setModulus";
                   var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
                     server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
                     var step4=await enc.handleSetmodulus(step3);
-                       server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step4));
+                       console.log(chalk.yellow(device+'<-:'), chalk.yellow(step4));
                        if (step4=="OK") {
                             //  var step6;
                             var rKE = await enc.send_request_key_exchange();
                             server.logea("/////////////////////////////////");
                             server.logea("Request Key Exchange command sent");
+                            ultimo_valor_enviado="request key exchange";
                             var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
                             try {
                               var step6=await enc.handleRKE(step5);
@@ -1873,9 +1914,9 @@ function negociate_encryption(receptor) {
                                return reject("NO KEY:"+step6)
                              }
                             } catch (e) {
-                              return reject(e);
+                              return reject(chalk.cyan("06-negociate encription")+e);
                             } finally {
-                              return;
+                            //  return;
                             }
                         }else {
                           return reject(step4)
@@ -1952,7 +1993,7 @@ if (bypass== false) {
   } catch (e) {
     return reject(e);
   } finally {
-    return;
+  //  return;
   }
 
 });

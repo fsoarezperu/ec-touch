@@ -29,7 +29,7 @@ ConvertBase.dec2hex = function(num) {
 router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto/:fecha/:hora', async (req,res)=>{
   new Promise(async function(resolve, reject) {
     try {
-      await ssp.ensureIsSet()
+       ssp.ensureIsSet2()
       if(on_startup===false){
         var machine_serial_number=numero_de_serie;
         var {no_remesa}=req.params;
@@ -75,7 +75,7 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
       const {no_remesa}=req.params;
       console.log("consultando retiro:"+no_remesa);
       try {
-        await ssp.ensureIsSet()
+        ssp.ensureIsSet2()
         if(on_startup==false){
           retiro= await pool.query ("SELECT * FROM remesas WHERE no_remesa=? AND tipo='egreso'",[no_remesa]);
           console.log("retiro:"+retiro[0].monto);
@@ -170,7 +170,7 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
       } catch (e) {
         console.log(e);
       } finally {
-        return
+        //return
       }
     });
 
@@ -179,7 +179,7 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
 router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
   new Promise(async function(resolve, reject) {
     try {
-      await ssp.ensureIsSet()
+      ssp.ensureIsSet2()
       if(on_startup==false){
         const {no_remesa}=req.params;
         const valid_payment= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and tipo='egreso' and status='completado'" ,[no_remesa]);
@@ -221,7 +221,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
     for (var i=0;i<thelength;i++){var thisy=string.substr(i*2,2);arry.push(thisy);}
     //console.log(arry);
     //var value=tambox.prepare_Encryption(arry);
-    await ssp.ensureIsSet()
+    ssp.ensureIsSet2()
     var data =await ssp.transmite_encriptado_y_procesa(global.receptor,arry);
     const retiro= await pool.query ("UPDATE remesas SET status='en_proceso' WHERE no_remesa=?",[no_remesa]);
     const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
@@ -256,7 +256,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
   new Promise(async function(resolve, reject) {
     try {
-      await ssp.ensureIsSet()
+      ssp.ensureIsSet2()
       if(on_startup==false){
         const {no_remesa}=req.params;
           if(no_remesa){

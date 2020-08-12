@@ -121,7 +121,7 @@ exports.finalizar_pagos_en_proceso=async function(){
     } catch (e) {
       return reject(e);
     } finally {
-      return;
+    //  return;
     }
   });
 

@@ -34,6 +34,9 @@
     $("#envio_serial").click(function() {
       socket.emit('envio_serial', "envio serial");
     });
+    $("#envio_serial_seguro").click(function() {
+      socket.emit('envio_serial_seguro', "envio serial seguro");
+    });
     $("#enval").click(function() {
       socket.emit('enable_validator');
     });
@@ -84,9 +87,9 @@
       window.location.replace("/cerrar_remesa_hermes");
     });
     socket.on('validator_enabled', function(msg) {
-      //  window.location.replace("/iniciar_remesa");
-      display_message("validador habilitado");
+      display_message(msg);
       console.log("validador habilitado");
+      window.location.replace("/iniciar_remesa");
     });
     socket.on('deposito', function(msg) {
       //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
@@ -133,10 +136,22 @@
       display_message(msg);
       console.log(msg);
     });
+    // socket.on('Cashbox_out_of_Service', function(msg) {
+    //   display_message(msg);
+    //   console.log(msg);
+    // });
     socket.on('comenzar_remesa2', function(msg) {
       console.log("orden de comenzar remesa recivida");
       socket.emit('enable_validator');
     });
+
+    socket.on('shoot', function(msg) {
+      console.log("orden de comenzar remesa recivida");
+      display_message("shoot");
+      socket.emit('enable_validator');
+    });
+
+
     socket.on('retiro_en_proceso', function(msg) {
       window.location.replace("/retiro_en_proceso");
     });
@@ -144,7 +159,8 @@
       display_system_running_indicator();
       online = true;
     });
-    socket.on('Cashbox_Removed', function(msg) {
+
+    socket.on('Cashbox_out_of_Service', function(msg) {
       is_cashbox_in_service = false;
       if (once) {
         //$('#out_of_service, #overlay-back').fadeIn(500);
@@ -157,6 +173,14 @@
       //  display_message(msg);
     });
     socket.on('Cashbox_Replaced', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      once = true;
+      muestra_consulta();
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Back_in_Service', function(msg) {
       is_cashbox_in_service = true;
       $('#out_of_service').fadeOut(500);
       $('#overlay').fadeIn(500);
@@ -199,19 +223,19 @@
       //location.reload();
       display_message(msg);
     });
-    socket.on('tog_validator', function() {
-      if (tog_validator) {
-        setTimeout(function() {
-          socket.emit('enable_validator');
-          tog_validator = false;
-        }, 1000);
-      } else {
-        setTimeout(function() {
-          socket.emit('disable_validator');
-          tog_validator = true;
-        }, 1000);
-      }
-    })
+    // socket.on('tog_validator', function() {
+    //   if (tog_validator) {
+    //     setTimeout(function() {
+    //       socket.emit('enable_validator');
+    //       tog_validator = false;
+    //     }, 1000);
+    //   } else {
+    //     setTimeout(function() {
+    //       socket.emit('disable_validator');
+    //       tog_validator = true;
+    //     }, 1000);
+    //   }
+    // })
     ////////////////////////////////////////////////////
     function clear_conection() {
       timer3 = setTimeout(function() {
@@ -241,15 +265,15 @@
   });
 
   function inicia() {
-    system_timer = setTimeout(function() {
-      $('#inicializando_sistema, .overlay-back').fadeIn(500);
-    }, 3000);
+    // system_timer = setTimeout(function() {
+    //   $('#inicializando_sistema, .overlay-back').fadeIn(500);
+    // }, 3000);
 
   }
   function borra_inicia() {
-    clearTimeout(system_timer);
-    $('#inicializando_sistema, .overlay-back').fadeOut(500);
-    inicia();
+    // clearTimeout(system_timer);
+    // $('#inicializando_sistema, .overlay-back').fadeOut(500);
+    // inicia();
   }
   function display_system_running_indicator() {
     $("#system_running_indicator").show();
@@ -434,24 +458,26 @@
             <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
             <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
             <!-- <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div> -->
-            <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div>
+            <!-- <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div> -->
             <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
             <!-- <div class="anuncio"> -->
-            <!-- <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200"> -->
+            <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
             <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
             <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
 
-            <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i>
+            <!-- <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i>
               <div class="interface_label">Enable validator</div>
-            </div>
-            <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i>
+            </div> -->
+            <!-- <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i>
               <div class="interface_label">Desable Validator</div>
-            </div>
+            </div> -->
 
             <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
             <!-- </div> -->
-            <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div>
-            <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial</div>
+            <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
+            <!-- <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial inseguro</div> -->
+            <!-- <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div> -->
+
 
           {{/if}}
         {{/if}}

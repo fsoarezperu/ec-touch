@@ -202,13 +202,14 @@ global.request_key_exchange = 0;
 global.ecount = "00000000";
 global.numero_de_serie="00000";
 global.country_code;
+global.current_tebs_barcode = "";
 global.tebs_barcode = "";
 global.note_validator_type="";
 //cuando envia ordenes al tbm de heroku app publica
 //global.tbm_adressx="https://tbm-cloud.herokuapp.com";
 global.tbm_adressx="http://192.168.1.2:3000";//esto tiene que apuntar a donde esta el servidor de interface API
 global.release_version="1.1";
-global.machine_ip="192.168.1.7";
+global.machine_ip="192.168.1.18";
 global.machine_port="3000";
 global.machine_developer="EC-HOME AUTOMATION";
 global.machine_support="fsoarez@ec-automation.com";

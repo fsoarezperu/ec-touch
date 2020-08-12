@@ -170,7 +170,7 @@ function send_request_key_exchange() {
     } catch (e) {
         return reject(e);
     } finally {
-      return;
+    //  return;
     }
   });
 
@@ -261,7 +261,7 @@ try {
 } catch (e) {
   return reject(e);
 } finally {
-  return;
+//  return;
 }
 //  ssp.enable_sending();
   });
@@ -294,11 +294,30 @@ return new Promise(function(resolve, reject) {
 });
 
 }
+
+async function reenviar_ultimo_dato(){
+  console.log(chalk.red("reenviando ultimo dato"));
+      ready_for_sending=true;
+      return new Promise(async function(resolve, reject) {
+        try {
+          //reenvia el ultimo dato aqui.
+          var data=await envia_encriptado(validator_address,synch)
+          return resolve(data);
+        } catch (e) {
+          return reject(chalk.magenta("no se pudo enviar el ultimo dato nuevamente."));
+        } finally {
+          //return;
+        }
+});
+  console.log(chalk.red("finalizo el reenvio"));
+}
+module.exports.reenviar_ultimo_dato=reenviar_ultimo_dato;
+
 function decrypt(mensaje) {
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
     try {
-      if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128){
+      if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128||mensaje.length==160||mensaje.length==192||mensaje.length==224||mensaje.length==256){
       var key = aesjs.utils.hex.toBytes(full_KEY);
       var aesEcb = new aesjs.ModeOfOperation.ecb(key);
       var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
@@ -307,16 +326,37 @@ function decrypt(mensaje) {
     //  console.log("decrypted:"+decryptedText.toUpperCase());
       return resolve(decryptedText);
     }else{
-      console.log("desencriptado"+mensaje);
-      console.log("mensaje length:"+mensaje.length);
+      console.log(chalk.cyan("NO desencriptado: "+mensaje));
+      console.log("mensaje length: "+mensaje.length);
+      if(mensaje.length==34||mensaje.length==66||mensaje.length==98||mensaje.length==130||mensaje.length==162||mensaje.length==194||mensaje.length==226||mensaje.length==258){
+        console.log("hay un byter extra, HAY QUE CORTARLO");
+        mensaje=mensaje.substr(0,mensaje.length-2);
+        console.log("new message trimmed is:"+mensaje);
+        var key = aesjs.utils.hex.toBytes(full_KEY);
+        var aesEcb = new aesjs.ModeOfOperation.ecb(key);
+        var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
+        var decryptedBytes = aesEcb.decrypt(encryptedBytes);
+        var decryptedText = aesjs.utils.hex.fromBytes(decryptedBytes);
+      //  console.log("decrypted:"+decryptedText.toUpperCase());
+        return resolve(decryptedText);
+      }else {
+        console.log("hay un byter extra, HAY QUE CORTARLO");
+        return reject(chalk.red("error 4322:"+e));
+      }
       console.log(chalk.red("NO SE PUDO DESENCRIPTAR"));
+      //Reenvia el ultimo dato, igualito, misma cuenta, mismo todo.
+      await reenviar_ultimo_dato();
+
+      /////////////////////////////////////////////////////////////
       //hANDLE pool
-      return "00000000000000000000000000000000";
+      return resolve("00000000000000000000000000000000");
+      //return ("00000000000000000000000000000000");
+
     }
     } catch (e) {
-      return reject(e);
+      return reject(chalk.magenta("no se pudo desnciptar, ")+e);
     } finally {
-      return;
+    //  return;
     }
   });
 
@@ -352,13 +392,13 @@ function handle_count() {
       //creo que tengo que reintentar enviar el dato anterior
     //  return reject("los paquetes de ecount no coinciden");
     ecount = changeEndianness(ecount);
-    return resolve();
+    return resolve(ecount);
     }
     //setTimeout(handle_count,1000);
   } catch (e) {
   return reject(e);
   } finally {
-    return (ecount);
+  //  return (ecount);
   }
   });
 
@@ -554,7 +594,7 @@ async function prepare_Encryption(datax) {
  } catch (e) {
     return reject(e);
  } finally {
-   return
+  // return
  }
 });
 }
@@ -621,80 +661,84 @@ module.exports.handleEcommand=handleEcommand;
 ////////////////////////////////////////////////////
 async function promise_handleEcommand(data){
   return new Promise(async function(resolve, reject) {
-// setTimeout(function () {
-//   resolve("yes after 10 seconds");
-// }, 10000);
+try {
+  var handler="";
+  var myData;
+  var number_of_byte =received_command.substr(0, 2);
+  number_of_byte=ssp.hex_to_dec(number_of_byte);//////////////////////
+  myData = received_command.substr(2, number_of_byte + 2);
+  var firstbyte = myData.substr(0, 2);
+  server.logea("after_encription received:" + number_of_byte + " Bytes of responde data");
+  server.logea("witch are:" + myData);
+  myData=myData.substr(2,number_of_byte+ 2)
+  server.logea("cleaned recevided data:"+myData);
+  server.logea(myData.length);
+  var number_of_packets=myData.length/32;
+  server.logea(number_of_packets);
+  // if(myData.length>32){
+  //   myData=myData.substr(0, 32);
+  //   console.log(chalk.red.inverse("Cutted length:"+myData));
+  // }
+  var ready=[];
 
-var handler="";
-var myData;
-var number_of_byte = received_command.substr(0, 2);
-myData = received_command.substr(2, number_of_byte + 2);
-var firstbyte = myData.substr(0, 2);
-//console.log("after_encription received:" + number_of_byte + " Bytes of responde data");
-//console.log("witch are:" + myData);
-myData=myData.substr(2,number_of_byte+ 2)
-//console.log("cleaned recevided data:"+myData);
-//console.log(myData.length);
-var number_of_packets=myData.length/32;
-//console.log(number_of_packets);
-// if(myData.length>32){
-//   myData=myData.substr(0, 32);
-//   console.log(chalk.red.inverse("Cutted length:"+myData));
-// }
-var ready=[];
+  // forEach((MyData, i) => {
+  //
+  // });
+  for (var i = 0; i < number_of_packets; i++) {
+   server.logea(i);
+   var from, to;
+   from=i*32;
+   to=from+32;
+   //console.log("From:"+from+" To:"+to);
+   //console.log(myData);
+   var myData2="";
+   myData2=myData.substr(from, 32);
+   //console.log(myData2);
+   server.logea("Grupo:"+(i+1)+":"+myData2);
+   //var tempo=await decrypt(myData2).toUpperCase();
+   var tempo=await decrypt(myData);
+   tempo=tempo.toUpperCase();
+   ready=ready+tempo;
+   //console.log("queda asi"+ready);
+  }
+  //for each
+  //ready=decrypt(myData).toUpperCase();
+  server.logea(chalk.green("<-:"+ready));
+  var data_length = ready.substr(0, 2);
+  handler=data_length;
+  data_length=parseInt(data_length,16);
+  server.logea("data length is:"+data_length);
+  var read_ecount=ready.substr(2, 8);
+  read_ecount=changeEndianness(read_ecount);
+  //console.log("reaD COUNT:"+read_ecount);
+  // if(global.show_details===true){
+  //   console.log(chalk.yellow(read_ecount+"<-"+device+'<-:'),chalk.yellow(received_command));
+  // }
+  //read_ecount=parseInt(read_ecount,10);
+  slave_count=read_ecount;
+  slave_count=pady(slave_count,8);
+  //slave_count = parseInt(slave_count, 16);
+  //  console.log("slave_read_ecount is:"+slave_count);
+  var read_data=ready.substr(10,ready.length);
+  server.logea("en promise_handleEcommand read_data is:"+read_data);
+  //exports.handleRoutingNotes(read_data);
+  data_length=data_length*2;
+  read_data=read_data.substr(0,data_length);
+  handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
+  //ssp.handlepoll(handler);
+  if(show_details){
+    //console.log("handler es:"+handler);
+    console.log(chalk.yellow(read_ecount+"<-"+device+'<-:')+" "+chalk.red(handler));//,chalk.yellow(received_command));
+    console.log("-----------------------------------");
+  }
+    return resolve(handler);
+      //reject();
 
-// forEach((MyData, i) => {
-//
-// });
-for (var i = 0; i < number_of_packets; i++) {
- server.logea(i);
- var from, to;
- from=i*32;
- to=from+32;
- //console.log("From:"+from+" To:"+to);
- //console.log(myData);
- var myData2="";
- myData2=myData.substr(from, 32);
- //console.log(myData2);
- server.logea("Grupo:"+(i+1)+":"+myData2);
- //var tempo=await decrypt(myData2).toUpperCase();
- var tempo=await decrypt(myData);
- tempo=tempo.toUpperCase();
- ready=ready+tempo;
- //console.log("queda asi"+ready);
+} catch (e) {
+  return reject(chalk.red("error 003;"+e));
+} finally {
+//  return;
 }
-//for each
-//ready=decrypt(myData).toUpperCase();
-server.logea(chalk.green("<-:"+ready));
-var data_length = ready.substr(0, 2);
-handler=data_length;
-data_length=parseInt(data_length,16);
-server.logea("data length is:"+data_length);
-var read_ecount=ready.substr(2, 8);
-read_ecount=changeEndianness(read_ecount);
-//console.log("reaD COUNT:"+read_ecount);
-// if(global.show_details===true){
-//   console.log(chalk.yellow(read_ecount+"<-"+device+'<-:'),chalk.yellow(received_command));
-// }
-//read_ecount=parseInt(read_ecount,10);
-slave_count=read_ecount;
-slave_count=pady(slave_count,8);
-//slave_count = parseInt(slave_count, 16);
-//  console.log("slave_read_ecount is:"+slave_count);
-var read_data=ready.substr(10,ready.length);
-server.logea("en promise_handleEcommand read_data is:"+read_data);
-//exports.handleRoutingNotes(read_data);
-data_length=data_length*2;
-read_data=read_data.substr(0,data_length);
-handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
-//ssp.handlepoll(handler);
-if(show_details){
-  //console.log("handler es:"+handler);
-  console.log(chalk.yellow(read_ecount+"<-"+device+'<-:')+" "+chalk.red(handler));//,chalk.yellow(received_command));
-  console.log("-----------------------------------");
-}
-  return resolve(handler);
-    //reject();
 
   });
 }

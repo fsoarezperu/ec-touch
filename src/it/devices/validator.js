@@ -22,16 +22,20 @@ function start_validator() {
     server.logea(chalk.green("starting_validator"));
     server.logea("/////////////////////////////////");
     try {
+
       var stat=await ssp.sync_and_stablish_presence_of(validator_address);
       if (stat=="OK") {
-        var step2=await ssp.negociate_encryption(validator_address);
-             if (step2=="OK") {
+      var step2=await ssp.negociate_encryption(validator_address);
+              if (step2=="OK") {
                 var step3= await validatorpoll(validator_address);
-                 if (step3=="OK") {
-                   //return resolve("TERMINADO");
-                 var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
-                   if (step4=="OK") {
-                     var step5= await ssp.setup_request_command(validator_address);
+                console.log(step3);
+                  if (step3=="OK") {
+                //    //return resolve("TERMINADO");
+                ultimo_valor_enviado="set protocol version"
+                  var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
+                    if (step4=="OK") {
+                      var step5= await ssp.setup_request_command(validator_address);
+                      console.log(step5);
                      if (step5=="OK") {
                        var step5_1= await set_channel_inhivits(validator_address);
                        if (step5_1=="OK") {
@@ -53,8 +57,8 @@ function start_validator() {
                                            //  await carga_monedas_al_hopper(validator_address);
                                            console.log(chalk.green("payout enabled"));
                                             // on_startup=false;
-                                            // var step8=await validator_poll_loop(validator_address);
-                                            // console.log(chalk.green("Inicio poll loop:"+step8));
+                                            var step8=await validator_poll_loop(validator_address);
+                                            console.log(chalk.green("Inicio poll loop:"+step8));
                                             return resolve("OK");
                                            }
                                         }else {
@@ -63,24 +67,27 @@ function start_validator() {
                                           var step7=await enable_payout(validator_address);
                                            if (step7=="OK") {
                                            //  await carga_monedas_al_hopper(validator_address);
-                                           console.log(chalk.green("payout enabled"));
+                                           console.log(chalk.green("payout enabled in here"));
+                                           var step8=await validator_poll_loop(validator_address);
+                                           console.log(chalk.green("Inicio poll loop:"+step8));
                                            return resolve("OK");
                                             }
                                         }
                                     }
                             }
                         }
-                    }
+                     }
                 }
               }
       //  var stat=await ssp.negociate_encryption(smart_hopper_address);
+      console.log(stat);
       }else {
-      return  reject("stat")
+      return  reject("cannot stablish presence of validator");
       }
     } catch (e) {
-      return reject(e);
+      return reject(chalk.cyan("02-Start Validator->")+e);
     } finally {
-      return;
+    //  return;
     }
   });
 
@@ -102,9 +109,9 @@ function validatorpoll(receptor) {
         return reject(step1);
       }
     } catch (e) {
-      return reject("fallo 0123:"+e);
+      return reject("07-validatorpoll ->"+e);
     } finally {
-      return;
+    //  return;
     }
 
     });
@@ -573,7 +580,7 @@ function handle_poll_validator(data){
   } catch (e) {
       return reject(e);
   } finally {
-    return;
+  //  return;
   }
 
   });
@@ -608,16 +615,16 @@ function set_channel_inhivits(receptor) {
   });
 };
 ////////////////////////////////////////////////////////
-function enable_validator(receptor) {
- return new Promise( async function(resolve, reject) {
-     console.log("Enable VALIDATOR");
-     await ssp.envia_encriptado(receptor,global.poll);
-     await ssp.envia_encriptado(receptor,global.enable);
-     await ssp.envia_encriptado(receptor,global.poll);
-     await ssp.envia_encriptado(receptor,global.poll);
-     return resolve("OK");
- });
-}
+// function enable_validator(receptor) {
+//  return new Promise( async function(resolve, reject) {
+//      console.log("Enable VALIDATOR");
+//      await ssp.envia_encriptado(receptor,global.poll);
+//      await ssp.envia_encriptado(receptor,global.enable);
+//      await ssp.envia_encriptado(receptor,global.poll);
+//      await ssp.envia_encriptado(receptor,global.poll);
+//      return resolve("OK");
+//  });
+// }
 ////////////////////////////////////////////////////////
 function enable_payout(receptor) {
  return new Promise( async function(resolve, reject) {
@@ -695,14 +702,17 @@ function handleGetTebsBarcode(data){
         } else {
           i = i;
         }
+
         //console.log("tebs_barcode current value is:"+tebs_barcode);
         tebs_barcode = tebs_barcode.concat(i);
       }
+      current_tebs_barcode=tebs_barcode;
+      return resolve(tebs_barcode);
     //  console.log(chalk.green("tebs barcode is:" + tebs_barcode));
     } catch (e) {
       return reject(e);
     } finally {
-        return resolve(tebs_barcode);
+
     }
 
 
