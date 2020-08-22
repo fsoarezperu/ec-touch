@@ -1,12 +1,13 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
+global.is_regis=false;
 global.my_resgistered_machine_name="";
 global.ultimo_valor_enviado="";
 global.ECOSVersion="1.0";
 global.last_sent="";
 global.view_log=false;
-global.show_details=true;
+global.show_details=false;
 global.seq_bit=0;
 global.sync=false;//esto tiene que iniciar en falso para que pueda agenciarse la negociacion de la llave de encriptacion
 global.validator_address = '00';

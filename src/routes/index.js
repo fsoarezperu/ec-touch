@@ -37,7 +37,8 @@ router.get('/', async (req, res) => {
         });
       } else {
         console.log(chalk.red("loading website"));
-        res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
+        console.log(glo.my_resgistered_machine_name);
+        res.render('index',{my_resgistered_machine_name:glo.my_resgistered_machine_name});
       }
 
     }
@@ -231,15 +232,15 @@ router.get('/smart_empty', async (req, res) => {
       //   machine_sn: numero_de_serie
       // }
       // await pool.query('INSERT INTO remesa_hermes set ?', [remesa_hermes]);
-      console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes);
-  await pool.query("UPDATE remesa_hermes SET monto=? WHERE status='iniciada'",[monto_remesa_hermes]);
+      console.log(chalk.yellow("actualizando monto de RH:")+chalk.red(monto_remesa_hermes));
+  await pool.query("UPDATE remesa_hermes SET monto=?, fecha_fin=?, hora_fin=? WHERE status='iniciada'",[monto_remesa_hermes,tambox.fecha_actual(),tambox.hora_actual()]);
   //await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
       const bolsa = {
         monto: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
         tebs_barcode: current_tebs_barcode,
         machine_sn: numero_de_serie,
-        fecha_inicial: '2019-10-01',
-        fecha_final: '2019-10-07',
+        fecha_inicial:  tambox.fecha_actual(),
+        fecha_final: tambox.fecha_actual(),
         dias_acumulados: '7'
       }
     //finaliza la remesa de la bolsa que se fue!

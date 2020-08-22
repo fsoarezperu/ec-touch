@@ -29,6 +29,7 @@ const router = express.Router();
 const log = require('log-to-file');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var exec = require('child_process').exec;
+const fetch = require('node-fetch');
 /////////////////////////////////////////////////////////////////////////////////////
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -108,7 +109,24 @@ to_tbm.on("connect",async function() {
     //io.to('lobby').emit('message', data);
     console.log("refreshing navigators from TBM...");
   });
+
   console.log(chalk.green("Connected to Tambox Manager"));
+  const current_registered_status= await pool.query("SELECT is_registered FROM machine");
+  if (current_registered_status[0].is_registered==1) {
+    console.log(chalk.yellow("Machine already registered"));
+  }else {
+    console.log(current_registered_status[0].is_registered);
+    glo.is_regis=current_registered_status[0].is_registered;
+            if (glo.is_regis==0) {
+              console.log("esta maquina no esta registrada y ya hay conexion con el servidor, se autoregistrará");
+              var regis=await is_this_machine_registered();
+              console.log(chalk.green("Register to tbm status:"+regis));
+                var nombre_maquina =await pool.query("SELECT machine_name FROM machine");
+                 glo.my_resgistered_machine_name=nombre_maquina[0].machine_name;
+              io.emit("iniciando");
+            }
+  }
+
   io.emit('show_connected');
   tbm_status = true;
   await tambox_manager_ping();
@@ -267,7 +285,7 @@ io.on('connection', function(socket) {
     io.emit('no_cabezal', "display message from update_requested");
   });
   socket.on('envio_serial', async function(msg) {
-    ssp.ensureIsSet2();
+    await ssp.ensureIsSet();
     console.log(chalk.green(msg +" para:"+device) );
     var esto=await sp.transmision_insegura(validator_address,poll);
     esto=await ssp.handlepoll(esto);
@@ -279,11 +297,18 @@ io.on('connection', function(socket) {
       esto();
       console.log("--------------------------");
     });
-  function esto(){
-    setTimeout(async function () {
-          await ssp.envia_encriptado(validator_address,poll);
-          esto();
-    }, 800);
+  async function esto(){
+    //setTimeout(async function () {
+      var current_tebs2x=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      //    data= await enc.handleEcommand(data);
+      //   data= await va.handleGetTebsBarcode(data);
+      //  console.log(current_tebs2x);
+          var current_tebs2=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
+        //  console.log(current_tebs2);
+          current_tebs2=await va.handleGetTebsBarcode(current_tebs2);
+          console.log(current_tebs2);
+    //      esto();
+    //}, 800);
     }
   socket.on('blocking_pooling', function(msg) {
   console.log(chalk.green(msg));
@@ -430,6 +455,11 @@ io.on('connection', function(socket) {
     await  sh.mandate_al_hopper(payout_amount);
     //io.emit('pay_value',"pay_value");
   });
+  socket.on('read_new_tebs', async function(msg) {
+      var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(data_Tebs);
+    //io.emit('pay_value',"pay_value");
+  });
 });
 /////////////////////////////////////////////////////////
 //esta funcion manda una pulso al servidor cada tanto para indicar que esta en linea.!
@@ -509,6 +539,7 @@ http.listen(machine_port, async function() {
     if (validator=="OK") {
       console.log(chalk.green("Validator Online"));
       on_startup=false;
+      io.emit("iniciando");
       //var step8=await va.validator_poll_loop(validator_address);
       //console.log(chalk.green("Inicio poll loop:"+step8));
     }else {
@@ -525,56 +556,48 @@ http.listen(machine_port, async function() {
 });
 /////////////////////////////////////////////////////////
 async function is_this_machine_registered(){
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
 //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
 try {
-  console.log(chalk.green("Registrando maquina"));
+  //console.log(chalk.green("intentando hacer checkin en tbm"));
   var tbm_adress=tbm_adressx;
   var fix= "/api/register_machine";
   var machine_sn=global.numero_de_serie;
   var type=global.note_validator_type;
   const url= tbm_adress+fix+"/"+machine_sn+"/"+type
-  const xHttp= new XMLHttpRequest();
-  xHttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-        return resolve(this.responseText);
-    }else {
-      console.log("no conection to TBM");
-      return resolve();
-    }
-     }
-  xHttp.open("GET",url,true);
-  xHttp.send();
+  var esti=await fetchWithTimeout(url,3000);
+  return resolve(esti)
 } catch (e) {
   return reject(e);
 } finally {
-  //return;
+
 }
   });
 }
 module.exports.is_this_machine_registered=is_this_machine_registered;
 //////////////////////////////////////////////////////////////////////
 async function query_this_machine(){
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
 //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
 try {
-  console.log(chalk.green("consultando maquina"));
+  //console.log(chalk.green("consultando maquina"));
   var tbm_adress=tbm_adressx;
   var fix= "/api/query_machine";
   var machine_sn=global.numero_de_serie;
   const url= tbm_adress+fix+"/"+machine_sn
-  const xHttp= new XMLHttpRequest();
-  xHttp.responseType = 'json';
-  xHttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      console.log(chalk.green("parametros de Maquina leida de nube: "+this.responseText));
-        return resolve(this.responseText);
-    }
-     }
-  xHttp.open("GET",url,true);
-  xHttp.send();
+
+  try {
+    var esti=await fetchWithTimeout2(url,3000);
+  //  console.log(esti);
+    return resolve(esti)
+  } catch (e) {
+    return resolve("no check-in")
+  } finally {
+
+  }
+
 } catch (e) {
-  return reject(e);
+  return reject(chalk.red("error aqui123")+e);
 } finally {
   //return;
 }
@@ -582,3 +605,80 @@ try {
 }
 module.exports.query_this_machine=query_this_machine;
 //}
+
+function consulta(url){
+
+      const FETCH_TIMEOUT = 3000;
+      let didTimeOut = false;
+
+      return new Promise(function(resolve, reject) {
+                                const timeout = setTimeout(function() {
+                                    didTimeOut = true;
+                                    reject(new Error('Request timed out'));
+                                }, FETCH_TIMEOUT);
+          console.log(url);
+          fetch(url)
+          .then(function(response) {
+              // Clear the timeout as cleanup
+              clearTimeout(timeout);
+              if(!didTimeOut) {
+                  console.log('fetch good! ', response);
+                  resolve(response);
+              }
+          })
+          .catch(function(err) {
+              console.log('fetch failed! ', err);
+
+              // Rejection already happened with setTimeout
+              if(didTimeOut) return;
+              // Reject with error
+              reject(err);
+          });
+      })
+      .then(function() {
+          // Request success and no timeout
+          //  return resolve(response);
+          console.log('good promise, no timeout! ');
+      })
+      .catch(function(err) {
+          // Error: response error, request timeout or runtime error
+          console.log('promise error! ', err);
+        //  return resolve("no check-in");
+        return;
+      });
+      return;
+}
+
+function fetchWithTimeout( url, timeout ) {
+    return new Promise( (resolve, reject) => {
+        // Set timeout timer
+        let timer = setTimeout(
+            //() => reject( new Error('Request timed out') ),
+            () => resolve('no check-in'),
+
+            timeout
+        );
+
+        fetch( url ).then(
+            response => resolve('OK'),
+            err => reject( err )
+        ).finally( () => clearTimeout(timer) );
+    })
+}
+
+function fetchWithTimeout2( url, timeout ) {
+    return new Promise( (resolve, reject) => {
+        // Set timeout timer
+        let timer = setTimeout(
+            //() => reject( new Error('Request timed out') ),
+            () => resolve('no check-in'),
+
+            timeout
+        );
+
+        fetch( url ).then(
+            response => resolve(response.json()),
+            err => reject( err )
+        ).finally( () => clearTimeout(timer) );
+    })
+}

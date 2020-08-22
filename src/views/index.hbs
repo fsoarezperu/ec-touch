@@ -185,7 +185,8 @@
       $('#out_of_service').fadeOut(500);
       $('#overlay').fadeIn(500);
       once = true;
-      muestra_consulta();
+      socket.emit("read_new_tebs");
+    //  muestra_consulta();
       //  display_message(msg);
     });
     socket.on('show_connected', function(msg) {
@@ -222,6 +223,33 @@
       console.log(msg);
       //location.reload();
       display_message(msg);
+    });
+
+    // Unlock TEBS Cashbox
+    $("#UC").click( function(){
+    socket.emit('unlock_cashbox');
+    });
+    socket.on('unlock_cashbox', function(msg){
+    display_message(msg);
+    });
+    //////////////////////////////////////////
+    // lock TEBS Cashbox
+    $("#LC").click( function(){
+    socket.emit('lock_cashbox');
+    });
+    socket.on('lock_cashbox', function(msg){
+    display_message(msg);
+    });
+
+    socket.on('Cashbox_Unlock_Enable', function(msg){
+    //display_message(msg);
+    document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+    console.log("pestillo desbloqueado");
+    });
+    socket.on('Cashbox_lock_Enable', function(msg){
+    //display_message(msg);
+    document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+    console.log("pestillo bloqueado");
     });
     // socket.on('tog_validator', function() {
     //   if (tog_validator) {
@@ -293,6 +321,7 @@
   };
   function clear_message() {
     document.getElementById("message").innerHTML = ""
+    document.getElementById("msg1").innerHTML="pestillo bloqueado";
   };
   async function muestra_consulta() {
     const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
@@ -422,7 +451,7 @@
          </div> -->
         <!-- <div>{{!my_resgistered_machine_name}}</div> -->
         <div id="message">
-          <ol></ol>
+          <ol>{{my_resgistered_machine_name}}</ol>
         </div>
         <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
       </div>
@@ -476,7 +505,7 @@
             <!-- </div> -->
             <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
             <!-- <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial inseguro</div> -->
-            <!-- <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div> -->
+            <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div>
 
 
           {{/if}}
@@ -487,19 +516,19 @@
         <div id="out_of_service">
           <div class="grupo3">
             <div></div>
-            <div id="titulo_popup">Cashbox Fuera de Servicio1</div>
+            <div id="titulo_popup" style="color:red;">No se detecta la bolsa de dinero</div>
             <div></div>
             <div></div>
-            <div><i class="fas fa-cogs fa-8x"></i>Inserte el cajon del dinero</div>
+            <div>Retire el cajon de dinero y verifique que la bolsa se encuentra correctamente colocada.</div>
             <div></div>
             <div></div>
-            <div>El sistema esta desabilitado</div>
+            <div id="msg1" style="color:green;"></div>
             <div></div>
             <!-- <div><a class="btn" style="width:120px;" id="opc11">Si</a></div>
             <div><a class="btn" style="width:120px;" id="testy1">No</a></div> -->
+            <div class="btn volver" id='UC'><i class="fas fa-lock-open fa-3x"></i></div>
             <div></div>
-            <div></div>
-            <div></div>
+            <div class="btn volver" id='LC'><i class="fas fa-lock fa-3x"></i></div>
           </div>
         </div>
 

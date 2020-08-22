@@ -268,11 +268,9 @@ try {
 }
 module.exports.handleRKE=handleRKE;
 ////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////
 var full_KEY=0;
 //var slave_count=0;
-
 function encrypt(mensaje) {
 return new Promise(function(resolve, reject) {
   try {
@@ -295,6 +293,8 @@ return new Promise(function(resolve, reject) {
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 async function reenviar_ultimo_dato(){
   console.log(chalk.red("reenviando ultimo dato"));
       ready_for_sending=true;
@@ -313,10 +313,12 @@ async function reenviar_ultimo_dato(){
 }
 module.exports.reenviar_ultimo_dato=reenviar_ultimo_dato;
 
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 function decrypt(mensaje) {
-
   return new Promise(async function(resolve, reject) {
     try {
+      //si el mesnaje tiene tamaño estandart
       if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128||mensaje.length==160||mensaje.length==192||mensaje.length==224||mensaje.length==256){
       var key = aesjs.utils.hex.toBytes(full_KEY);
       var aesEcb = new aesjs.ModeOfOperation.ecb(key);
@@ -326,12 +328,13 @@ function decrypt(mensaje) {
     //  console.log("decrypted:"+decryptedText.toUpperCase());
       return resolve(decryptedText);
     }else{
-      console.log(chalk.cyan("NO desencriptado: "+mensaje));
-      console.log("mensaje length: "+mensaje.length);
+      //si el mensaje viene con bytes extras al final que necesitan ser cortados.
+      server.logea(chalk.cyan("NO desencriptado: "+mensaje));
+      server.logea("mensaje length: "+mensaje.length);
       if(mensaje.length==34||mensaje.length==66||mensaje.length==98||mensaje.length==130||mensaje.length==162||mensaje.length==194||mensaje.length==226||mensaje.length==258){
-        console.log("hay un byter extra, HAY QUE CORTARLO");
+        //console.log(chalk.magenta("CORTADO"));
         mensaje=mensaje.substr(0,mensaje.length-2);
-        console.log("new message trimmed is:"+mensaje);
+        server.logea("new message trimmed is:"+mensaje);
         var key = aesjs.utils.hex.toBytes(full_KEY);
         var aesEcb = new aesjs.ModeOfOperation.ecb(key);
         var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
@@ -340,18 +343,16 @@ function decrypt(mensaje) {
       //  console.log("decrypted:"+decryptedText.toUpperCase());
         return resolve(decryptedText);
       }else {
-        console.log("hay un byter extra, HAY QUE CORTARLO");
+        //console.log("hay un byter extra, HAY QUE CORTARLO");
         return reject(chalk.red("error 4322:"+e));
       }
       console.log(chalk.red("NO SE PUDO DESENCRIPTAR"));
       //Reenvia el ultimo dato, igualito, misma cuenta, mismo todo.
-      await reenviar_ultimo_dato();
-
+      //await reenviar_ultimo_dato();
       /////////////////////////////////////////////////////////////
       //hANDLE pool
       return resolve("00000000000000000000000000000000");
       //return ("00000000000000000000000000000000");
-
     }
     } catch (e) {
       return reject(chalk.magenta("no se pudo desnciptar, ")+e);
@@ -359,9 +360,9 @@ function decrypt(mensaje) {
     //  return;
     }
   });
-
-
 }
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 function handle_count() {
   return new Promise(function(resolve, reject) {
   try {
@@ -655,7 +656,7 @@ var ready=[];
   //exports.handleRoutingNotes(read_data);
   handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
   await ssp.handlepoll(handler);
-  return handler
+  return handler;
 }
 module.exports.handleEcommand=handleEcommand;
 ////////////////////////////////////////////////////
