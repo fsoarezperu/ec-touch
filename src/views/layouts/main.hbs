@@ -6,11 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximun-scale=1.0,user-scalable=0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Tambox Machine 1.0</title>
-  <link rel="shortcut icon" href="/img/favicon-32x32.png" type="image/x-icon">
+  <!-- <link rel="shortcut icon" href="/img/favicon-32x32.png" type="image/x-icon"> -->
+  <link rel="shortcut icon" href="">
   <script src="/socket/socket.io.dev.js"></script>
 
   <script type="text/javascript" src="/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="../jquery/jquery.min.js"></script>
+  <!-- <script type="text/javascript" src="../jquery/jquery.min.js"></script> -->
 
   <link rel="stylesheet" type="text/css" href="css/tambox.css">
   <!-- <link rel="stylesheet" type="text/css" href="../css/tambox.css"> -->
@@ -26,13 +27,16 @@
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.js"></script>
   <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script> -->
   <script src="js/angular-tweebmax-draggable-knob.js"></script>
+
   <script type="text/javascript">
     var socket = io();
     $(document).ready(function() {
+      console.log("cargando homesite 2020");
       socket.on('iniciando', function(msg) {
-        console.log("por resetear");
         setTimeout(function () {
-          window.location.replace("/");
+          //alert("por resetear");
+          console.log("por resetear");
+        //  window.location.replace("/");
         }, 5000);
         });
     });

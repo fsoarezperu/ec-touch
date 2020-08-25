@@ -189,7 +189,8 @@ io.on('connection', function(socket) {
       if (data=="01F0") {
       //  console.log(chalk.green(data));
         console.log(chalk.cyan("ENABLE VALIDATOR"));
-        io.emit('validator_enabled', "validator_enabled");
+      //  io.emit('validator_enabled', "validator_enabled");
+        io.emit('paso2', "paso2");
         return resolve();
       }else {
         reject("el validador no se habilito");
@@ -460,6 +461,11 @@ io.on('connection', function(socket) {
       console.log(data_Tebs);
     //io.emit('pay_value',"pay_value");
   });
+  socket.on('interno', async function(msg) {
+    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(msg);
+    //io.emit('pay_value',"pay_value");
+  });
 });
 /////////////////////////////////////////////////////////
 //esta funcion manda una pulso al servidor cada tanto para indicar que esta en linea.!
@@ -469,8 +475,10 @@ async function tambox_manager_ping() {
       if (tbm_status) {
         setTimeout(() => {
           //  console.log('connected to TBM');
+          if (is_regis) {
           io.emit('show_connected'); //muestra que la maquina esta conectada a nube
           to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
+          }
           tambox_manager_ping();
           //  is_os_running();
         }, 15000);
@@ -497,7 +505,7 @@ function is_os_running() {
 }
 /////////////////////////////////////////////////////////
 http.listen(machine_port, async function() {
-  io.emit("iniciando","refrescando homepage");
+  //io.emit("iniciando","refrescando homepage");
 //   setTimeout(function () {
 //     console.log("forznado reinicio de pantallas");
 //       io.emit("iniciando","iniciando sistema");
@@ -568,7 +576,7 @@ try {
   var esti=await fetchWithTimeout(url,3000);
   return resolve(esti)
 } catch (e) {
-  return reject(e);
+  return resolve(e);
 } finally {
 
 }

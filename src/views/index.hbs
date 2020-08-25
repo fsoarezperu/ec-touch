@@ -2,7 +2,7 @@
   var system_timer;
   var timer3;
   var once = true;
-  var socket = io();
+//  var socket = io();
   var tog_validator = true;
   var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
@@ -10,10 +10,7 @@
 
   $(document).ready(function() {
     inicia(); //esto habilita el fade de inicializacion
-
-    //  $("#abc").hide();
     $("#abc").css('visibility', 'hidden');
-
     display_remote_conection();
 
     $("#config").click(function() {
@@ -78,6 +75,11 @@
       $('#overlay').fadeIn(500);
       //  $('#overlay, #overlay-back').fadeOut(500);
     });
+    $("#borrar_pizarra").click(function() {
+    borrar_la_pizarra();
+    cargar_pantalla_iniciar_remesa();
+    });
+
     ////////////////////////////////////////////////////
     remote_TBM.on('machine', function(data) {
       console.log("ticking...");
@@ -87,9 +89,9 @@
       window.location.replace("/cerrar_remesa_hermes");
     });
     socket.on('validator_enabled', function(msg) {
-      display_message(msg);
-      console.log("validador habilitado");
-      window.location.replace("/iniciar_remesa");
+      // display_message(msg);
+      // console.log("validador habilitado");
+      // window.location.replace("/iniciar_remesa");
     });
     socket.on('deposito', function(msg) {
       //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
@@ -130,7 +132,7 @@
     });
     socket.on('refresh_window', function(msg) {
       console.log(msg);
-      window.location.reload(true);
+      //window.location.reload(true);
     });
     socket.on('disable_validator', function(msg) {
       display_message(msg);
@@ -144,13 +146,11 @@
       console.log("orden de comenzar remesa recivida");
       socket.emit('enable_validator');
     });
-
     socket.on('shoot', function(msg) {
       console.log("orden de comenzar remesa recivida");
       display_message("shoot");
       socket.emit('enable_validator');
     });
-
 
     socket.on('retiro_en_proceso', function(msg) {
       window.location.replace("/retiro_en_proceso");
@@ -159,7 +159,6 @@
       display_system_running_indicator();
       online = true;
     });
-
     socket.on('Cashbox_out_of_Service', function(msg) {
       is_cashbox_in_service = false;
       if (once) {
@@ -186,7 +185,7 @@
       $('#overlay').fadeIn(500);
       once = true;
       socket.emit("read_new_tebs");
-    //  muestra_consulta();
+      //  muestra_consulta();
       //  display_message(msg);
     });
     socket.on('show_connected', function(msg) {
@@ -212,7 +211,7 @@
     socket.on('location_reload', function(msg) {
       console.log("reloading...");
       //location.reload();
-      location.replace("/");
+      //location.replace("/");
     });
     socket.on('blocking_pooling', function(msg) {
       console.log(msg);
@@ -224,32 +223,30 @@
       //location.reload();
       display_message(msg);
     });
-
     // Unlock TEBS Cashbox
     $("#UC").click( function(){
-    socket.emit('unlock_cashbox');
+     socket.emit('unlock_cashbox');
     });
     socket.on('unlock_cashbox', function(msg){
-    display_message(msg);
+     display_message(msg);
     });
     //////////////////////////////////////////
     // lock TEBS Cashbox
     $("#LC").click( function(){
-    socket.emit('lock_cashbox');
+     socket.emit('lock_cashbox');
     });
     socket.on('lock_cashbox', function(msg){
-    display_message(msg);
+     display_message(msg);
     });
-
     socket.on('Cashbox_Unlock_Enable', function(msg){
-    //display_message(msg);
-    document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-    console.log("pestillo desbloqueado");
+     //display_message(msg);
+     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+     console.log("pestillo desbloqueado");
     });
     socket.on('Cashbox_lock_Enable', function(msg){
-    //display_message(msg);
-    document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-    console.log("pestillo bloqueado");
+     //display_message(msg);
+     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+     console.log("pestillo bloqueado");
     });
     // socket.on('tog_validator', function() {
     //   if (tog_validator) {
@@ -265,10 +262,17 @@
     //   }
     // })
     ////////////////////////////////////////////////////
+function cargar_pantalla_iniciar_remesa() {
+  //$('#pizarra').load("./pizarra.hbs");
+}
+
+    function borrar_la_pizarra() {
+        document.getElementById('pizarra').innerHTML="";
+    }
     function clear_conection() {
       timer3 = setTimeout(function() {
         is_connected = false;
-      }, 10000);
+      }, 20000);
     }
     function display_remote_conection() {
       if (is_connected) {
@@ -280,18 +284,15 @@
         display_remote_conection();
       }, 5000);
     }
-
     // $("#testy1").click(function() {
     //   $('#out_of_service, #overlay-back').fadeOut(500);
     //   console.log("testy1");
     // });
-
     // $("#opc11").click(function() {
     //   $('#out_of_service,#overlay-back').fadeOut(500);
     //   //$('#overlay2, #overlay-back').fadeIn(500);
     // });
   });
-
   function inicia() {
     // system_timer = setTimeout(function() {
     //   $('#inicializando_sistema, .overlay-back').fadeIn(500);
@@ -435,7 +436,6 @@
     grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
   }
 </style>
-
 <body oncontextmenu="return false">
   <div id="loading" style="display:none">Error:<br />El servidor esta paralizado.</div>
   <div id="display">
@@ -455,7 +455,7 @@
         </div>
         <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
       </div>
-      <div class="grupo2">
+      <div class="grupo2" id="pizarra">
         <!-- <i class="far fa-list-alt fa-10x"></i> -->
         <!-- <i class="fas fa-link fa-2x"></i>
               <i class="fab fa-mixcloud fa-2x"></i>
@@ -483,6 +483,9 @@
             <h3>Solicitud de Retiro en proceso</h3>
             <h4>#:{{retiro.no_remesa}}</h4>
           {{else}}
+          <div class="pizarra">
+
+          </div>
             <!-- <div class="btn interface_button" id='deposito'><i class="fas fa-cash-register fa-4x"></i><br><div class="interface_label">Deposito</div></div> -->
             <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
             <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
@@ -505,8 +508,9 @@
             <!-- </div> -->
             <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
             <!-- <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial inseguro</div> -->
-            <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div>
+            <!-- <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div> -->
 
+            <div class="btn" id='borrar_pizarra'><i class="fas fa-random fa-4x"></i><br>Borrar Pizarra</div>
 
           {{/if}}
         {{/if}}

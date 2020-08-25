@@ -22,11 +22,14 @@ router.get('/', async (req, res) => {
       remesa: remesa_en_proceso[0]
     });
   } else {
-    const remesa = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
-    if (remesa.length > 0) {
-      console.log("REMESA:" + remesa[0]);
+    //const remesa = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
+    var manipulada=await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
+    manipulada=JSON.stringify(manipulada);
+  //  console.log("REMESAx:" +manipulada.length );
+    if (manipulada.length > 2) {
+      console.log("REMESAy:" +manipulada );
       res.render('index', {
-        remesa: remesa[0]
+        remesa: manipulada[0]
       });
     } else {
       const retiro = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='egreso'");
