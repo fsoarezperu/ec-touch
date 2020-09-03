@@ -42,6 +42,8 @@ app.use('/css', express.static(__dirname + '/public/css/'));
 app.use('/finish', express.static(__dirname + '/public/'));
 app.use('/js', express.static(__dirname + '/public/javascripts/'));
 app.use('/img', express.static(__dirname + '/public/images/'));
+app.use('/', express.static(__dirname + '/'));
+
 app.use(require(__dirname + '/routes'));
 app.use('/api', require('./api/remesas'));
 app.use('/api/retiro', require('./api/retiros'));
@@ -465,6 +467,29 @@ io.on('connection', function(socket) {
     //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
       console.log(msg);
     //io.emit('pay_value',"pay_value");
+  });
+  socket.on('borrar_pizarra', async function(msg) {
+    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(msg);
+    io.emit('borrar_pizarra',"msg");
+  });
+
+  socket.on('borrar_todo', async function(msg) {
+    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(msg);
+    io.emit('borrar_pizarra',"msg");
+  });
+
+  socket.on('cargar_otro', async function(msg) {
+    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(msg);
+    io.emit('cargar_otro',"msg");
+  });
+
+  socket.on('volver', async function(msg) {
+    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+      console.log(msg);
+    io.emit('volver',"msg");
   });
 });
 /////////////////////////////////////////////////////////

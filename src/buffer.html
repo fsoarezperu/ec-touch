@@ -1,0 +1,28 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+$("#iniciar_remesa").click(function() {
+  socket.emit("iniciar_remesa",'iniciar_remesa');
+});
+
+$("#borrar_todo").click(function() {
+    socket.emit("borrar_pizarra",'borrar_pizarra');
+});
+
+$("#cargar_otro").click(function() {
+  socket.emit("cargar_otro",'cargar_otro');
+//  alert('GENIO');
+});
+
+
+ });
+ </script>
+
+<div></div>
+<div>Pagina 1</div>
+<div></div>
+<div><a class="btn btn-primary m-4" id="iniciar_remesa">Iniciar remesa</a> </div>
+<div><a class="btn btn-primary m-4" id="borrar_todo">borrar todo</a> </div>
+<div><a class="btn btn-primary m-4" id="cargar_otro">Siguiente</a> </div>
+<div></div>
+<div></div>
+<div></div>

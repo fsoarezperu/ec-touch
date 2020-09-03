@@ -76,10 +76,35 @@
       //  $('#overlay, #overlay-back').fadeOut(500);
     });
     $("#borrar_pizarra").click(function() {
-    borrar_la_pizarra();
-    cargar_pantalla_iniciar_remesa();
+      socket.emit('borrar_pizarra',"se esta borrando la pizarra en todos los usuarios");
+    //borrar_la_pizarra();
+    //cargar_pantalla_iniciar_remesa();
+    });
+    socket.on('iniciar_remesa', function(msg) {
+      borrar_la_pizarra();
+
     });
 
+    socket.on('borrar_todo', function(msg) {
+      borrar_la_pizarra();
+
+    });
+
+    socket.on('volver', function(msg) {
+    //  borrar_la_pizarra();
+    $('#pizarra').load("./buffer.html");
+    });
+
+    socket.on('cargar_otro', function(msg) {
+    //  borrar_la_pizarra();
+    $('#pizarra').load("./otro.html");
+    });
+
+    cargar_pantalla_iniciar_remesa();
+
+    $("#iniciar_remesa").click(function() {
+      alert('GENIO');
+    });
     ////////////////////////////////////////////////////
     remote_TBM.on('machine', function(data) {
       console.log("ticking...");
@@ -262,8 +287,20 @@
     //   }
     // })
     ////////////////////////////////////////////////////
+    function loadFile(filePath) {
+  var result = null;
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", filePath, false);
+  xmlhttp.send();
+  if (xmlhttp.status==200) {
+    result = xmlhttp.responseText;
+  }
+  return result;
+}
+
 function cargar_pantalla_iniciar_remesa() {
-  //$('#pizarra').load("./pizarra.hbs");
+    $('#pizarra').load("./buffer.html");
+  //  document.getElementById('pizarra').innerHTML=loadFile('./buffer.txt');
 }
 
     function borrar_la_pizarra() {
