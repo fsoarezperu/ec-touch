@@ -9,28 +9,39 @@ const va = require('./it/devices/validator');
 const it = require('./it/devices/tambox');
 const sh = require('./it/devices/smart_hopper');
 const tambox = require('./it/devices/tambox');
-const moment=require("moment");
 const ssp = require('./it/ssp');
 const sp = require('./it/serial_port');
 const enc = require('./it/encryption');
 const glo = require('./it/globals');
 const tbm = require('./it/tbm_sync/synchronize');
+const moment=require("moment");
+
+
 const pool = require('./database');
 const chalk = require('chalk');
 const mysql_store = require('express-mysql-session');
+
+
 const session = require('express-session');
 const exphbs = require('express-handlebars');
 const path = require('path');
 const morgan = require('morgan');
 const {database} = require('./keys.js');
+
 const express = require("express");
 const app = express();
 const router = express.Router();
+
 const log = require('log-to-file');
+
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+
 var exec = require('child_process').exec;
+
 const fetch = require('node-fetch');
 /////////////////////////////////////////////////////////////////////////////////////
+fs = require('fs')
+
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
@@ -135,6 +146,7 @@ to_tbm.on("connect",async function() {
 });
 /////////////////////////////////////////////////////////
 io.on('connection', function(socket) {
+  console.log("usuario conectado");
   socket.on('disconnect', function() {});
   socket.on('sincronizando', function(msg) {
     to_tbm.emit('system_running_indicator', "tambox1.0x");
@@ -160,6 +172,7 @@ io.on('connection', function(socket) {
     ecount = "00000000";
     await ssp.transmite_encriptado_y_procesa(validator_address,reset_counters)
   });
+  /////////////////////////////////////////////////////////////
   socket.on('enable_validator',async function(msg) {
    await ssp.ensureIsSet();
   return  new Promise(async function(resolve, reject) {
@@ -182,7 +195,6 @@ io.on('connection', function(socket) {
      }
          });
   });
-
   socket.on('habilita_validador',async function(msg) {
     await ssp.ensureIsSet();
     return new Promise(async function(resolve, reject) {
@@ -205,12 +217,12 @@ io.on('connection', function(socket) {
     }
         });
   });
-
   socket.on('disable_validator',async function(msg) {
      await ssp.ensureIsSet();
      await ssp.envia_encriptado(validator_address,desable);
      console.log(chalk.cyan("DISABLE VALIDATOR"));
   });
+  /////////////////////////////////////////////////////////////
   socket.on('lock_cashbox', async function(msg) {
     io.emit('lock_cashbox', "locking cashbox");
     console.log(chalk.cyan("LOCKING CASHBOX"));
@@ -287,6 +299,7 @@ io.on('connection', function(socket) {
     console.log(chalk.green(msg));
     io.emit('no_cabezal', "display message from update_requested");
   });
+  /////////////////////////////////////////////////////////////
   socket.on('envio_serial', async function(msg) {
     await ssp.ensureIsSet();
     console.log(chalk.green(msg +" para:"+device) );
@@ -329,6 +342,7 @@ io.on('connection', function(socket) {
       console.log("SENDING IS:"+ready_for_sending+" And Pooling is:"+ready_for_pooling);
       io.emit('blocking_sending', "blocking_sending");
   });
+  /////////////////////////////////////////////////////////////
   socket.on('empty_hoppper', function(msg) {
     console.log(chalk.green(msg));
       sp.disable_hopper_pooling();
@@ -387,6 +401,7 @@ io.on('connection', function(socket) {
       sh.super_comando(smart_hopper_address,pay5s).then(data =>{return enc.promise_handleEcommand();}).then(async function(data){return await ssp.handlepoll(data);})
       .then(data =>{console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));io.emit('pay_5s', "pay_5s");sp.enable_hopper_pooling();})
   });
+  /////////////////////////////////////////////////////////////
   socket.on('registradora', function(msg) {
     // console.log(chalk.green(msg));
     //   sp.disable_hopper_pooling();
@@ -458,6 +473,7 @@ io.on('connection', function(socket) {
     await  sh.mandate_al_hopper(payout_amount);
     //io.emit('pay_value',"pay_value");
   });
+  /////////////////////////////////////////////////////////////
   socket.on('read_new_tebs', async function(msg) {
       var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
       console.log(data_Tebs);
@@ -473,26 +489,144 @@ io.on('connection', function(socket) {
       console.log(msg);
     io.emit('borrar_pizarra',"msg");
   });
-
   socket.on('borrar_todo', async function(msg) {
     //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
       console.log(msg);
     io.emit('borrar_pizarra',"msg");
   });
-
   socket.on('cargar_otro', async function(msg) {
     //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
       console.log(msg);
     io.emit('cargar_otro',"msg");
   });
-
   socket.on('volver', async function(msg) {
     //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
       console.log(msg);
     io.emit('volver',"msg");
   });
+  /////////////////////////////////////////////////////////
+  socket.on('iniciar_nueva_remesa', async function(msg) {
+    // //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+    //   console.log(msg);
+    // //io.emit('volver',"msg");
+    // await ssp.ensureIsSet();
+    //    return  new Promise(async function(resolve, reject) {
+    //       try {
+    //         console.log(chalk.green("disparo de enable_validator"));
+    //         var data=await ssp.envia_encriptado(validator_address,enable);
+    //         if (data=="01F0") {
+    //           console.log(chalk.cyan("VALIDATOR ENABLED SUCCESFULLY"));
+    //          return resolve();
+    //         }else {
+    //           reject("el validador no se habilito");
+    //         }
+    //       } catch (e) {
+    //         return reject(chalk.red("error en socket:")+e);
+    //       } finally {
+    //       io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+    //       }
+    //           });
+    console.log(msg);
+    await  validator_enabled_now();
+    io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+    console.log("orden completada");
+  });
+  socket.on('terminar_remesa', async function(msg) {
+    console.log(msg);
+    await validator_disabled_now();
+    console.log("orden completada");
+  });
+  socket.on('cancelar_remesa', async function(msg) {
+    console.log(msg);
+    await validator_disabled_now();
+    console.log("orden completada");
+  });
+
+  /////////////////////////////////////////////////////////
+  socket.on('cancelar_remesa', async function(msg) {
+    console.log(msg);
+    await validator_disabled_now();
+    console.log("orden completada");
+  });
+
+  /////////////////////////////////////////////////////////
+  socket.on('config', async function(msg) {
+    console.log(msg);
+  //  socket.emit('config2',"config2");
+    fs.readFile(__dirname + '/system/configuracion.html', 'utf8', function (err,data) {
+      if (err) {
+        return console.log(err);
+      }
+    //  console.log(data);
+      io.emit('config2',data);
+    });
+  });
+
+  io.on('buffer', async function(msg) {
+  console.log(msg);
+
+  fs.readFile(__dirname + '/buffer.html', 'utf8', function (err,data) {
+    if (err) {
+      return console.log(err);
+    }
+  //  console.log(data);
+    io.emit('buffer',data);
+  });
+
+//    await validator_disabled_now();
+//    console.log("orden completada");
+//  });
+});
+
+
 });
 /////////////////////////////////////////////////////////
+async function validator_enabled_now() {
+  //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+
+  //io.emit('volver',"msg");
+  await ssp.ensureIsSet();
+     return  new Promise(async function(resolve, reject) {
+        try {
+        //  console.log(chalk.green("disparo de enable_validator"));
+          var data=await ssp.envia_encriptado(validator_address,enable);
+          if (data=="01F0") {
+            console.log(chalk.green("VALIDATOR ENABLED SUCCESFULLY"));
+           return resolve("OK");
+          }else {
+            reject("el validador no se habilito");
+          }
+        } catch (e) {
+          return reject(chalk.red("error en socket:")+e);
+        }
+        // finally {
+        // io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+        // }
+            });
+}
+async function validator_disabled_now() {
+  //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+  //  console.log(msg);
+  //io.emit('volver',"msg");
+  await ssp.ensureIsSet();
+     return  new Promise(async function(resolve, reject) {
+        try {
+          //console.log(chalk.green("disparo de enable_validator"));
+          var data=await ssp.envia_encriptado(validator_address,desable);
+          if (data=="01F0") {
+            console.log(chalk.red("VALIDATOR DISABLED SUCCESFULLY"));
+           return resolve("OK");
+          }else {
+            reject("el validador no se deshabilito");
+          }
+        } catch (e) {
+          return reject(chalk.red("error en socket:")+e);
+        }
+        // finally {
+        // //io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+        // }
+            });
+}
 //esta funcion manda una pulso al servidor cada tanto para indicar que esta en linea.!
 async function tambox_manager_ping() {
   return new Promise(function(resolve, reject) {

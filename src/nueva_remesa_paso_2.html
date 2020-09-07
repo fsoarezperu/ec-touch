@@ -1,0 +1,55 @@
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#terminar_remesa").click(function() {
+    socket.emit("terminar_remesa",'terminar_remesa');
+  });
+
+  $("#cancelar_remesa").click(function() {
+    socket.emit("cancelar_remesa",'cancelar_remesa');
+  });
+
+  // socket.on('iniciar_nueva_remesa_paso2', function(msg){
+  //   $('#pizarra').load("./iniciar_nueva_remesa_paso2.html");
+  // });
+  // socket.on('system_running_indicator', function(msg) {
+  //   display_system_running_indicator()
+  // });
+  //
+  // function display_system_running_indicator(){
+  //   $("#system_running_indicator").show();
+  //     setTimeout(clear_system_running_indicator,200);
+  //   };
+  //   function clear_system_running_indicator(){
+  //       $("#system_running_indicator").hide();
+  //     };
+ });
+ </script>
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+      <div id="message">Ingrese el dinero</div>
+      <div></div>
+    </div>
+
+    <div class="grupo2">
+    <div></div>
+        <div></div>
+            <div></div>
+        <div></div>
+        <div>
+          <div id="currency_val" class="depositado"style="float:left;"></div><div id="depositado"style="float:initial;">0.00</div>
+          <div style="font-size:28px;">Billetes Leidos:</div><div id="qty_bill" style="font-size:28px;">0</div>
+
+        </div>
+        <!-- </div> -->
+        <div></div>
+        <div></div>
+        <div>
+        <a class="btn btn-primary m-2" id="terminar_remesa">Terminar REMESA</a>
+        <a class="btn btn-primary m-2" id="cancelar_remesa">Cancelar REMESA</a>
+        </div>
+    </div>
+
+  </div>
+</body>
