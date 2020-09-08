@@ -1,10 +1,15 @@
 <script type="text/javascript">
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
-  $("#main").on("click",function() {
-    socket.emit("buffer",'buffer');
-  });
-
+  // $("#main").on("click",function() {
+  //   socket.emit("buffer",'buffer');
+  // });
+  // socket.on('buffer', function(msg){
+  //     console.log("en client side, recibi el buffer ");
+  //   //  $('#display').innerHTML=msg;
+  //     $('#display').html(msg);
+  // //  $('#display').load("./buffer.html");
+  // });
 ///////////////////////////////////////////////////////
 //   $("#config").click(function() {
 //   socket.emit("config",'config');
@@ -14,12 +19,7 @@
 // });
 ///////////////////////////////////////////////////////
 });
-socket.on('buffer', function(msg){
-    console.log("en client side, recibi el buffer ");
-  //  $('#display').innerHTML=msg;
-    $('#display').html(msg);
-//  $('#display').load("./buffer.html");
-});
+
  </script>
   <div class="wrapper">
     <div class="titulo">

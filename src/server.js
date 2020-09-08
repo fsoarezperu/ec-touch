@@ -562,7 +562,7 @@ io.on('connection', function(socket) {
     });
   });
 
-  io.on('buffer', async function(msg) {
+  socket.on('buffer', async function(msg) {
   console.log(msg);
 
   fs.readFile(__dirname + '/buffer.html', 'utf8', function (err,data) {

@@ -9,18 +9,18 @@
       $('#display').html(msg);
   });
 ///////////////////////////////////////////////////////
-$("#config").on("click",function() {
-socket.emit("config",'config');
-});
+// $("#config").on("click",function() {
+// socket.emit("config",'config');
+// });
 
 ///////////////////////////////////////////////////////
 });
 
-socket.on('config2', function(msg){
-  console.log("en client side, recibi el socket config...");
-//  $('#display').load("./system/configuracion.html");
-    $('#display').html(msg);
-});
+// socket.on('config2', function(msg){
+//   console.log("en client side, recibi el socket config...");
+// //  $('#display').load("./system/configuracion.html");
+//     $('#display').html(msg);
+// });
 
  </script>
 
@@ -31,6 +31,11 @@ socket.on('config2', function(msg){
      <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
    </div>
    <div class="grupo2">
+     <div></div>
+     <div></div>
+     <div></div>
+     <div></div>
+
      <div><a class="btn btn-primary m-4" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
      <!-- <div><a class="btn btn-primary m-4" id="borrar_todo">borrar todo</a> </div> -->
      <!-- <div><a class="btn btn-primary m-4" id="cargar_otro">cargar otro</a> </div> -->

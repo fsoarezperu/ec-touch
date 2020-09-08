@@ -1,0 +1,684 @@
+<script type="text/javascript">
+  var system_timer;
+  var timer3;
+  var once = true;
+//  var socket = io();
+  var tog_validator = true;
+  var remote_TBM = io.connect('http://192.168.1.2:3000');
+  var is_connected = false;
+  var is_cashbox_in_service = true;
+
+  $(document).ready(function() {
+    inicia(); //esto habilita el fade de inicializacion
+    $("#abc").css('visibility', 'hidden');
+    display_remote_conection();
+
+    // $("#config").click(function() {
+    //   window.location.replace("/configuracion");
+    // });
+    $("#deposito").click(function() {
+      socket.emit('deposito', "Deposito requerido");
+    });
+    $("#recibir_pago").click(function() {
+      alert("recibir_pago");
+    });
+    $("#cambio_moneda").click(function() {
+      alert("cambio_moneda");
+    });
+    $("#ayuda").click(function() {
+      alert("ayuda");
+    });
+    $("#envio_serial").click(function() {
+      socket.emit('envio_serial', "envio serial");
+    });
+    $("#envio_serial_seguro").click(function() {
+      socket.emit('envio_serial_seguro', "envio serial seguro");
+    });
+    $("#enval").click(function() {
+      socket.emit('enable_validator');
+    });
+    $("#desval").click(function() {
+      socket.emit('disable_validator');
+    });
+    $("#grabar").click(function() {
+      //  alert("grabando");
+      socket.emit('cerrar_remesa_hermes');
+      $('#overlay,#overlay2,.overlay-back').fadeOut(500);
+    });
+    $("#iniciar_remesa").click(function() {
+      socket.emit('enable_validator');
+    });
+    $("#force_serial").click(function() {
+      socket.emit('force_serial');
+    });
+    $("#blocking_pooling").click(function() {
+      socket.emit('blocking_pooling', "blocking pooling");
+    });
+    $('#Overlay-test').on('click', function() {
+      $('#overlay, .overlay-back').fadeIn(500);
+      console.log("test over click");
+    });
+    $('#monedero').on('click', function() {
+      console.log("monedero click");
+      window.location.replace("/monedero");
+    });
+    $("#testy2").click(function() {
+      $('#overlay, .overlay-back').fadeOut(500);
+      console.log("testy2");
+    });
+    $("#opc12").click(function() {
+      $('#overlay').fadeOut(500);
+      $('#overlay2, .overlay-back').fadeIn(500);
+    });
+    $("#cancel").click(function() {
+      $('#overlay2').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      //  $('#overlay, #overlay-back').fadeOut(500);
+    });
+    $("#borrar_pizarra").click(function() {
+      socket.emit('borrar_pizarra',"se esta borrando la pizarra en todos los usuarios");
+    //borrar_la_pizarra();
+    //cargar_pantalla_iniciar_remesa();
+    });
+    socket.on('iniciar_remesa', function(msg) {
+      borrar_la_pizarra();
+
+    });
+
+    socket.on('borrar_todo', function(msg) {
+      borrar_la_pizarra();
+
+    });
+
+    socket.on('volver', function(msg) {
+    //  borrar_la_pizarra();
+    $('#display').load("./buffer.html");
+    });
+
+    socket.on('cargar_otro', function(msg) {
+    //  borrar_la_pizarra();
+    $('#display').load("./otro.html");
+    });
+/////////////////////////////////////////////////////////////////////
+    // socket.on('buffer', function(msg) {
+    // //  borrar_la_pizarra();
+    // $('#display').load("./buffer.html");
+    // });
+/////////////////////////////////////////////////////////////////////
+  //   $("#config").click(function() {
+  //   socket.emit("config",'config');
+  // });
+  //   socket.on('config', function(msg){
+  //   $('#display').load("./system/configuracion.html");
+  // });
+
+    // socket.on('iniciar_nueva_remesa_paso2', function(msg){
+    //   $('#pizarra').load("./nueva_remesa_paso_2.html");
+    // });
+
+    cargar_pantalla_guardada();
+
+    $("#iniciar_remesa").click(function() {
+      alert('GENIO');
+    });
+    ////////////////////////////////////////////////////
+    remote_TBM.on('machine', function(data) {
+      console.log("ticking...");
+    });
+    ////////////////////////////////////////////////////
+    socket.on('cerrar_remesa_hermes', function(msg) {
+      window.location.replace("/cerrar_remesa_hermes");
+    });
+    socket.on('validator_enabled', function(msg) {
+      // display_message(msg);
+      // console.log("validador habilitado");
+      // window.location.replace("/iniciar_remesa");
+    });
+    socket.on('deposito', function(msg) {
+      //window.location.replace("/api/nueva_remesa/999/001/12345/03/2020-05-01/18:52:03");
+      //ejecutar via ajax
+      var no_remesa = randomString(8, '#');
+      //var hora_creacion="12:00:00";
+      var today = new Date();
+      var objToday = new Date();
+      var dd = String(today.getDate()).padStart(2, '0');
+      var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      var yyyy = today.getFullYear();
+      today = yyyy + '-' + mm + '-' + dd;
+      var fecha_creacion = today;
+
+      var curHour = objToday.getHours()
+      var curMinute = objToday.getMinutes()
+      var curSeconds = objToday.getSeconds()
+      var hora_creacion = curHour + ':' + curMinute + ':' + curSeconds;
+      $.ajax({
+        url: '/api/nueva_remesa/999/001/12345/' + no_remesa + '/' + fecha_creacion + '/' + hora_creacion,
+        contentType: "application/json",
+        dataType: 'json',
+        type: "GET",
+        success: function(data) {
+          console.log("Dato guardado via AJAX", data);
+        },
+        error: function(e) {
+          console.log(e.message);
+        }
+
+      });
+    });
+    socket.on('iniciando', function(msg) {
+      console.log("por resetear");
+      //setTimeout(function () {
+      window.location.replace("/");
+      //  }, 5000);
+    });
+    socket.on('refresh_window', function(msg) {
+      console.log(msg);
+      //window.location.reload(true);
+    });
+    socket.on('disable_validator', function(msg) {
+      display_message(msg);
+      console.log(msg);
+    });
+    // socket.on('Cashbox_out_of_Service', function(msg) {
+    //   display_message(msg);
+    //   console.log(msg);
+    // });
+    socket.on('comenzar_remesa2', function(msg) {
+      console.log("orden de comenzar remesa recivida");
+      socket.emit('enable_validator');
+    });
+    socket.on('shoot', function(msg) {
+      console.log("orden de comenzar remesa recivida");
+      display_message("shoot");
+      socket.emit('enable_validator');
+    });
+
+    socket.on('retiro_en_proceso', function(msg) {
+      window.location.replace("/retiro_en_proceso");
+    });
+    socket.on('system_running_indicator', function(msg) {
+      display_system_running_indicator();
+      online = true;
+    });
+    socket.on('Cashbox_out_of_Service', function(msg) {
+      is_cashbox_in_service = false;
+      if (once) {
+        //$('#out_of_service, #overlay-back').fadeIn(500);
+        $('#out_of_service, .overlay-back').fadeIn(500);
+
+        once = false;
+      }
+      //  $('#overlay, #overlay-back').fadeIn(500);
+
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Replaced', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      once = true;
+      muestra_consulta();
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Back_in_Service', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      once = true;
+      socket.emit("read_new_tebs");
+      //  muestra_consulta();
+      //  display_message(msg);
+    });
+    socket.on('show_connected', function(msg) {
+      is_connected = true;
+      //  $("#abc").show();
+      display_remote_conection();
+      clearTimeout(timer3);
+      console.log("show_connected");
+      clear_conection();
+      //  document.getElementById("abc").css('visibility', 'visible');
+      //    $("#abc").css('visibility', 'visible');
+    });
+    socket.on('show_not_connected', function(msg) {
+      is_connected = false;
+      //$("#abc").hide();
+
+      //document.getElementById("abc").css('visibility', 'hidden');
+      //  $("#abc").css('visibility', 'hidden');
+    });
+    socket.on('no_cabezal', function(msg) {
+      window.location.replace("/no_cabezal");
+    });
+    socket.on('location_reload', function(msg) {
+      console.log("reloading...");
+      //location.reload();
+      //location.replace("/");
+    });
+    socket.on('blocking_pooling', function(msg) {
+      console.log(msg);
+      display_message(msg);
+      //location.reload();
+    });
+    socket.on('force_serial', function(msg) {
+      console.log(msg);
+      //location.reload();
+      display_message(msg);
+    });
+    // Unlock TEBS Cashbox
+    $("#UC").click( function(){
+     socket.emit('unlock_cashbox');
+    });
+    socket.on('unlock_cashbox', function(msg){
+     display_message(msg);
+    });
+    //////////////////////////////////////////
+    // lock TEBS Cashbox
+    $("#LC").click( function(){
+     socket.emit('lock_cashbox');
+    });
+    socket.on('lock_cashbox', function(msg){
+     display_message(msg);
+    });
+    socket.on('Cashbox_Unlock_Enable', function(msg){
+     //display_message(msg);
+     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+     console.log("pestillo desbloqueado");
+    });
+    socket.on('Cashbox_lock_Enable', function(msg){
+     //display_message(msg);
+     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+     console.log("pestillo bloqueado");
+    });
+    // socket.on('tog_validator', function() {
+    //   if (tog_validator) {
+    //     setTimeout(function() {
+    //       socket.emit('enable_validator');
+    //       tog_validator = false;
+    //     }, 1000);
+    //   } else {
+    //     setTimeout(function() {
+    //       socket.emit('disable_validator');
+    //       tog_validator = true;
+    //     }, 1000);
+    //   }
+    // })
+    ////////////////////////////////////////////////////
+function loadFile(filePath) {
+  var result = null;
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", filePath, false);
+  xmlhttp.send();
+  if (xmlhttp.status==200) {
+    result = xmlhttp.responseText;
+  }
+  return result;
+}
+
+function cargar_pantalla_guardada() {
+  //aqui la meta es que tome el archivo donde se guarda el estado actual de la pagina y se carga la pagina actual en todos los servidores al mismo tiempo,
+  //incluso si la maquina ya esta en otro proceso.
+
+    $('#display').load("./buffer.html");
+  //  document.getElementById('pizarra').innerHTML=loadFile('./buffer.txt');
+}
+
+    function borrar_la_pizarra() {
+        document.getElementById('display').innerHTML="";
+    }
+    function clear_conection() {
+      timer3 = setTimeout(function() {
+        is_connected = false;
+      }, 20000);
+    }
+    function display_remote_conection() {
+      if (is_connected) {
+        $("#abc").css('visibility', 'visible');
+      } else {
+        $("#abc").css('visibility', 'hidden');
+      }
+      setTimeout(function() {
+        display_remote_conection();
+      }, 5000);
+    }
+    // $("#testy1").click(function() {
+    //   $('#out_of_service, #overlay-back').fadeOut(500);
+    //   console.log("testy1");
+    // });
+    // $("#opc11").click(function() {
+    //   $('#out_of_service,#overlay-back').fadeOut(500);
+    //   //$('#overlay2, #overlay-back').fadeIn(500);
+    // });
+  });
+  function inicia() {
+    // system_timer = setTimeout(function() {
+    //   $('#inicializando_sistema, .overlay-back').fadeIn(500);
+    // }, 3000);
+
+  }
+  function borra_inicia() {
+    // clearTimeout(system_timer);
+    // $('#inicializando_sistema, .overlay-back').fadeOut(500);
+    // inicia();
+  }
+  function display_system_running_indicator() {
+    $("#system_running_indicator").show();
+    borra_inicia();
+    //  document.getElementById("system_running_indicator").css('visibility', 'visible')
+    //  document.getElementById("system_running_indicator").innerHTML=".";
+    setTimeout(clear_system_running_indicator, 200);
+  };
+  function clear_system_running_indicator() {
+    $("#system_running_indicator").hide();
+    //  document.getElementById("system_running_indicator").css('visibility', 'hidden')
+    //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+  function display_message(mes_to_display) {
+    document.getElementById("message").innerHTML = mes_to_display;
+    setTimeout(clear_message, 1000);
+  };
+  function clear_message() {
+    document.getElementById("message").innerHTML = ""
+    document.getElementById("msg1").innerHTML="pestillo bloqueado";
+  };
+  async function muestra_consulta() {
+    const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+    var monto = monto_total_remesas[0].totalremesax;
+    console.log("aqui muestra el monto");
+    //  console.log(monto);
+    if (!is_cashbox_in_service) {
+      $('#overlay, .overlay-back').fadeIn(500);
+    }
+  }
+  function randomString(length, chars) {
+    var mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    var result = '';
+    for (var i = length; i > 0; --i) result += mask[Math.round(Math.random() * (mask.length - 1))];
+    return result;
+  }
+</script>
+<style media="screen">
+  /* html, body {
+    width  : 100%;
+    height : 100%;
+  } */
+  .wrapper {
+    position: relative;
+  }
+
+  /* .popup{
+    position: relative;
+  } */
+  .overlay-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: 15px;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 5;
+    display: none;
+  }
+
+  #overlay {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #overlay2 {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #inicializando_sistema {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  #out_of_service {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+
+  .grupo3 {
+    /* grid-column: 1/5; */
+    min-height: 350px;
+    width: 100%;
+    max-width: 700px;
+    /*grid-row: auto; */
+    background-color: rgba(60, 60, 60, 1);
+    /* background-image: url("../img/bg_image4.jpg"); */
+    color: white;
+    border: 4.5px solid white;
+    border-radius: 15px;
+    padding: 5px;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 0.5fr auto 0.5fr;
+    grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
+  }
+</style>
+<body oncontextmenu="return false">
+  <div id="loading" style="display:none"> <br>Error:<br/>El servidor esta paralizado.</div>
+  <div id="display">
+    <div class="wrapper" id="pizarra">
+      <div class="titulo2">
+        <!-- <div class=""><div id="system_running_indicator"><i class="fas fa-satellite-dish "></i></div></div> -->
+        <div class="">
+          <div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div>
+        </div>
+        <div id="abc"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
+        <!-- <div class="">
+          <i class="fas fa-wifi fa-sm"></i>
+         </div> -->
+        <!-- <div>{{!my_resgistered_machine_name}}</div> -->
+        <div id="message">
+          <ol>{{my_resgistered_machine_name}}</ol>
+        </div>
+        <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
+      </div>
+      <div class="grupo2" >
+        <!-- <i class="far fa-list-alt fa-10x"></i> -->
+        <!-- <i class="fas fa-link fa-2x"></i>
+              <i class="fab fa-mixcloud fa-2x"></i>
+              <i class="fas fa-network-wired fa-2x"></i>
+              <i class="fas fa-power-off fa-2x"></i>
+              <i class="fas fa-recycle fa-2x"></i>
+              <i class="fas fa-satellite-dish fa-2x"></i>
+              <i class="fas fa-server fa-2x"></i>
+              <i class="fas fa-share-alt fa-2x"></i>
+              <i class="fas fa-signal fa-2x"></i>
+              <i class="fas fa-wifi fa-2x"></i> -->
+
+        {{#if remesa}}
+          <div> </div>
+          <div>
+            <h1>Remesa lista para procesar</h1>
+            <h1>#:{{remesa.no_remesa}}</h1>
+            <h1>Presione el boton para ingresar el dinero</h1>
+          </div>
+          <div></div>
+          <div></div>
+          <div><a class="btn btn-primary m-4" id="iniciar_remesa">Iniciar remesa</a> </div>
+        {{else}}
+          {{#if retiro}}
+            <h3>Solicitud de Retiro en proceso</h3>
+            <h4>#:{{retiro.no_remesa}}</h4>
+          {{else}}
+          <div class="pizarra">
+
+          </div>
+            <!-- <div class="btn interface_button" id='deposito'><i class="fas fa-cash-register fa-4x"></i><br><div class="interface_label">Deposito</div></div> -->
+            <!-- <div class="btn interface_button" id='recibir_pago'><i class="fas fa-comment-dollar fa-4x"></i><br><div class="interface_label">Recibir un Pago</div></div> -->
+            <!-- <div class="btn interface_button" id='cambio_moneda'><i class="fas fa-money-bill-alt fa-4x"></i><br><div class="interface_label">Cambio de Moneda</div></div> -->
+            <!-- <div class="btn interface_button" id='ayuda'><i class="fas fa-info fa-4x"></i><br><div class="interface_label">Ayuda</div></div> -->
+            <!-- <div class="btn" id='force_serial'><i class="fas fa-random fa-4x"></i><br>force_serial</div> -->
+            <!-- <div id="abc"><i class="fas fa-wifi fa-2x"></i></div> -->
+            <!-- <div class="anuncio"> -->
+            <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
+            <!-- <div class="btn interface_button" id='Overlay-test'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Overlay-test</div></div> -->
+            <!-- <div class="btn interface_button" id='monedero'><i class="fab fa-mixcloud fa-4x"></i><div class="interface_label">Monedero</div></div> -->
+
+            <!-- <div class="btn interface_button" id='enval'><i class="fab fa-mixcloud fa-4x"></i>
+              <div class="interface_label">Enable validator</div>
+            </div> -->
+            <!-- <div class="btn interface_button" id='desval'><i class="fab fa-mixcloud fa-4x"></i>
+              <div class="interface_label">Desable Validator</div>
+            </div> -->
+
+            <!-- <img src="img/logo_tambo3.png" alt="Tambox" width="200" height="150"> -->
+            <!-- </div> -->
+            <!-- <div class="btn" id='blocking_pooling'><i class="fas fa-random fa-4x"></i><br>blocking_pooling</div> -->
+            <!-- <div class="btn" id='envio_serial'><i class="fas fa-random fa-4x"></i><br>Envio Serial inseguro</div> -->
+            <!-- <div class="btn" id='envio_serial_seguro'><i class="fas fa-random fa-4x"></i><br>Envio Serial seguro</div> -->
+
+            <div class="btn" id='borrar_pizarra'><i class="fas fa-random fa-4x"></i><br>Borrar Pizarra</div>
+
+          {{/if}}
+        {{/if}}
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="out_of_service">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup" style="color:red;">No se detecta la bolsa de dinero</div>
+            <div></div>
+            <div></div>
+            <div>Retire el cajon de dinero y verifique que la bolsa se encuentra correctamente colocada.</div>
+            <div></div>
+            <div></div>
+            <div id="msg1" style="color:green;"></div>
+            <div></div>
+            <!-- <div><a class="btn" style="width:120px;" id="opc11">Si</a></div>
+            <div><a class="btn" style="width:120px;" id="testy1">No</a></div> -->
+            <div class="btn volver" id='UC'><i class="fas fa-lock-open fa-3x"></i></div>
+            <div></div>
+            <div class="btn volver" id='LC'><i class="fas fa-lock fa-3x"></i></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="overlay">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Estas vaciando la caja?</div>
+            <div></div>
+            <div></div>
+            <div><i class="fas fa-cogs fa-8x"></i>Confirma que esta retirando el dinero?</div>
+            <div></div>
+            <div></div>
+            <div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div>
+            <div></div>
+            <div><a class="btn" style="width:120px;" id="opc12">Si</a></div>
+            <div><a class="btn" style="width:120px;" id="testy2">No</a></div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="overlay2">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Se actualizará la base de datos3</div>
+            <div></div>
+            <div></div>
+            <div>Confirma que esta Retirando el dinero?</div>
+            <div></div>
+            <div></div>
+            <div>Actualmente registramos que en el cashbox existen xx billetes, que dan un total de S/.xxx</div>
+            <div></div>
+            <div><a class="btn" style="width:120px;" id="cancel">Cancelar</a></div>
+            <div><a class="btn" style="width:120px;" id="grabar">ok</a></div>
+            <div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="popup">
+        <div class="overlay-back"></div>
+        <div id="inicializando_sistema">
+          <div class="grupo3">
+            <div></div>
+            <div id="titulo_popup">Inicializando Sistema</div>
+            <div></div>
+            <div></div>
+            <div>Espere un momento se esta inicializando el sistema</div>
+            <div></div>
+            <div></div>
+            <div id="mensaje_proceso">procesando</div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <!--Display -->
+  <!-- <div id="message"><ol></ol></div> -->
+  <script type="text/javascript">
+    /////////////////////////////////////////////////////////////
+    // var online;
+    // function updateStatus(variable) {
+    //   if (!variable) {
+    //     document.getElementById('display').style.display = 'none';
+    //     document.getElementById('loading').style.display = 'inline';
+    //   } else {
+    //     document.getElementById('loading').style.display = 'none';
+    //     document.getElementById('display').style.display = 'inline';
+    //   }
+    //   online = false;
+    // }
+    // /////////////////////////////////////////////////////////////
+    // var tim;
+    // function control(variable) {
+    //   tim = setTimeout(function() {
+    //     updateStatus(online);
+    //   }, 25000);
+    // }
+    /////////////////////////////////////////////////////////////
+  </script>
+
+</body>
