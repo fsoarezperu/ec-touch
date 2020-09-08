@@ -1,74 +1,48 @@
 <script type="text/javascript">
-  var system_timer;
-  var timer3;
-  var once = true;
-  var tog_validator = true;
+  var timer_de_display_remote_conection_to_tbm;
   var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
-  var is_cashbox_in_service = true;
-
+  var mydata;
   $(document).ready(function() {
     cargar_pantalla_guardada();
-    $("#abc").css('visibility', 'hidden');
-    display_remote_conection();
+    $("#TBM_icon").css('visibility', 'hidden');
+    display_remote_conection_to_TBM();
 /////////////////////////////////////////////////////////////////////
-    $(document).on("click","#config",function(){
-      //console.log("click en wrapper");
-      socket.emit("config",'config');
-    });
-    $("#config").on("click",function() {
-      console.log("presione el boton de config");
-      socket.emit("config",'config');
-    });
-    socket.on('config2', function(msg){
-      console.log("en client side, recibi el socket config...");
-    //  $('#display').load("./system/configuracion.html");
-        $('#display').html(msg);
-    });
+    enlace_a("main");
 /////////////////////////////////////////////////////////////////////
-    $(document).on("click","#main",function(){
-      socket.emit("buffer",'buffer');
-    });
-    socket.on('buffer', function(msg){
-        console.log("en client side, recibi el buffer ");
-      //  $('#display').innerHTML=msg;
-        $('#display').html(msg);
-    //  $('#display').load("./buffer.html");
-    });
+    enlace_a("config");
+    enlace_a("info");
+    enlace_a("cuadre_diario");
+    enlace_a("cifras_generales");
+    enlace_a("remesa_hermes");
 
-    $("#borrar_pizarra").click(function() {
-      socket.emit('borrar_pizarra',"se esta borrando la pizarra en todos los usuarios");
-    });
-    socket.on('iniciar_remesa', function(msg) {
-      borrar_la_pizarra();
-    });
-    socket.on('borrar_todo', function(msg) {
-      borrar_la_pizarra();
-    });
-    socket.on('volver', function(msg) {
-      $('#display').load("./buffer.html");
-    });
-    socket.on('cargar_otro', function(msg) {
-      $('#display').load("./otro.html");
-    });
-/////////////////////////////////////////////////////////////////////
-    // socket.on('buffer', function(msg) {
-    // //  borrar_la_pizarra();
-    // $('#display').load("./buffer.html");
-    // });
-/////////////////////////////////////////////////////////////////////
-  //   $("#config").click(function() {
-  //   socket.emit("config",'config');
-  // });
-  //   socket.on('config', function(msg){
-  //   $('#display').load("./system/configuracion.html");
-  // });
+    mandar_orden("lock_cashbox");
+    mandar_orden("unlock_cashbox");
 
-    // socket.on('iniciar_nueva_remesa_paso2', function(msg){
-    //   $('#pizarra').load("./nueva_remesa_paso_2.html");
-    // });
+/////////////////////////////////////////////////////////////////////
+function enlace_a(a1) {
+  var a1x="#"+a1;
+  $(document).on("click",a1x,function(){
+    socket.emit(a1,a1);
+  });
+  socket.on(a1, function(msg){
+    $('#display').html(msg[1]);
+    mydata=msg[0];
+    console.log(mydata);
+  });
+  return;
+}
 
-    ////////////////////////////////////////////////////
+function mandar_orden(a2) {
+  var a2y="#"+a2;
+  $(document).on("click",a2y,function(){
+    socket.emit(a2,a2);
+  });
+  socket.on(a2, function(msg){
+    display_message(msg);
+  });
+  return;
+}
     remote_TBM.on('machine', function(data) {
       console.log("ticking...");
     });
@@ -77,96 +51,73 @@
       display_system_running_indicator();
       online = true;
     });
-    socket.on('show_connected', function(msg) {
-      is_connected = true;
-      //  $("#abc").show();
-      display_remote_conection();
-      clearTimeout(timer3);
-      console.log("show_connected");
-      clear_conection();
-
-    });
-    socket.on('show_not_connected', function(msg) {
-      is_connected = false;
-      //$("#abc").hide();
-
-      //document.getElementById("abc").css('visibility', 'hidden');
-      //  $("#abc").css('visibility', 'hidden');
-    });
-    socket.on('location_reload', function(msg) {
-      console.log("reloading...");
-      //location.reload();
-      //location.replace("/");
-    });
-
-    $("#UC").click( function(){
-     socket.emit('unlock_cashbox');
-    });
-    socket.on('unlock_cashbox', function(msg){
-     display_message(msg);
-    });
-    //////////////////////////////////////////
-    // lock TEBS Cashbox
-    $("#LC").click( function(){
-     socket.emit('lock_cashbox');
-    });
-    socket.on('lock_cashbox', function(msg){
-     display_message(msg);
-    });
-    socket.on('Cashbox_Unlock_Enable', function(msg){
-     //display_message(msg);
-     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-     console.log("pestillo desbloqueado");
-    });
-    socket.on('Cashbox_lock_Enable', function(msg){
-     //display_message(msg);
-     document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-     console.log("pestillo bloqueado");
-    });
-
-    function loadFile(filePath) {
-  var result = null;
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", filePath, false);
-  xmlhttp.send();
-  if (xmlhttp.status==200) {
-    result = xmlhttp.responseText;
-  }
-  return result;
-}
-    function cargar_pantalla_guardada() {
-        $('#display').load("./buffer.html");
-    }
-    function borrar_la_pizarra() {
-        document.getElementById('display').innerHTML="";
-    }
-    function clear_conection() {
-      timer3 = setTimeout(function() {
-        is_connected = false;
-      }, 20000);
-    }
-    function display_remote_conection() {
-      if (is_connected) {
-        $("#abc").css('visibility', 'visible');
-      } else {
-        $("#abc").css('visibility', 'hidden');
-      }
-      setTimeout(function() {
-        display_remote_conection();
-      }, 5000);
-    }
     function display_system_running_indicator() {
       $("#system_running_indicator").show();
-
-      //  document.getElementById("system_running_indicator").css('visibility', 'visible')
-      //  document.getElementById("system_running_indicator").innerHTML=".";
       setTimeout(clear_system_running_indicator, 200);
     };
     function clear_system_running_indicator() {
       $("#system_running_indicator").hide();
-      //  document.getElementById("system_running_indicator").css('visibility', 'hidden')
-      //  document.getElementById("system_running_indicator").innerHTML="";
     };
+    ////////////////////////////////////////////////////
+    socket.on('show_connected_to_TBM', function(msg) {
+      is_connected = true;
+      display_remote_conection_to_TBM();
+      clearTimeout(timer_de_display_remote_conection_to_tbm);
+      console.log("show_connected_to_TBM");
+      clear_conection_to_TBM();
+    });
+    socket.on('show_not_connected', function(msg) {
+      is_connected = false;
+    });
+    function clear_conection_to_TBM() {
+      timer_de_display_remote_conection_to_tbm = setTimeout(function() {
+        is_connected = false;
+      }, 20000);
+    }
+    function display_remote_conection_to_TBM() {
+      if (is_connected) {
+        $("#TBM_icon").css('visibility', 'visible');
+      } else {
+        $("#TBM_icon").css('visibility', 'hidden');
+      }
+      setTimeout(function() {
+        display_remote_conection_to_TBM();
+      }, 10000);
+    }
+    ////////////////////////////////////////////////////
+    // $("#LC").click( function(){
+    //  socket.emit('lock_cashbox');
+    // });
+    // $("#UC").click( function(){
+    //  socket.emit('unlock_cashbox');
+    // });
+
+    // socket.on('lock_cashbox', function(msg){
+    //  display_message(msg);
+    //  //document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+    //  //console.log("pestillo desbloqueado");
+    // });
+    // socket.on('unlock_cashbox', function(msg){
+    //  display_message(msg);
+    //  //document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+    //  //console.log("pestillo bloqueado");
+    // });
+
+    //////////////////////////////////////////
+    function loadFile(filePath) {
+      var result = null;
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", filePath, false);
+      xmlhttp.send();
+      if (xmlhttp.status==200) {
+        result = xmlhttp.responseText;
+      }
+      return result;
+    }
+    function cargar_pantalla_guardada() {
+        $('#display').load("./buffer.html");
+    }
+    //////////////////////////////////////////
     function display_message(mes_to_display) {
       document.getElementById("message").innerHTML = mes_to_display;
       setTimeout(clear_message, 1000);
@@ -175,6 +126,7 @@
       document.getElementById("message").innerHTML = ""
       document.getElementById("msg1").innerHTML="pestillo bloqueado";
     };
+    //////////////////////////////////////////
   });
 </script>
 <style media="screen">
@@ -274,7 +226,7 @@
   <div id="loading" style="display:none"> <br>Error:<br/>El servidor esta paralizado.</div>
   <div id="display">
     <div class="wrapper" id="pizarra">
-
+      <!-- ESTO SE LLENA EN LINEA CON LA INFORMACION GUARDADA EN BUFFER.HTML -->
     </div>
   </div>
 

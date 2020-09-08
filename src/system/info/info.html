@@ -1,0 +1,52 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  $('#machine_sn').html(mydata.machine_sn);
+  $('#tebs').html(mydata.Tebs_barcode);
+  $('#release').html(mydata.os_version);
+  $('#given_ip').html(mydata.direccion_ip);
+  $('#given_port').html(mydata.puerto);
+  $('#developer').html(mydata.creado_por);
+  $('#support').html(mydata.soporte_tecnico);
+});
+
+ </script>
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Información General</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+
+    <div class="grupo">
+      <!-- <div>Mac address</div>
+      <div>Ip local</div> -->
+      <div>
+      <p>Numero de Serie validador:<div id="machine_sn"></div> </p>
+
+      <p>Tebs_barcode:<div id="tebs"></div></p>
+      <p>OS version:<div id="release"></div></p>
+      <p>Direccion IP:<div id="given_ip"></div></p>
+      <p>Puerto de red:<div id="given_port"></div></p>
+      <p>Creado Por:<div id="developer"></div></p>
+      <p>Soporte Técnico<div id="support"></div></p>
+      </div>
+      <div></div>
+      <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i></div>
+      <div></div>
+      <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div class="btn volver" id='main'>OK</div>
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

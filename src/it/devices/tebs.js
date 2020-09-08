@@ -319,7 +319,7 @@ function enable_validator() {
 /////////////////////////////////////////////////////////
 function poll_loop() {
   it.ensureIsSet().then(async function() {
-      io.emit('system_running_indicator'); //indica el punto intermitente en interface para notar que el programa esta corriendo adecuadamente.
+    //  io.emit('system_running_indicator'); //indica el punto intermitente en interface para notar que el programa esta corriendo adecuadamente.
       //  io.emit('tog_validator');
 
       if (ready_for_sending) {

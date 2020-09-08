@@ -229,12 +229,12 @@
       //  muestra_consulta();
       //  display_message(msg);
     });
-    socket.on('show_connected', function(msg) {
+    socket.on('show_connected_to_TBM', function(msg) {
       is_connected = true;
       //  $("#abc").show();
       display_remote_conection();
       clearTimeout(timer3);
-      console.log("show_connected");
+      console.log("show_connected_to_TBM");
       clear_conection();
       //  document.getElementById("abc").css('visibility', 'visible');
       //    $("#abc").css('visibility', 'visible');

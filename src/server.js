@@ -140,12 +140,12 @@ to_tbm.on("connect",async function() {
             }
   }
 
-  io.emit('show_connected');
+  io.emit('show_connected_to_TBM');
   tbm_status = true;
   await tambox_manager_ping();
 });
 /////////////////////////////////////////////////////////
-io.on('connection', function(socket) {
+io.on('connection', async function(socket) {
   console.log("usuario conectado");
   socket.on('disconnect', function() {});
   socket.on('sincronizando', function(msg) {
@@ -224,14 +224,14 @@ io.on('connection', function(socket) {
   });
   /////////////////////////////////////////////////////////////
   socket.on('lock_cashbox', async function(msg) {
-    io.emit('lock_cashbox', "locking cashbox");
+    io.emit('lock_cashbox', "lock_cashbox");
     console.log(chalk.cyan("LOCKING CASHBOX"));
-    var levels= await  ssp.transmite_encriptado_y_procesa(validator_address,cashbox_lock_enable)
+    await  ssp.transmite_encriptado_y_procesa(validator_address,cashbox_lock_enable)
   });
   socket.on('unlock_cashbox', async function(msg) {
     console.log(chalk.cyan("UNLOCKING CASHBOX"));
-    io.emit('unlock_cashbox', "unlocking cashbox");
-     var levels= await  ssp.transmite_encriptado_y_procesa(validator_address,cashbox_unlock_enable)
+    io.emit('unlock_cashbox', "unlock_cashbox");
+     await  ssp.transmite_encriptado_y_procesa(validator_address,cashbox_unlock_enable)
   });
   /////////////////////////////////////////////////////////////
   socket.on('finish', async function(msg) {
@@ -484,48 +484,8 @@ io.on('connection', function(socket) {
       console.log(msg);
     //io.emit('pay_value',"pay_value");
   });
-  socket.on('borrar_pizarra', async function(msg) {
-    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-      console.log(msg);
-    io.emit('borrar_pizarra',"msg");
-  });
-  socket.on('borrar_todo', async function(msg) {
-    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-      console.log(msg);
-    io.emit('borrar_pizarra',"msg");
-  });
-  socket.on('cargar_otro', async function(msg) {
-    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-      console.log(msg);
-    io.emit('cargar_otro',"msg");
-  });
-  socket.on('volver', async function(msg) {
-    //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-      console.log(msg);
-    io.emit('volver',"msg");
-  });
   /////////////////////////////////////////////////////////
   socket.on('iniciar_nueva_remesa', async function(msg) {
-    // //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-    //   console.log(msg);
-    // //io.emit('volver',"msg");
-    // await ssp.ensureIsSet();
-    //    return  new Promise(async function(resolve, reject) {
-    //       try {
-    //         console.log(chalk.green("disparo de enable_validator"));
-    //         var data=await ssp.envia_encriptado(validator_address,enable);
-    //         if (data=="01F0") {
-    //           console.log(chalk.cyan("VALIDATOR ENABLED SUCCESFULLY"));
-    //          return resolve();
-    //         }else {
-    //           reject("el validador no se habilito");
-    //         }
-    //       } catch (e) {
-    //         return reject(chalk.red("error en socket:")+e);
-    //       } finally {
-    //       io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
-    //       }
-    //           });
     console.log(msg);
     await  validator_enabled_now();
     io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
@@ -541,46 +501,95 @@ io.on('connection', function(socket) {
     await validator_disabled_now();
     console.log("orden completada");
   });
-
   /////////////////////////////////////////////////////////
-  socket.on('cancelar_remesa', async function(msg) {
-    console.log(msg);
-    await validator_disabled_now();
-    console.log("orden completada");
-  });
+  conectar_enlace_de(socket,'main','/buffer.html',"vardata");
+  conectar_enlace_de(socket,'config','/system/configuracion.html',"vardata");
 
-  /////////////////////////////////////////////////////////
-  socket.on('config', async function(msg) {
+  var this_machine={
+    machine_sn:numero_de_serie,
+    Tebs_barcode:tebs_barcode,
+    os_version:release_version,
+    direccion_ip:machine_ip,
+    puerto:machine_port,
+    creado_por:machine_developer,
+    soporte_tecnico:machine_support
+  }
+  conectar_enlace_de(socket,'info','/system/info/info.html',this_machine);
+  ///////////////////////////////////////////////////////////////////////////
+  const no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
+  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+
+  const no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  //en PROCESO
+  const no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  const monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
+
+  const no_egresos_pend = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  const monto_total_egresos_pend = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  ////////////////////////
+  var totales = {
+    no_remesas: no_remesas[0].noRemesa,
+    monto_total_remesas: monto_total_remesas[0].totalremesax,
+    no_egresos: no_egresos[0].noEgreso,
+    monto_total_egresos: monto_total_egresos[0].totalEgreso,
+
+    saldo: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
+    trans_global: no_remesas[0].noRemesa + no_egresos[0].noEgreso,
+
+    no_remesas_pend: no_remesas_pend[0].noRemesa,
+    monto_total_remesas_pend: monto_total_remesas_pend[0].totalremesax,
+    no_egresos_pend: no_egresos_pend[0].noEgreso,
+    monto_total_egresos_pend: monto_total_egresos_pend[0].totalEgreso,
+    moneda:"PEN"
+
+  };
+  // var mi_cuadre_diario={
+  //   no_remesas:10,
+  //   monto_total_remesas:400,
+  //   no_egresos:5,
+  //   monto_total_egresos:200,
+  //   trans_global:200,
+  //   saldo:200,
+  //   moneda:"PEN"
+  // };
+  conectar_enlace_de(socket,'cuadre_diario','/system/cuadre_diario/cuadre_diario.html',totales);
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  var mis_cifras_generales;
+  conectar_enlace_de(socket,'cifras_generales','/system/cifras_generales/montos.html',mis_cifras_generales);
+
+  conectar_enlace_de(socket,'remesa_hermes','/system/remesa_hermes/remesa_hermes.html',this_machine);
+
+  socket.on('get_machine_information', async function(msg) {
     console.log(msg);
-  //  socket.emit('config2',"config2");
-    fs.readFile(__dirname + '/system/configuracion.html', 'utf8', function (err,data) {
-      if (err) {
-        return console.log(err);
-      }
-    //  console.log(data);
-      io.emit('config2',data);
+    var this_machine2={
+      machine_sn:numero_de_serie,
+      Tebs_barcode:tebs_barcode,
+      os_version:release_version,
+      direccion_ip:machine_ip,
+      puerto:machine_port,
+      creado_por:machine_developer,
+      soporte_tecnico:machine_support
+    }
+      io.emit('get_machine_information',this_machine);
     });
+
+
   });
 
-  socket.on('buffer', async function(msg) {
+function conectar_enlace_de(xsocket,xid,xpath,vardata) {
+  xsocket.on(xid, async function(msg) {
   console.log(msg);
-
-  fs.readFile(__dirname + '/buffer.html', 'utf8', function (err,data) {
+  fs.readFile(__dirname + xpath, 'utf8', function (err,data) {
     if (err) {
       return console.log(err);
     }
-  //  console.log(data);
-    io.emit('buffer',data);
+    var totaldata=[vardata,data]
+    io.emit(xid,totaldata);
   });
-
-//    await validator_disabled_now();
-//    console.log("orden completada");
-//  });
 });
-
-
-});
-/////////////////////////////////////////////////////////
+}
 async function validator_enabled_now() {
   //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
 
@@ -635,7 +644,7 @@ async function tambox_manager_ping() {
         setTimeout(() => {
           //  console.log('connected to TBM');
           if (is_regis) {
-          io.emit('show_connected'); //muestra que la maquina esta conectada a nube
+          io.emit('show_connected_to_TBM'); //muestra que la maquina esta conectada a nube
           to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
           }
           tambox_manager_ping();

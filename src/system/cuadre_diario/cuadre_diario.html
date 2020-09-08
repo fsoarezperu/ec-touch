@@ -1,0 +1,73 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  $('#no_remesas').html(mydata.no_remesas);
+  $('#monto_total_remesas').html(mydata.monto_total_remesas);
+  $('#no_egresos').html(mydata.no_egresos);
+  $('#monto_total_egresos').html(mydata.monto_total_egresos);
+  $('#trans_global').html(mydata.trans_global);
+  $('#saldo').html(mydata.saldo);
+  $('#moneda').html(mydata.moneda);
+});
+
+ </script>
+
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Cuadre Diario</div>
+      <div class="btn volver" id='soporte'>Soporte</div>
+    </div>
+
+    <div class="cuadre_diario">
+      <table>
+        <tr>
+          <th>Tipo</th>
+          <th># Transacciones</th>
+          <th>Monto Acumulado</th>
+        </tr>
+        <tr>
+          <td>Remesas</td>
+          <td> <div id="no_remesas"></div> </td>
+          <td><div id="moneda"></div> <div id="monto_total_remesas"></div>.00</td>
+        </tr>
+        <tr>
+          <td>Egresos</td>
+          <td><div id="no_egresos"></div></td>
+          <td><div class="moneda"></div><div class="monto_total_egresos"></div>.00</td>
+        </tr>
+        <tr>
+          <td>Totales</td>
+          <td><div id="trans_global"></div></td>
+          <td><div id="moneda"></div><div id="saldo"></div>.00</td>
+        </tr>
+
+      </table>
+      <table border="0" class="ok_support">
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td width="30%">
+            <div class="btn volver" id='main'>OK</div>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+</body>

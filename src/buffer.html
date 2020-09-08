@@ -5,28 +5,16 @@
     socket.emit("iniciar_nueva_remesa",'iniciar_nueva_remesa');
   });
   socket.on('iniciar_nueva_remesa_paso2', function(msg){
-  //  $('#display').load("./nueva_remesa_paso_2.html");
       $('#display').html(msg);
   });
 ///////////////////////////////////////////////////////
-// $("#config").on("click",function() {
-// socket.emit("config",'config');
-// });
-
-///////////////////////////////////////////////////////
 });
-
-// socket.on('config2', function(msg){
-//   console.log("en client side, recibi el socket config...");
-// //  $('#display').load("./system/configuracion.html");
-//     $('#display').html(msg);
-// });
-
  </script>
 
  <div class="wrapper">
-   <div class="titulo">
+   <div class="titulo2">
      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+     <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
      <div id="message">Tambox 1.0</div>
      <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
    </div>
@@ -35,9 +23,6 @@
      <div></div>
      <div></div>
      <div></div>
-
      <div><a class="btn btn-primary m-4" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
-     <!-- <div><a class="btn btn-primary m-4" id="borrar_todo">borrar todo</a> </div> -->
-     <!-- <div><a class="btn btn-primary m-4" id="cargar_otro">cargar otro</a> </div> -->
    </div>
  </div>
