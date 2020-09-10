@@ -19,6 +19,7 @@
     mandar_orden("lock_cashbox");
     mandar_orden("unlock_cashbox");
     mandar_orden("smart_empty");
+    mandar_orden("trigger_socket");
 /////////////////////////////////////////////////////////////////////
 function enlace_a(a1) {
   var a1x="#"+a1;
@@ -32,10 +33,10 @@ function enlace_a(a1) {
   });
   return;
 }
-
 function mandar_orden(a2) {
   var a2y="#"+a2;
   $(document).on("click",a2y,function(){
+    console.log(a2);
     socket.emit(a2,a2);
   });
   socket.on(a2, function(msg){
@@ -115,7 +116,8 @@ function mandar_orden(a2) {
       return result;
     }
     function cargar_pantalla_guardada() {
-        $('#display').load("./buffer.html");
+      //  $('#display').load("./system/buffer.html");
+          socket.emit("main","main");
     }
     //////////////////////////////////////////
     function display_message(mes_to_display) {

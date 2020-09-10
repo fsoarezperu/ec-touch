@@ -7,6 +7,8 @@ const sh = require("./devices/smart_hopper");
 const pool = require('./../database');
 const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
+const iox = require('socket.io-client');
+const socket2=iox.connect('http://localhost:4000',{reconnect:true});
 
 const moment=require("moment");
 const glo = require('./globals');
@@ -14,6 +16,15 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////
 // var sync = false;
 // var seq_bit = 0;
+socket2.on('connect',function(socket){
+  console.log("connected como cliente desde otro js");
+})
+function emite_como_cliente() {
+  socket2.emit('fer','fer');
+  console.log("emitting como cliente");
+
+};
+module.exports.emite_como_cliente=emite_como_cliente;
 function sequencer() {
 //  console.log("sequencer in:"+sync);
   if (sync == true) {
@@ -325,12 +336,12 @@ return new Promise(async function(resolve, reject) {
                                   break;
 
                                   case("B3"):
-                                  console.log(global.last_sent);
-                                  if(global.last_sent===""){
-                                    io.io.emit('Smart_emptying', "Smart_emptying");
+                                  //console.log(global.last_sent);
+                              //    if(global.last_sent==="B3"){
+                                    socket2.emit('Smart_emptying', "Smart_emptying");
                                     console.log(chalk.red("Smart emptying"));
-                                  //  global.last_sent=poll_responde[2];
-                                  }
+                                //    global.last_sent=poll_responde[2];
+                                //  }
                                   break;
                                   /////////////////////////////////////////////////////////
                                   case("B4"):

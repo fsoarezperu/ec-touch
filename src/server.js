@@ -98,7 +98,9 @@ function shutdown(callback){
 //////////////////////////////////////////////////////////////////////
 var http = require('http').Server(app);
 //var io = require('socket.io', {rememberTransport: false,transports: ['WebSocket', 'Flash Socket', 'AJAX long-polling']})(http);
-var io = require('socket.io', {rememberTransport: false,transports: ['Flash Socket', 'AJAX long-polling']})(http);
+//var io = require('socket.io', {rememberTransport: false,transports: ['Flash Socket', 'AJAX long-polling']})(http);
+var io = require('socket.io')(http);
+
 exports.io = io; //this is to be used by other files on the project and be able to send emit by socket io.
 //////////////////////////////////////////////////////////////////////
 var to_tbm = require("socket.io-client")('http://192.168.1.2:3000');
@@ -129,8 +131,8 @@ to_tbm.on("connect",async function() {
     console.log(chalk.yellow("Machine already registered"));
   }else {
     console.log(current_registered_status[0].is_registered);
-    glo.is_regis=current_registered_status[0].is_registered;
-            if (glo.is_regis==0) {
+    is_regis=current_registered_status[0].is_registered;
+            if (is_regis==0) {
               console.log("esta maquina no esta registrada y ya hay conexion con el servidor, se autoregistrará");
               var regis=await is_this_machine_registered();
               console.log(chalk.green("Register to tbm status:"+regis));
@@ -701,6 +703,46 @@ async function calcular_cifras_generales() {
           };
         return mis_montos;
 }
+async function calcular_cuadre_diario() {
+  const no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
+  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+
+  const no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  //en PROCESO
+  const no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  const monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
+
+  const no_egresos_pend = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  const monto_total_egresos_pend = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  ////////////////////////
+  var totales = {
+    no_remesas: no_remesas[0].noRemesa,
+    monto_total_remesas: monto_total_remesas[0].totalremesax,
+    no_egresos: no_egresos[0].noEgreso,
+    monto_total_egresos: monto_total_egresos[0].totalEgreso,
+
+    saldo: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
+    trans_global: no_remesas[0].noRemesa + no_egresos[0].noEgreso,
+
+    no_remesas_pend: no_remesas_pend[0].noRemesa,
+    monto_total_remesas_pend: monto_total_remesas_pend[0].totalremesax,
+    no_egresos_pend: no_egresos_pend[0].noEgreso,
+    monto_total_egresos_pend: monto_total_egresos_pend[0].totalEgreso,
+    moneda:"PEN"
+
+  };
+  // var mi_cuadre_diario={
+  //   no_remesas:10,
+  //   monto_total_remesas:400,
+  //   no_egresos:5,
+  //   monto_total_egresos:200,
+  //   trans_global:200,
+  //   saldo:200,
+  //   moneda:"PEN"
+  // };
+  return totales;
+}
 function conectar_enlace_de(xsocket,xid,xpath,vardata) {
   xsocket.on(xid, async function(msg) {
   console.log(msg);
@@ -1212,7 +1254,7 @@ io.on('connection', async function(socket) {
     console.log("orden completada");
   });
   /////////////////////////////////////////////////////////
-  conectar_enlace_de(socket,'main','/buffer.html',"vardata");
+  conectar_enlace_de(socket,'main','/system/buffer.html',"vardata");
   conectar_enlace_de(socket,'config','/system/configuracion.html',"vardata");
 
   var this_machine={
@@ -1226,43 +1268,7 @@ io.on('connection', async function(socket) {
   }
   conectar_enlace_de(socket,'info','/system/info/info.html',this_machine);
   ///////////////////////////////////////////////////////////////////////////
-  const no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
-  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-
-  const no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
-  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
-  //en PROCESO
-  const no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
-  const monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
-
-  const no_egresos_pend = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
-  const monto_total_egresos_pend = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
-  ////////////////////////
-  var totales = {
-    no_remesas: no_remesas[0].noRemesa,
-    monto_total_remesas: monto_total_remesas[0].totalremesax,
-    no_egresos: no_egresos[0].noEgreso,
-    monto_total_egresos: monto_total_egresos[0].totalEgreso,
-
-    saldo: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
-    trans_global: no_remesas[0].noRemesa + no_egresos[0].noEgreso,
-
-    no_remesas_pend: no_remesas_pend[0].noRemesa,
-    monto_total_remesas_pend: monto_total_remesas_pend[0].totalremesax,
-    no_egresos_pend: no_egresos_pend[0].noEgreso,
-    monto_total_egresos_pend: monto_total_egresos_pend[0].totalEgreso,
-    moneda:"PEN"
-
-  };
-  // var mi_cuadre_diario={
-  //   no_remesas:10,
-  //   monto_total_remesas:400,
-  //   no_egresos:5,
-  //   monto_total_egresos:200,
-  //   trans_global:200,
-  //   saldo:200,
-  //   moneda:"PEN"
-  // };
+  var totales=await calcular_cuadre_diario();
   conectar_enlace_de(socket,'cuadre_diario','/system/cuadre_diario/cuadre_diario.html',totales);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1272,6 +1278,7 @@ io.on('connection', async function(socket) {
   conectar_enlace_de(socket,'cifras_generales','/system/cifras_generales/cifras_generales.html',mis_cifras_generales);
 
   conectar_enlace_de(socket,'remesa_hermes','/system/remesa_hermes/remesa_hermes.html',"null");
+  conectar_enlace_de(socket,'Smart_emptying','/system/remesa_hermes/vaciando.html',"null");
 
   socket.on('get_machine_information', async function(msg) {
     console.log(msg);
@@ -1287,7 +1294,14 @@ io.on('connection', async function(socket) {
       io.emit('get_machine_information',this_machine);
     });
 
-
+  socket.on('trigger_socket',function(){
+    console.log(chalk.yellow("trigger_socket fired"));
+    ssp.emite_como_cliente();
+  });
+  socket.on('fer',function(){
+    console.log(chalk.yellow("fer si funciono"));
+  //  ssp.emite_como_cliente();
+  });
   });
   // var mis_cifras_generales;
   // mis_cifras_generales=await calcular_cifras_generales();

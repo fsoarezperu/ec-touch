@@ -92,7 +92,7 @@
 
     socket.on('volver', function(msg) {
     //  borrar_la_pizarra();
-    $('#display').load("./buffer.html");
+    $('#display').load("./system/buffer.html");
     });
 
     socket.on('cargar_otro', function(msg) {
@@ -318,7 +318,7 @@ function cargar_pantalla_guardada() {
   //aqui la meta es que tome el archivo donde se guarda el estado actual de la pagina y se carga la pagina actual en todos los servidores al mismo tiempo,
   //incluso si la maquina ya esta en otro proceso.
 
-    $('#display').load("./buffer.html");
+    $('#display').load("./system/buffer.html");
   //  document.getElementById('pizarra').innerHTML=loadFile('./buffer.txt');
 }
 

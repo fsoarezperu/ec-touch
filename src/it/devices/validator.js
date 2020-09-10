@@ -46,7 +46,7 @@ function start_validator() {
                                             var regis=await server.is_this_machine_registered();
                                             //console.log("resgistered is:"+regis);
                                         if(regis=="OK"){
-                                          glo.is_regis=true;
+                                          is_regis=true;
 
                                         //  console.log(chalk.green("Registro Aprovado:"+regis));
                                           //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
@@ -67,7 +67,7 @@ function start_validator() {
                                             return resolve("OK");
                                            }
                                         }else {
-                                          glo.is_regis=false;
+                                          is_regis=false;
                                           //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //  global.my_resgistered_machine_name=my_resgistered_machine.name;
                                             //server.io.emit("iniciando","iniciando sistema");
