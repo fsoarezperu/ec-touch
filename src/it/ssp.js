@@ -229,7 +229,6 @@ module.exports.enable_sending=enable_sending;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function handlepoll(data){
 return new Promise(async function(resolve, reject) {
-
   try {
   //  console.log("data antes de match:"+data);
     var poll_responde=data.match(/.{1,2}/g);
@@ -326,11 +325,12 @@ return new Promise(async function(resolve, reject) {
                                   break;
 
                                   case("B3"):
-                                    io.io.emit('Smart_emptying', "Smart emptying");
-                                //  if(global.last_sent===""){
-                                    console.log(chalk.red.inverse("Smart emptying"));
-                                //    global.last_sent=poll_responde[2];
-                                //  }
+                                  console.log(global.last_sent);
+                                  if(global.last_sent===""){
+                                    io.io.emit('Smart_emptying', "Smart_emptying");
+                                    console.log(chalk.red("Smart emptying"));
+                                  //  global.last_sent=poll_responde[2];
+                                  }
                                   break;
                                   /////////////////////////////////////////////////////////
                                   case("B4"):
@@ -736,6 +736,7 @@ return new Promise(async function(resolve, reject) {
     return reject(e);
   } finally {
   //  return;
+//  last_sent="";
   }
 });
 }

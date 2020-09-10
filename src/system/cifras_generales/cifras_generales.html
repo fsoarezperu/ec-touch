@@ -1,0 +1,70 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  $('#totbills').html(mydata.totbills);
+  $('#totaccum').html(mydata.totaccum);
+  $('#monto_en_bolsa').html(mydata.monto_en_bolsa);
+  $('#total_general').html(mydata.total_general);
+});
+
+ </script>
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left fa-1x"></i></div>
+      <div>Cifras Generales</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div>
+
+    <div class="cuadre_diario">
+      <table>
+        <tr>
+          <th>Tipo</th>
+          <th># Billetes</th>
+          <th>Monto Acumulado</th>
+        </tr>
+        <tr>
+          <td>en reciclador</td>
+          <td><div id="totbills"></div></td>
+          <td><div id="totaccum"></div></td>
+        </tr>
+        <tr>
+          <td>en bolsa</td>
+          <td></td>
+          <td><div id="monto_en_bolsa"></div></td>
+        </tr>
+        <tr>
+          <td>Totales</td>
+          <td></td>
+          <td><div id="total_general"></div></td>
+        </tr>
+
+      </table>
+      <table border="0" class="ok_support">
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td width="30%">
+            <div class="btn volver" id='main'>OK</div>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </table>
+
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>
