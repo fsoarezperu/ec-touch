@@ -7,6 +7,10 @@
   socket.on('iniciar_nueva_remesa_paso2', function(msg){
       $('#display').html(msg);
   });
+  socket.on('fer', function(msg){
+      //$('#display').html(msg);
+      alert("fer");
+  });
 ///////////////////////////////////////////////////////
 });
  </script>
@@ -25,5 +29,8 @@
      <div></div>
      <div><a class="btn btn-primary m-4" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
           <div><a class="btn btn-primary m-4" id="trigger_socket">Trigger socket</a> </div>
+          <div><a class="btn btn-primary m-4" id="fer">fer</a> </div>
+          <div><a class="btn btn-primary m-4" id="connected">connected</a> </div>
+
    </div>
  </div>

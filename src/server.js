@@ -9,7 +9,7 @@ const va = require('./it/devices/validator');
 const it = require('./it/devices/tambox');
 const sh = require('./it/devices/smart_hopper');
 const tambox = require('./it/devices/tambox');
-const ssp = require('./it/ssp');
+
 const sp = require('./it/serial_port');
 const enc = require('./it/encryption');
 const glo = require('./it/globals');
@@ -103,6 +103,8 @@ var io = require('socket.io')(http);
 
 exports.io = io; //this is to be used by other files on the project and be able to send emit by socket io.
 //////////////////////////////////////////////////////////////////////
+const ssp = require('./it/ssp');
+
 var to_tbm = require("socket.io-client")('http://192.168.1.2:3000');
 // var to_tbm = require("socket.io-client")('https://tbm-cloud.herokuapp.com');
 exports.to_tbm = to_tbm;
@@ -1294,12 +1296,21 @@ io.on('connection', async function(socket) {
       io.emit('get_machine_information',this_machine);
     });
 
-  socket.on('trigger_socket',function(){
+  socket.on('trigger_socket', function(){
     console.log(chalk.yellow("trigger_socket fired"));
     ssp.emite_como_cliente();
   });
   socket.on('fer',function(){
     console.log(chalk.yellow("fer si funciono"));
+  //  ssp.emite_como_cliente();
+    socket.emit('prueba','prueba');
+  });
+  socket.on('connected',function(){
+    console.log(chalk.yellow("fer si funciono2"));
+  //  ssp.emite_como_cliente();
+  });
+  socket.on('test',function(){
+    console.log(chalk.yellow("test"));
   //  ssp.emite_como_cliente();
   });
   });

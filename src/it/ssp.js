@@ -2,13 +2,39 @@ const server = require('./../server');
 const chalk=require('chalk');
 const sp = require('./serial_port');
 const enc = require('./encryption');
-const io = require("./../server.js");
+//const io = require("./../server.js");
 const sh = require("./devices/smart_hopper");
 const pool = require('./../database');
 const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
-const iox = require('socket.io-client');
-const socket2=iox.connect('http://localhost:4000',{reconnect:true});
+//const iox = require('socket.io-client');
+//const socket2=iox.connect('http://localhost:4000',{reconnect:true});
+
+//var io = require('socket.io-client');
+//var socket = io.connect('http://localhost:4000');
+//var io = require("socket.io-client")('http://localhost:4000');
+
+var client = require("socket.io-client");
+var socket = client.connect("http://localhost:4000");
+
+//socket.emit("test", "foo");
+
+socket.on('connect', function () {
+  // socket connected
+    console.log("connected como cliente desde otro js");
+    socket.emit('connected','connected');
+
+    socket.on('prueba', function (msg) {
+      // socket connected
+        console.log("si lo recibo adecuadamente");
+        //socket.emit('connected','connected');
+    });
+
+    console.log('connect',socket.id);
+    socket.on('connection',function (socket) {
+        console.log('conenction',socket.id);
+    });
+});
 
 const moment=require("moment");
 const glo = require('./globals');
@@ -16,11 +42,11 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////
 // var sync = false;
 // var seq_bit = 0;
-socket2.on('connect',function(socket){
-  console.log("connected como cliente desde otro js");
-})
+// socket2.on('connect',function(socket){
+//
+// })
 function emite_como_cliente() {
-  socket2.emit('fer','fer');
+  socket.emit('fer','fer');
   console.log("emitting como cliente");
 
 };
@@ -275,12 +301,12 @@ return new Promise(async function(resolve, reject) {
                                   //console.log(poll_responde[i]);
                                   console.log(chalk.red.inverse("Cashbox out of Service"));
                                   // if(on_startup){
-                                     io.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+                                     socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
                                   //   await inicio_sin_cajon();
                                   //   console.log(chalk.red("iniciando sin cajon de dinero puesto"));
                                   //   return resolve("inicio_sin_cajon")
                                   // }else {
-                                  //   io.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+                                  //   socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
                                   //   if(!global.last_sent===poll_responde[2]){
                                   //   console.log("Cashbox out of Service");
                                   //   global.last_sent=poll_responde[2];
@@ -291,13 +317,13 @@ return new Promise(async function(resolve, reject) {
 
                                   case("92"):
                                   console.log(chalk.red.inverse("Cashbox Back in Service"));
-                                  io.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+                                  socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
                                   break;
 
                                   case("93"):
                                 //  if(global.last_sent===""){
                                     console.log(chalk.red.inverse("Cashbox Unlock Enable"));
-                                    io.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
+                                    socket.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
                                   //  global.last_sent=poll_responde[2];
                                   //}
                                   break;
@@ -328,7 +354,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B0"):
                                   console.log(chalk.red.inverse("Jam recovery"));
-                                    io.io.emit('Jam_recovery', "Jam recovery");
+                                    socket.emit('Jam_recovery', "Jam recovery");
                                   break;
 
                                   case("B1"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +386,7 @@ return new Promise(async function(resolve, reject) {
                                      value_in_hex=value_in_hex/100;
                                      //console.log(value_in_hex);
                                     //value dispensed:
-                                    io.io.emit('Smart_emptied', "Smart emptied");
+                                    socket.emit('Smart_emptied', "Smart emptied");
                                 //    global.last_sent=poll_responde[2];
                                 //  }
                                   break;
@@ -371,7 +397,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B6"):
                                   console.log(chalk.red.inverse("Device Initializing"));
-                                  io.io.emit('Device_Initializing', "Device Initializing");
+                                  socket.emit('Device_Initializing', "Device Initializing");
                                   break;
 
                                   case("B7"):
@@ -392,12 +418,12 @@ return new Promise(async function(resolve, reject) {
 
                                   case("BF"):
                                   console.log(chalk.red.inverse("Value Added"));
-                                    io.io.emit('Value_Added', "Value Added");
+                                    socket.emit('Value_Added', "Value Added");
                                   break;
 
                                   case("C0"):
                                   console.log(chalk.cyan("Maintenance Required"));
-                                    io.io.emit('Maintenance_Required', "Maintenance Required");
+                                    socket.emit('Maintenance_Required', "Maintenance Required");
                                   break;
 
                                   case("C1"):
@@ -406,12 +432,12 @@ return new Promise(async function(resolve, reject) {
 
                                   case("C2"):
                                   console.log(chalk.cyan("emptying"));
-                                  io.io.emit('emptying', "emptying");
+                                  socket.emit('emptying', "emptying");
                                   break;
 
                                   case("C3"):
                                   console.log(chalk.cyan("emptied"));
-                                  io.io.emit('emptied', "emptied");
+                                  socket.emit('emptied', "emptied");
                                   break;
 
                                   case("C4"):
@@ -424,32 +450,32 @@ return new Promise(async function(resolve, reject) {
 
                                   case("C9"):
                                   console.log(chalk.cyan("Note Transfered to Stacker"));
-                                  io.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+                                  socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
                                   break;
 
                                   case("CA"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   console.log(chalk.cyan("Note into Stacker at Reset"));
-                                  io.io.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
+                                  socket.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
                                   break;
 
                                   case("CB"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   console.log(chalk.cyan("Note into Store at Reset"));
-                                  io.io.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
+                                  socket.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
                                   break;
 
                                   case("CC"):
                                   console.log(chalk.cyan("Staking y"));
-                                  io.io.emit('Staking', "Staking");
+                                  socket.emit('Staking', "Staking");
                                   break;
 
                                   case("CE"):
                                   console.log(chalk.cyan("Note Held in Bezel"));
-                                  io.io.emit('note_held_in_bezel', "Retirar Billete");
+                                  socket.emit('note_held_in_bezel', "Retirar Billete");
                                   break;
 
                                   case("CF"):
                                   console.log(chalk.cyan("Device full"));
-                                  io.io.emit('Device_full', "Device full");
+                                  socket.emit('Device_full', "Device full");
                                   break;
 
                                   case("D1"):
@@ -477,7 +503,7 @@ return new Promise(async function(resolve, reject) {
                                   const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
                                   var id_remesa1 = remesa1[0].no_remesa;
                                   await pool.query ("UPDATE remesas SET status='completado', monto=? WHERE no_remesa=?",[value_in_hex,id_remesa1]);
-                                  io.io.emit('Dispensed', value_in_hex);
+                                  socket.emit('Dispensed', value_in_hex);
                                   //do not assign credit
                               //    global.last_sent=poll_responde[2];
                               //  }
@@ -534,7 +560,7 @@ return new Promise(async function(resolve, reject) {
                                      var id_remesa2 = remesa2[0].no_remesa;
                                      await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
                                    }
-                                  io.io.emit('Dispensing', value_in_hex);
+                                  socket.emit('Dispensing', value_in_hex);
                                   //do not assign credit
                               //    global.last_sent=poll_responde[2];
                               //  }
@@ -542,13 +568,13 @@ return new Promise(async function(resolve, reject) {
 
                                   case("DB"):
                                   console.log(chalk.green.inverse("Note Stored in Payout"));
-                                  io.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
+                                  socket.emit('Note_Stored_in_Payout', "Note Stored in Payout");
                                   //do not assign credit
                                   break;
 
                                   case("DC"):
                                   console.log(chalk.red.inverse("Incomplete payout"));
-                                  io.io.emit('Incomplete_payout', "Incomplete payout");
+                                  socket.emit('Incomplete_payout', "Incomplete payout");
                                   // 0CF0 F1 DC 00 00000058 1B 00 00 E8
                                   //do not assign credit
                                   break;
@@ -560,7 +586,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("DE"):
                                   console.log(chalk.red.inverse("cashbox paid"));
-                                  io.io.emit('cashbox_paid', "cashbox paid");
+                                  socket.emit('cashbox_paid', "cashbox paid");
                                   //do not assign credit
                                   break;
 
@@ -577,24 +603,24 @@ return new Promise(async function(resolve, reject) {
 
                                   case("E1"):
                                   console.log(chalk.red.inverse("Note cleared from front"));
-                                      io.io.emit('Note_cleared_from_front', "Note cleared from front");
+                                      socket.emit('Note_cleared_from_front', "Note cleared from front");
                                   //do not assign credit
                                   break;
 
                                   case("E2"):
                                   console.log(chalk.red.inverse("Note cleared into cashbox"));
-                                  io.io.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
+                                  socket.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
                                   //asign credit
                                   break;
 
                                   case("E3"):
                                   console.log(chalk.red.inverse("Cashbox Removedx"));
-                                  io.io.emit('Cashbox_Removed', "Cashbox Removed");
+                                  socket.emit('Cashbox_Removed', "Cashbox Removed");
                                   break;
 
                                   case("E4"):
                                   console.log(chalk.red.inverse("Cashbox Replaced"));
-                                  io.io.emit('Cashbox_Replaced', "Cashbox Replaced");
+                                  socket.emit('Cashbox_Replaced', "Cashbox Replaced");
                                   break;
 
                                   case("E5"):
@@ -607,7 +633,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("E7"):
                                   console.log(chalk.red.inverse("Stacker Full"));
-                                  io.io.emit('Stacker_Full', "Stacker Full");
+                                  socket.emit('Stacker_Full', "Stacker Full");
                                   break;
 
                                   case("E8"):
@@ -620,7 +646,7 @@ return new Promise(async function(resolve, reject) {
                                     global.last_sent=poll_responde[2];
                                   }
                                 //  console.log(chalk.red("Validator Disabled"));
-                                //  io.io.emit('Validator_Disabled', "Validator Disabled");
+                                //  socket.emit('Validator_Disabled', "Validator Disabled");
                                   break;
 
                                   case("E9"):
@@ -629,7 +655,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("EB"):
                                   console.log(chalk.cyan("Staked"));
-                                  io.io.emit('Staked', "Staked");
+                                  socket.emit('Staked', "Staked");
                                   break;
 
                                   case("EC"):
@@ -801,7 +827,7 @@ async function store_note(monto) {
         monto:monto,
         country_code:country_code
       }
-      io.io.emit('nuevo_billete_recivido', msg);
+      socket.emit('nuevo_billete_recivido', msg);
       console.log(chalk.cyan("SUCCESFULL"));
     }else{
        var rem2 = remesa[0].no_remesa;
@@ -826,7 +852,7 @@ async function store_note(monto) {
         monto:monto,
         country_code:country_code
       }
-      io.io.emit('nuevo_billete_recivido', msg);
+      socket.emit('nuevo_billete_recivido', msg);
     }
 
     const remesa4 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso' ");
@@ -1099,17 +1125,17 @@ exports.handleGetTebsBarcode=function(data){
 // //
 //         case("90"):
 //         console.log(chalk.red.inverse("Cashbox out of Service"));
-//         io.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+//         socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
 //         break;
 // //
 //         case("92"):
 //         console.log(chalk.red.inverse("Cashbox Back in Service"));
-//         io.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+//         socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
 //         break;
 // //
 // //         case("93"):
 // //         console.log(chalk.red.inverse("Cashbox Unlock Enable"));
-// //           io.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
+// //           socket.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
 // //         break;
 // //
 // //         case("A5"):
@@ -1138,7 +1164,7 @@ exports.handleGetTebsBarcode=function(data){
 // //
 //         case("B0"):
 //         console.log(chalk.red.inverse("Jam recovery"));
-//           io.io.emit('Jam_recovery', "Jam recovery");
+//           socket.emit('Jam_recovery', "Jam recovery");
 //         break;
 // //
 // //         case("B1"):
@@ -1147,7 +1173,7 @@ exports.handleGetTebsBarcode=function(data){
 // //
 //          case("B3"):
 //          console.log(chalk.red.inverse("Smart emptying"));
-//            io.io.emit('Smart_emptying', "Smart emptying");
+//            socket.emit('Smart_emptying', "Smart emptying");
 //          break;
 // //
 //         case("B4"):
@@ -1165,7 +1191,7 @@ exports.handleGetTebsBarcode=function(data){
 //          value_in_hex=value_in_hex/100;
 //       //   console.log(value_in_hex);
 //         //value dispensed:
-//         io.io.emit('Smart_emptied', "Smart emptied");
+//         socket.emit('Smart_emptied', "Smart emptied");
 //         break;
 // //
 // //         case("B5"):
@@ -1174,7 +1200,7 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("B6"):
 // //         console.log(chalk.red.inverse("Device Initializing"));
-// //         io.io.emit('Device_Initializing', "Device Initializing");
+// //         socket.emit('Device_Initializing', "Device Initializing");
 // //         break;
 // //
 // //         case("B7"):
@@ -1195,12 +1221,12 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("BF"):
 // //         console.log(chalk.red.inverse("Value Added"));
-// //           io.io.emit('Value_Added', "Value Added");
+// //           socket.emit('Value_Added', "Value Added");
 // //         break;
 // //
 // //         case("C0"):
 // //         console.log(chalk.cyan("Maintenance Required"));
-// //           io.io.emit('Maintenance_Required', "Maintenance Required");
+// //           socket.emit('Maintenance_Required', "Maintenance Required");
 // //         break;
 // //
 // //         case("C1"):
@@ -1209,12 +1235,12 @@ exports.handleGetTebsBarcode=function(data){
 // //
 //         case("C2"):
 //         console.log(chalk.cyan("emptying"));
-//         io.io.emit('emptying', "emptying");
+//         socket.emit('emptying', "emptying");
 //         break;
 // //
 //         case("C3"):
 //         console.log(chalk.cyan("emptied"));
-//         io.io.emit('emptied', "emptied");
+//         socket.emit('emptied', "emptied");
 //         break;
 // //
 // //         case("C4"):
@@ -1227,32 +1253,32 @@ exports.handleGetTebsBarcode=function(data){
 // //
 //         case("C9"):
 //         console.log(chalk.cyan("Note Transfered to Stacker"));
-//         io.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+//         socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
 //         break;
 // //
 // //         case("CA"):
 // //         console.log(chalk.cyan("Note into Stacker at Reset"));
-// //         io.io.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
+// //         socket.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
 // //         break;
 // //
 // //         case("CB"):
 // //         console.log(chalk.cyan("Note into Store at Reset"));
-// //         io.io.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
+// //         socket.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
 // //         break;
 // //
 // //         case("CC"):
 // //         console.log(chalk.cyan("Staking"));
-// //         io.io.emit('Staking', "Staking");
+// //         socket.emit('Staking', "Staking");
 // //         break;
 // //
 // //         case("CE"):
 // //       //  console.log(chalk.cyan("Note Held in Bezel"));
-// //         io.io.emit('note_held_in_bezel', "retirar bilete");
+// //         socket.emit('note_held_in_bezel', "retirar bilete");
 // //         break;
 // //
 // //         case("CF"):
 // //         console.log(chalk.cyan("Device full"));
-// //         io.io.emit('Device_full', "Device full");
+// //         socket.emit('Device_full', "Device full");
 // //         break;
 // //
 // //         case("D1"):
@@ -1279,7 +1305,7 @@ exports.handleGetTebsBarcode=function(data){
 // //         const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
 // //         var id_remesa1 = remesa1[0].no_remesa;
 // //         await pool.query ("UPDATE remesas SET status='completado', monto=? WHERE no_remesa=?",[value_in_hex,id_remesa1]);
-// //         io.io.emit('Dispensed', value_in_hex);
+// //         socket.emit('Dispensed', value_in_hex);
 // //         //do not assign credit
 // //         break;
 // //
@@ -1333,19 +1359,19 @@ exports.handleGetTebsBarcode=function(data){
 // //            var id_remesa2 = remesa2[0].no_remesa;
 // //            await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
 // //          }
-// //         io.io.emit('Dispensing', value_in_hex);
+// //         socket.emit('Dispensing', value_in_hex);
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("DB"):
 // //         console.log(chalk.red.inverse("Note Stored in Payout"));
-// //         io.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
+// //         socket.emit('Note_Stored_in_Payout', "Note Stored in Payout");
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("DC"):
 // //         console.log(chalk.red.inverse("Incomplete payout"));
-// //         io.io.emit('Incomplete_payout', "Incomplete payout");
+// //         socket.emit('Incomplete_payout', "Incomplete payout");
 // //         // 0CF0 F1 DC 00 00000058 1B 00 00 E8
 // //         //do not assign credit
 // //         break;
@@ -1357,7 +1383,7 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("DE"):
 // //         console.log(chalk.red.inverse("cashbox paid"));
-// //         io.io.emit('cashbox_paid', "cashbox paid");
+// //         socket.emit('cashbox_paid', "cashbox paid");
 // //         //do not assign credit
 // //         break;
 // //
@@ -1374,24 +1400,24 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("E1"):
 // //         console.log(chalk.red.inverse("Note cleared from front"));
-// //             io.io.emit('Note_cleared_from_front', "Note cleared from front");
+// //             socket.emit('Note_cleared_from_front', "Note cleared from front");
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("E2"):
 // //         console.log(chalk.red.inverse("Note cleared into cashbox"));
-// //         io.io.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
+// //         socket.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
 // //         //asign credit
 // //         break;
 // //
 // //         case("E3"):
 // //         console.log(chalk.red.inverse("Cashbox Removed"));
-// //         io.io.emit('Cashbox_Removed', "Cashbox Removed");
+// //         socket.emit('Cashbox_Removed', "Cashbox Removed");
 // //         break;
 // //
 // //         case("E4"):
 // //         console.log(chalk.red.inverse("Cashbox Replaced"));
-// //         io.io.emit('Cashbox_Replaced', "Cashbox Replaced");
+// //         socket.emit('Cashbox_Replaced', "Cashbox Replaced");
 // //         break;
 // //
 // //         case("E5"):
@@ -1404,13 +1430,13 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("E7"):
 // //         console.log(chalk.red.inverse("Stacker Full"));
-// //         io.io.emit('Stacker_Full', "Stacker Full");
+// //         socket.emit('Stacker_Full', "Stacker Full");
 // //         break;
 // //
 //          case("E8"):
 //          console.log(chalk.red("Validator DisabledX"));
 // // //        console.log(chalk.green("Ready"));
-// //         io.io.emit('Validator_Disabled', "Validator Disabled");
+// //         socket.emit('Validator_Disabled', "Validator Disabled");
 //          break;
 // //
 // //         case("E9"):
@@ -1419,7 +1445,7 @@ exports.handleGetTebsBarcode=function(data){
 // //
 // //         case("EB"):
 // //         console.log(chalk.cyan("Staked"));
-// //         io.io.emit('Staked', "Staked");
+// //         socket.emit('Staked', "Staked");
 // //         break;
 // //
 // //         case("EC"):
@@ -1529,19 +1555,19 @@ exports.handleGetTebsBarcode=function(data){
 //                  {
 //                     case("90"):
 //                     console.log(chalk.red.inverse("Cashbox out of Service"));
-//                     io.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+//                     socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
 //                     break;
 //                     case("92"):
 //                     console.log(chalk.red.inverse("Cashbox Back in Service"));
-//                     io.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+//                     socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
 //                     break;
 //                     case("B0"):
 //                     console.log(chalk.red.inverse("Jam recovery"));
-//                       io.io.emit('Jam_recovery', "Jam recovery");
+//                       socket.emit('Jam_recovery', "Jam recovery");
 //                     break;
 //                     case("B3"):
 //                      console.log(chalk.red.inverse("Smart emptying"));
-//                        io.io.emit('Smart_emptying', "Smart emptying");
+//                        socket.emit('Smart_emptying', "Smart emptying");
 //                     break;
 //                     case("B4"):
 //                     console.log(chalk.red.inverse("Smart emptied"));
@@ -1556,19 +1582,19 @@ exports.handleGetTebsBarcode=function(data){
 //                      value_in_hex=value_in_hex/100;
 //                      //console.log(value_in_hex);
 //                     //value dispensed:
-//                     io.io.emit('Smart_emptied', "Smart emptied");
+//                     socket.emit('Smart_emptied', "Smart emptied");
 //                     break;
 //                     case("C2"):
 //                     console.log(chalk.cyan("emptying"));
-//                     io.io.emit('emptying', "emptying");
+//                     socket.emit('emptying', "emptying");
 //                     break;
 //                     case("C3"):
 //                     console.log(chalk.cyan("emptied"));
-//                     io.io.emit('emptied', "emptied");
+//                     socket.emit('emptied', "emptied");
 //                     break;
 //                     case("C9"):
 //                     console.log(chalk.cyan("Note Transfered to Stacker"));
-//                     io.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+//                     socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
 //                     break;
 //                     case("E8"):
 //                      console.log(chalk.red(device+" DisabledX"));
