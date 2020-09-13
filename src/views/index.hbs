@@ -15,16 +15,30 @@
     enlace_a("cuadre_diario");
     enlace_a("cifras_generales");
     enlace_a("remesa_hermes");
+    enlace_a("Smart_emptying");
+    enlace_a("Smart_emptied");
+    enlace_a("cashbox_unlocked");
+    enlace_a("Cashbox_Back_in_Service");
 
     mandar_orden("lock_cashbox");
     mandar_orden("unlock_cashbox");
     mandar_orden("smart_empty");
-    mandar_orden("trigger_socket");
+    //mandar_orden("Smart_emptying");
+  //  mandar_orden("Smart_emptied");
+  //  mandar_orden("Cashbox_Back_in_Service");
 
-    mandar_orden("fer");
-    mandar_orden("connected");
+
+    // mandar_orden("trigger_socket");
+    //
+    // mandar_orden("fer");
+    // mandar_orden("connected");
 
 
+
+    socket.on('iniciando', function(msg) {
+      console.log("refrescando pantallas");
+      window.location.replace("/");
+    });
 /////////////////////////////////////////////////////////////////////
 function enlace_a(a1) {
   var a1x="#"+a1;
@@ -91,25 +105,6 @@ function mandar_orden(a2) {
       }, 10000);
     }
     ////////////////////////////////////////////////////
-    // $("#LC").click( function(){
-    //  socket.emit('lock_cashbox');
-    // });
-    // $("#UC").click( function(){
-    //  socket.emit('unlock_cashbox');
-    // });
-
-    // socket.on('lock_cashbox', function(msg){
-    //  display_message(msg);
-    //  //document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-    //  //console.log("pestillo desbloqueado");
-    // });
-    // socket.on('unlock_cashbox', function(msg){
-    //  display_message(msg);
-    //  //document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-    //  //console.log("pestillo bloqueado");
-    // });
-
-    //////////////////////////////////////////
     function loadFile(filePath) {
       var result = null;
       var xmlhttp = new XMLHttpRequest();
@@ -121,7 +116,6 @@ function mandar_orden(a2) {
       return result;
     }
     function cargar_pantalla_guardada() {
-      //  $('#display').load("./system/buffer.html");
           socket.emit("main","main");
     }
     //////////////////////////////////////////
@@ -136,98 +130,7 @@ function mandar_orden(a2) {
     //////////////////////////////////////////
   });
 </script>
-<style media="screen">
-  /* html, body {
-    width  : 100%;
-    height : 100%;
-  } */
-  .wrapper {
-    position: relative;
-  }
 
-  /* .popup{
-    position: relative;
-  } */
-  .overlay-back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    border-radius: 15px;
-    opacity: 0.6;
-    filter: alpha(opacity=60);
-    z-index: 5;
-    display: none;
-  }
-
-  #overlay {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-
-  #overlay2 {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-
-  #inicializando_sistema {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-
-  #out_of_service {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    width: 80%;
-    height: 100%;
-    opacity: 1;
-    z-index: 10;
-    display: none;
-    margin: 0 auto;
-  }
-
-  .grupo3 {
-    /* grid-column: 1/5; */
-    min-height: 350px;
-    width: 100%;
-    max-width: 700px;
-    /*grid-row: auto; */
-    background-color: rgba(60, 60, 60, 1);
-    /* background-image: url("../img/bg_image4.jpg"); */
-    color: white;
-    border: 4.5px solid white;
-    border-radius: 15px;
-    padding: 5px;
-    text-align: center;
-    display: grid;
-    grid-template-columns: 0.5fr auto 0.5fr;
-    grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
-  }
-</style>
 
 <body oncontextmenu="return false">
   <div id="loading" style="display:none"> <br>Error:<br/>El servidor esta paralizado.</div>

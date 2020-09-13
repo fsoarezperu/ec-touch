@@ -7,30 +7,22 @@
   socket.on('iniciar_nueva_remesa_paso2', function(msg){
       $('#display').html(msg);
   });
-  socket.on('fer', function(msg){
-      //$('#display').html(msg);
-      alert("fer");
-  });
+  // socket.on('fer', function(msg){
+  //     //$('#display').html(msg);
+  //     alert("fer");
+  // });
 ///////////////////////////////////////////////////////
 });
  </script>
 
- <div class="wrapper">
+ <div class="wrapper2">
    <div class="titulo2">
      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
      <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
      <div id="message">Tambox 1.0</div>
      <div class="btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
-   </div>
-   <div class="grupo2">
-     <div></div>
-     <div></div>
-     <div></div>
-     <div></div>
+  </div>
+   <div class="grupo4">
      <div><a class="btn btn-primary m-4" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
-          <div><a class="btn btn-primary m-4" id="trigger_socket">Trigger socket</a> </div>
-          <div><a class="btn btn-primary m-4" id="fer">fer</a> </div>
-          <div><a class="btn btn-primary m-4" id="connected">connected</a> </div>
-
    </div>
  </div>

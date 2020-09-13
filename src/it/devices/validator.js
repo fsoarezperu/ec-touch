@@ -28,7 +28,7 @@ function start_validator() {
       var step2=await ssp.negociate_encryption(validator_address);
               if (step2=="OK") {
                 var step3= await validatorpoll(validator_address);
-                //console.log("step3 es:"+step3);
+              //  console.log("step3 es:"+step3);
                 //console.log(step3);
                   if (step3=="OK") {
                 //    //return resolve("TERMINADO");
@@ -46,7 +46,7 @@ function start_validator() {
                                             var regis=await server.is_this_machine_registered();
                                             //console.log("resgistered is:"+regis);
                                         if(regis=="OK"){
-                                          is_regis=true;
+                                          glo.is_regis=true;
 
                                         //  console.log(chalk.green("Registro Aprovado:"+regis));
                                           //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
@@ -67,7 +67,7 @@ function start_validator() {
                                             return resolve("OK");
                                            }
                                         }else {
-                                          is_regis=false;
+                                          glo.is_regis=false;
                                           //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //  global.my_resgistered_machine_name=my_resgistered_machine.name;
                                             //server.io.emit("iniciando","iniciando sistema");
@@ -98,8 +98,6 @@ function start_validator() {
       }
     } catch (e) {
       return reject(chalk.cyan("02-Start Validator->")+e);
-    } finally {
-    //  return;
     }
   });
 
@@ -108,6 +106,7 @@ module.exports.start_validator=start_validator;
 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
 function validatorpoll(receptor) {
+  console.log("aqui creo la promesa de validator poll");
   return  new Promise(async function(resolve, reject) {
     try {
       server.logea("aqui global.poll:"+global.poll);
@@ -127,12 +126,9 @@ function validatorpoll(receptor) {
       }
     } catch (e) {
       return reject("07-validatorpoll ->"+e);
-    } finally {
-    //  return;
     }
-
     });
-  } //hace consulta de poll pero no hace bucle
+  }; //hace consulta de poll pero no hace bucle
   module.exports.validatorpoll=validatorpoll;
 ////////////////////////////////////////////////////////
 // function handle_poll_validator(data){

@@ -2,6 +2,10 @@
 font-family: "CustomFont";
 src: url("/fonts/font1.ttf");
 }
+* {
+  box-sizing: border-box;
+}
+
 html {
   touch-action:none;
 }
@@ -39,14 +43,32 @@ li{
   font-weight: bold;
 }
 .wrapper{
-  max-width: 800px;
-  max-height: 460px;
+  /* max-width: 800px; */
+  width: auto;
+  /* max-height: 460px; */
+  height: auto;
   overflow: hidden;
-
+  position: relative;
   display: grid;
 
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: auto auto auto;
+  /* grid-template-columns: 1fr 1fr 1fr 1fr; */
+  grid-template-columns:auto-fill, minmax(200px, 1fr);
+  /* grid-template-rows: auto auto auto; */
+  grid-gap: 5px;
+  margin : 0 auto;
+}
+.wrapper2{
+  /* max-width: 800px; */
+  width: auto;
+  /* max-height: 460px; */
+  height: 110vh;
+  overflow: hidden;
+  position: relative;
+  display: grid;
+
+  /* grid-template-columns: 1fr 1fr 1fr 1fr; */
+  /* grid-template-columns:auto-fill, minmax(200px, 1fr); */
+  /* grid-template-rows: auto auto auto; */
   grid-gap: 5px;
   margin : 0 auto;
 }
@@ -70,7 +92,7 @@ li{
   background-color: rgba(8, 8, 8, 1);
   display: grid;
   grid-template-columns: 0.3fr 0.3fr 3fr 0.5fr;
-
+  max-height: 13vh;
   border: 1.5px solid gray;
   padding: 5px;
   border-radius: 10px;
@@ -85,6 +107,7 @@ li{
 .grupo2{
   grid-column: 1/5;
   min-height:350px;
+  /* height: auto; */
   background-image: url("../img/bg_image4.jpg");
   /* background-image: url("../img/bg_tambox.png"); */
 
@@ -96,6 +119,36 @@ li{
   display:grid;
   grid-template-columns: repeat(3, auto);
   grid-template-rows:repeat(3, auto);
+}
+.grupo3 {
+  /* grid-column: 1/5; */
+  min-height: 350px;
+  width: 100%;
+  max-width: 700px;
+  /*grid-row: auto; */
+  background-color: rgba(60, 60, 60, 1);
+  /* background-image: url("../img/bg_image4.jpg"); */
+  color: white;
+  border: 4.5px solid white;
+  border-radius: 15px;
+  padding: 5px;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 0.5fr auto 0.5fr;
+  grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
+}
+.grupo4{
+  grid-column: 1;
+  min-height:100%;
+  background-image: url("../img/bg_image4.jpg");
+  color: white;
+  border: 1.5px solid gray;
+  border-radius: 15px;
+  padding: 5px;
+  text-align: center;
+  display:grid;
+  grid-template-columns: 1fr;
+  grid-template-rows:auto;
 }
 .cuadre_diario{
   grid-column: 1/5;
@@ -206,8 +259,9 @@ li{
   padding: 5px;
   text-align: center;
   display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+  /* repeat(7, 1fr); */
+  /* grid-template-rows: repeat(2, 1fr); */
   grid-gap:1em;
   background-image: url("../img/bg_image4.jpg");
 }
@@ -239,7 +293,7 @@ li{
   shadow: 0 1px 5px rgba(104,104,104,0.8);
   box-shadow:0px 2px 4px rgba(104,104,104,0.8);
   align-items: center;
-  align-self: center;
+  /* align-self: center; */
   align-content: center;
   /* height: minmax(100px,300px); */
   font-size: 18px;
@@ -273,6 +327,18 @@ li{
   /* text-shadow: 1px 1px 1px #ccc; */
   /* font-size: 1em; */
 }
+#out_of_service {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 100%;
+  opacity: 1;
+  z-index: 10;
+  display: none;
+  margin: 0 auto;
+}
+
 .interface_button{
   margin:5px;
 }
@@ -388,4 +454,50 @@ li{
   align-content: center;
   /* height: minmax(100px,300px); */
   font-size: 18px;
+}
+#inicializando_sistema {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 100%;
+  opacity: 1;
+  z-index: 10;
+  display: none;
+  margin: 0 auto;
+}
+#overlay2 {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 100%;
+  opacity: 1;
+  z-index: 10;
+  display: none;
+  margin: 0 auto;
+}
+#overlay {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 100%;
+  opacity: 1;
+  z-index: 10;
+  display: none;
+  margin: 0 auto;
+}
+.overlay-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  border-radius: 15px;
+  opacity: 0.6;
+  filter: alpha(opacity=60);
+  z-index: 5;
+  display: none;
 }

@@ -15,14 +15,15 @@ const tambox = require("./devices/tambox");
 //var io = require("socket.io-client")('http://localhost:4000');
 
 var client = require("socket.io-client");
-var socket = client.connect("http://localhost:4000");
-
+var my_server_port= "http://localhost:"+machine_port
+var socket = client.connect(my_server_port);
+module.exports.socket=socket;
 //socket.emit("test", "foo");
 
 socket.on('connect', function () {
   // socket connected
     console.log("connected como cliente desde otro js");
-    socket.emit('connected','connected');
+  //  socket.emit('connected','connected');
 
     socket.on('prueba', function (msg) {
       // socket connected
@@ -30,10 +31,10 @@ socket.on('connect', function () {
         //socket.emit('connected','connected');
     });
 
-    console.log('connect',socket.id);
-    socket.on('connection',function (socket) {
-        console.log('conenction',socket.id);
-    });
+    // console.log('connect',socket.id);
+    // socket.on('connection',function (socket) {
+    //     console.log('conenction',socket.id);
+    // });
 });
 
 const moment=require("moment");
@@ -46,9 +47,8 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 //
 // })
 function emite_como_cliente() {
-  socket.emit('fer','fer');
+  socket.emit('fer',"'fer'");
   console.log("emitting como cliente");
-
 };
 module.exports.emite_como_cliente=emite_como_cliente;
 function sequencer() {
@@ -363,11 +363,11 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B3"):
                                   //console.log(global.last_sent);
-                              //    if(global.last_sent==="B3"){
-                                    socket2.emit('Smart_emptying', "Smart_emptying");
+                                  if(global.last_sent===""){
+                                    socket.emit('Smart_emptying', "Smart_emptying");
                                     console.log(chalk.red("Smart emptying"));
-                                //    global.last_sent=poll_responde[2];
-                                //  }
+                                    global.last_sent=poll_responde[2];
+                                  }
                                   break;
                                   /////////////////////////////////////////////////////////
                                   case("B4"):
@@ -386,7 +386,7 @@ return new Promise(async function(resolve, reject) {
                                      value_in_hex=value_in_hex/100;
                                      //console.log(value_in_hex);
                                     //value dispensed:
-                                    socket.emit('Smart_emptied', "Smart emptied");
+                                    socket.emit('Smart_emptied', "Smart_emptied");
                                 //    global.last_sent=poll_responde[2];
                                 //  }
                                   break;
@@ -1642,7 +1642,7 @@ function ensureIsSet() {
               //  console.log("Timeout reached");
                return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
               // return resolve("OK");
-             }, 4000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
+            }, 6000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
