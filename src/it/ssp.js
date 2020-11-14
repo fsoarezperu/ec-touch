@@ -322,7 +322,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("93"):
                                 //  if(global.last_sent===""){
-                                    console.log(chalk.red.inverse("Cashbox Unlock Enable"));
+                                    console.log(chalk.green("Cashbox Unlock Enable"));
                                     socket.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
                                   //  global.last_sent=poll_responde[2];
                                   //}
@@ -363,11 +363,11 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B3"):
                                   //console.log(global.last_sent);
-                                  if(global.last_sent===""){
+                                  //if(global.last_sent===""){
                                     socket.emit('Smart_emptying', "Smart_emptying");
-                                    console.log(chalk.red("Smart emptying"));
-                                    global.last_sent=poll_responde[2];
-                                  }
+                                    //console.log(chalk.red("Smart emptying"));
+                                  //  global.last_sent=poll_responde[2];
+                                  //}
                                   break;
                                   /////////////////////////////////////////////////////////
                                   case("B4"):
@@ -1934,8 +1934,12 @@ function envia_encriptado(receptorx,orden){
         server.logea("here to_sed is:"+toSend);
           var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
           //console.log(data);
-          data=await enc.promise_handleEcommand(data)
-          return resolve(data);
+          if (data.length!=0) {
+            data=await enc.promise_handleEcommand(data)
+            return resolve(data);
+          }else {
+            return reject("no data received");
+          }
 
       } catch (e) {
         return reject(chalk.red("error 0054:")+e);

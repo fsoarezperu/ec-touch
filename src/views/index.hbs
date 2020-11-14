@@ -3,6 +3,7 @@
   var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
   var mydata;
+  var mytimer;
   $(document).ready(function() {
     cargar_pantalla_guardada();
     $("#TBM_icon").css('visibility', 'hidden');
@@ -27,13 +28,22 @@
   //  mandar_orden("Smart_emptied");
   //  mandar_orden("Cashbox_Back_in_Service");
 
-
     // mandar_orden("trigger_socket");
     //
     // mandar_orden("fer");
     // mandar_orden("connected");
 
+    socket.on('Cashbox_Unlock_Enable', function(msg) {
+      console.log("desbloqueado desde aqui.");
+    //  window.location.replace("/");
+    display_pestillo("Desbloqueado");
+    });
 
+    socket.on('Cashbox_Lock_Enable', function(msg) {
+    //  console.log("desbloqueado");
+    //  window.location.replace("/");
+  //  document.getElementById("msg1").innerHTML="pestillo desbloqueado";
+    });
 
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
@@ -124,9 +134,16 @@ function mandar_orden(a2) {
       setTimeout(clear_message, 1000);
     };
     function clear_message() {
-      document.getElementById("message").innerHTML = ""
-      document.getElementById("msg1").innerHTML="pestillo bloqueado";
+    document.getElementById("message").innerHTML = "";
+    document.getElementById("msg1").innerHTML = "Bloqueado";
     };
+
+    function display_pestillo(mes_to_displayx) {
+      clearTimeout(mytimer);
+      document.getElementById("msg1").innerHTML = mes_to_displayx;
+      mytimer=setTimeout(clear_message, 2000);
+    };
+
     //////////////////////////////////////////
   });
 </script>

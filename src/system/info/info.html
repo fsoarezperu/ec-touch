@@ -2,9 +2,9 @@
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
   $('#machine_sn').html(mydata.machine_sn);
-  $('#tebs').html(mydata.Tebs_barcode);
+  $('#tebs').html(parseInt(mydata.Tebs_barcode, 10));
   $('#release').html(mydata.os_version);
-  $('#given_ip').html(mydata.direccion_ip);
+  $('#given_ip').html(mydata.direccion_ip +":"+mydata.puerto);
   $('#given_port').html(mydata.puerto);
   $('#developer').html(mydata.creado_por);
   $('#support').html(mydata.soporte_tecnico);
@@ -18,30 +18,29 @@
       <div>Información General</div>
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
     </div>
-
-    <div class="grupo">
+  <div class="grupo4">
+    <!-- <div class="grupo_full_width"> -->
       <!-- <div>Mac address</div>
       <div>Ip local</div> -->
-      <div>
-      <p>Numero de Serie validador:<div id="machine_sn"></div> </p>
-
+      <div class="texto">
+      <p class="inline-p">Tipo de maquina:<div id="machine_tipe">Tebs</div></p>
+      <p class="inline-p">Numero de Serie validador:<div id="machine_sn"></div></p>
       <p>Tebs_barcode:<div id="tebs"></div></p>
       <p>OS version:<div id="release"></div></p>
+      <p>Fecha de actualizacion:<div id="date_update">2/11/2020</div></p>
+      </div>
+
+      <div class="texto">
       <p>Direccion IP:<div id="given_ip"></div></p>
-      <p>Puerto de red:<div id="given_port"></div></p>
       <p>Creado Por:<div id="developer"></div></p>
       <p>Soporte Técnico<div id="support"></div></p>
       </div>
-      <div></div>
-      <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i></div>
-      <div></div>
-      <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div class="btn volver" id='main'>OK</div>
+  <div id="msg1">
+    Bloqueado
+  </div>
+      <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i><br> Unlock Cashbox</div>
+      <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i><br>Lock Cashbox</div>
+      <div class="btn volver" id='main'>Volver</div>
     </div>
 
   </div>

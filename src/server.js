@@ -283,10 +283,7 @@ io.on('connection', async function(socket) {
     console.log(total_tienda_id[0].totalxtienda_id);
     io.emit('consultar_total_tienda_id', total_tienda_id[0].totalxtienda_id);
   });
-  socket.on('smart_empty', async function(msg) {
-    console.log(chalk.green('will smart_empty:' + msg));
-    await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty)
-  });
+
   socket.on('nuevo_billete_recivido', function(msg) {
     var tt = msg.monto;
     var ttt = msg.country_code;
@@ -530,12 +527,19 @@ io.on('connection', async function(socket) {
   console.log(mis_cifras_generales);
   conectar_enlace_de(socket,'cifras_generales','/system/cifras_generales/cifras_generales.html',mis_cifras_generales);
 
-  conectar_enlace_de(socket,'remesa_hermes','/system/remesa_hermes/remesa_hermes.html',"null");
-  conectar_enlace_de(socket,'Smart_emptying','/system/remesa_hermes/vaciando.html',"null");
-
-  conectar_enlace_de(socket,'Smart_emptied','/system/remesa_hermes/smart_empty.html',"null");
-  conectar_enlace_de(socket,'cashbox_unlocked','/system/remesa_hermes/cashbox_unlocked.html',"null");
-  conectar_enlace_de(socket,'Cashbox_Back_in_Service','/system/remesa_hermes/fin_remesa_hermes.html',"null",testing_callback);
+  socket.on('smart_empty', async function(msg) {
+    console.log(chalk.green('will smart_empty:' + msg));
+    await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty);
+    console.log("aqui salgo de smart empty");
+  });
+  socket.on('Cashbox_Unlock_Enable', function(msg) {
+    io.emit('Cashbox_Unlock_Enable',"cashbox Unlocked");
+  });
+  conectar_enlace_de(socket,'remesa_hermes','/system/remesa_hermes/rm_1.html',"null");
+  conectar_enlace_de(socket,'Smart_emptying','/system/remesa_hermes/rm_2.html',"null");
+  conectar_enlace_de(socket,'Smart_emptied','/system/remesa_hermes/rm_3.html',"null");
+  conectar_enlace_de(socket,'cashbox_unlocked','/system/remesa_hermes/rm_4.html',"null");
+  conectar_enlace_de(socket,'Cashbox_Back_in_Service','/system/remesa_hermes/rm_5.html',"null",testing_callback);
 
   socket.on('get_machine_information', async function(msg) {
     console.log(msg);
@@ -942,7 +946,7 @@ async function calcular_cuadre_diario() {
 }
 function conectar_enlace_de(xsocket,xid,xpath,vardata,cb) {
   xsocket.on(xid, async function(msg) {
-  console.log(msg);
+  console.log(chalk.green(msg));
   fs.readFile(__dirname + xpath, 'utf8', function (err,data) {
     if (err) {
       return console.log(err);
