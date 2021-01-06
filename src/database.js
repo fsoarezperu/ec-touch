@@ -18,7 +18,7 @@ if(err){
 }
 
   if(connection) connection.release();
-  //console.log('DB is conected');
+  console.log('DB is conected');
   return;
 });
 

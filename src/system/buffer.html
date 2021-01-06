@@ -1,17 +1,33 @@
 <script type="text/javascript">
+
   $(document).ready(function() {
-///////////////////////////////////////////////////////
-  $("#iniciar_nueva_remesa").click(function() {
-    socket.emit("iniciar_nueva_remesa",'iniciar_nueva_remesa');
-  });
-  socket.on('iniciar_nueva_remesa_paso2', function(msg){
-      $('#display').html(msg);
-  });
-  // socket.on('fer', function(msg){
-  //     //$('#display').html(msg);
-  //     alert("fer");
+
+  // $("#iniciar_nueva_remesa").click(function() {
+  //   socket.emit("iniciar_nueva_remesa",'iniciar_nueva_remesa');
   // });
-///////////////////////////////////////////////////////
+  // $("#fer").click(function() {
+  //   socket.emit("fer",'genio');
+  // });
+
+
+  // $("#fer").click(function() {
+  //   socket.emit("fer",'genio');
+  // });
+
+  // socket.on('iniciar_nueva_remesa_paso2', function(msg){
+  //     $('#display').html(msg);
+  // });
+
+   // socket.on('main', function(msg){
+   //     $('#display').html(msg);
+   //     //alert("fer");
+   // });
+
+   // socket.on('cancelling', function(msg){
+   //     $('#display').html(msg);
+   //     //alert("fer");
+   // });
+
 });
  </script>
 
@@ -27,5 +43,6 @@
   </div>
    <div class="grupo4">
      <div><a class="btn btn-primary m-4" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
+     <div><a class="btn btn-primary m-4" id="fer">Fer</a> </div>
    </div>
  </div>

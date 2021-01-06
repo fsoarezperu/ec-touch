@@ -3,6 +3,8 @@ var aesjs = require('aes-js');
 var Big_Number = require('big-number');
 const BigNumber = require('bignumber.js');
 const ssp = require('./ssp');
+const os = require('./os');
+
 const chalk=require('chalk');
 const glo = require('./globals');
 const sp = require('./serial_port');
@@ -52,7 +54,7 @@ function handleSetgenerator(data){
     var poll_responde=data.match(/.{1,2}/g);
     //console.log("poll_responde is:"+poll_responde);
     if(poll_responde[1] == "F0"){
-    server.logea(chalk.green("GENERATOR EXCHANGED SUCCESFULLY"));
+    os.logea(chalk.green("GENERATOR EXCHANGED SUCCESFULLY"));
       return resolve("OK");
     }
     if(poll_responde[1] == "F4"){
@@ -73,7 +75,7 @@ function handleSetmodulus(data){
   return new Promise(function(resolve, reject) {
     var poll_responde=data.match(/.{1,2}/g);
     if(poll_responde[1] == "F0"){
-      server.logea(chalk.green("MODULUS EXCHANGED SUCCESFULLY"));
+      os.logea(chalk.green("MODULUS EXCHANGED SUCCESFULLY"));
         return resolve("OK");
     }
     if(poll_responde[1] == "F4"){
@@ -129,25 +131,25 @@ function send_request_key_exchange() {
     //  console.log("request_key_exchange command sent");
       //my_HOST_RND = 999;
       var HostInterKey = 0;
-      server.logea("my_HOST_RND:" + my_HOST_RND);
+      os.logea("my_HOST_RND:" + my_HOST_RND);
       calc_generator = parseInt(calc_generator, 10);
       calc_modulus = parseInt(calc_modulus, 10);
-      server.logea("my calc_generator:" + calc_generator);
-      server.logea("my calc_modulus:" + calc_modulus);
+      os.logea("my calc_generator:" + calc_generator);
+      os.logea("my calc_modulus:" + calc_modulus);
       HostInterKey = Big_Number(calc_generator).pow(my_HOST_RND);
       HostInterKey = Big_Number(HostInterKey).mod(calc_modulus);
       if (HostInterKey.lenth < 4) {
         if (HostInterKey.lenth == 3) {
-          server.logea("prefix");
+          os.logea("prefix");
           var prefix = "0";
           HostInterKey = prefix.concat(HostInterKey);
         }
         if (HostInterKey.lenth == 2) {
-          server.logea("prefix");
+          os.logea("prefix");
           var prefix = "00";
           HostInterKey = prefix.concat(HostInterKey);
         }
-        server.logea("Host interkey padded");
+        os.logea("Host interkey padded");
       }
       //console.log("HostInterKey:" + HostInterKey);
       ///////////////////////////////////////////////
@@ -164,7 +166,7 @@ function send_request_key_exchange() {
       var hexiado = hexiando;
       request_key_exchange = hexiado;
       //////////////////////////////////////////////
-      server.logea(request_key_exchange);
+      os.logea(request_key_exchange);
     //  console.log("fin de send request key exchange");
       return resolve(request_key_exchange);
     } catch (e) {
@@ -199,12 +201,12 @@ try {
     dec_SlaveInterKey = dec_SlaveInterKey.toString(10);
 
     if (firstbyte == "F0") {
-      server.logea("OK received SlaveInterKey RECEIVED");
-      server.logea("SlaveInterKey:" + slaveInterKey);
-      server.logea("SlaveInterKey dec:" + (dec_SlaveInterKey));
+      os.logea("OK received SlaveInterKey RECEIVED");
+      os.logea("SlaveInterKey:" + slaveInterKey);
+      os.logea("SlaveInterKey dec:" + (dec_SlaveInterKey));
       var final_key = Big_Number(dec_SlaveInterKey).pow(my_HOST_RND);
       final_key = Big_Number(final_key).mod(calc_modulus);
-      server.logea("Encryption KEY:" + final_key);
+      os.logea("Encryption KEY:" + final_key);
       final_key = ssp.ConvertBase.dec2hex(final_key).toUpperCase();
       final_key =pady(final_key,4); //para rellenar con 0 a la izqeuirda cuando el hex salga muy pequeño
     //  console.log("Encryption KEY to hex:" + final_key);
@@ -226,15 +228,15 @@ try {
         console.log(chalk.red("Not Possible to create the Key"));
     //  console.log(chalk.green("KEY:" + full_KEY));
     // var rKE = exports.send_request_key_exchange();
-    // server.logea("/////////////////////////////////");
-    // server.logea("Request Key Exchange command sent");
+    // os.logea("/////////////////////////////////");
+    // os.logea("Request Key Exchange command sent");
     // var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
     // try {
     //   var step6=await handleRKE(step5);
     //   if(step6.length>0){
-    //     server.logea(chalk.green('KEY:'), chalk.green(step6));
+    //     os.logea(chalk.green('KEY:'), chalk.green(step6));
     //     console.log(chalk.green("KEY CALCULATED SUCCESFULLY"));
-    //     server.logea("/////////////////////////////////");
+    //     os.logea("/////////////////////////////////");
     //     encryptionStatus = true;
     //    return resolve("OK")
     //
@@ -247,7 +249,7 @@ try {
     //   return;
     // }
     //
-    // server.logea("/////////////////////////////////");
+    // os.logea("/////////////////////////////////");
     // setTimeout(function () {
     //   sp.retrial();
     // }, 1000);
@@ -255,7 +257,7 @@ try {
     }
     if (firstbyte == "F4") {
       console.log(chalk.red("Parameter out of range"));
-      server.logea("/////////////////////////////////");
+      os.logea("/////////////////////////////////");
       return  reject("Parameter out of range");
     }
 } catch (e) {
@@ -329,12 +331,12 @@ function decrypt(mensaje) {
       return resolve(decryptedText);
     }else{
       //si el mensaje viene con bytes extras al final que necesitan ser cortados.
-      server.logea(chalk.cyan("NO desencriptado: "+mensaje));
-      server.logea("mensaje length: "+mensaje.length);
+      os.logea(chalk.cyan("NO desencriptado: "+mensaje));
+      os.logea("mensaje length: "+mensaje.length);
       if(mensaje.length==34||mensaje.length==66||mensaje.length==98||mensaje.length==130||mensaje.length==162||mensaje.length==194||mensaje.length==226||mensaje.length==258){
         //console.log(chalk.magenta("CORTADO"));
         mensaje=mensaje.substr(0,mensaje.length-2);
-        server.logea("new message trimmed is:"+mensaje);
+        os.logea("new message trimmed is:"+mensaje);
         var key = aesjs.utils.hex.toBytes(full_KEY);
         var aesEcb = new aesjs.ModeOfOperation.ecb(key);
         var encryptedBytes = aesjs.utils.hex.toBytes(mensaje);
@@ -384,7 +386,7 @@ function handle_count() {
       //console.log(chalk.green("COINCIDEN"));
       //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
       //concuerda.
-      server.logea("slave_count es:"+slave_count+" y ecount:"+ecount);
+      os.logea("slave_count es:"+slave_count+" y ecount:"+ecount);
       ecount = changeEndianness(ecount);
       return resolve(ecount);
     }else{
@@ -446,7 +448,7 @@ function determinar_send_padding() {
 }
 
 function padx(pad, str, padLeft) {
-  server.logea("padding es:"+padding);
+  os.logea("padding es:"+padding);
   if (typeof str === 'undefined')
     return pad;
   if (padLeft) {
@@ -460,8 +462,8 @@ function padx(pad, str, padLeft) {
 async function prepare_Encryption(datax) {
   return new Promise(async function(resolve, reject) {
     try {
- server.logea(chalk.cyan("esto es lo que me envian como data total:"+datax));
-  // server.logea("esto tiene datax[0]:"+datax[0]);
+ os.logea(chalk.cyan("esto es lo que me envian como data total:"+datax));
+  // os.logea("esto tiene datax[0]:"+datax[0]);
   // console.log("esto tiene datax[1]:"+datax[1]);
   // console.log("esto tiene datax[2]:"+datax[2]);
   // console.log("esto tiene datax[3]:"+datax[3]);
@@ -477,7 +479,7 @@ async function prepare_Encryption(datax) {
 
 
    await handle_count();
-   server.logea("DataLength + ecount:"+chalk.green(ebuffer)+ chalk.cyan(ecount) );
+   os.logea("DataLength + ecount:"+chalk.green(ebuffer)+ chalk.cyan(ecount) );
    ebuffer = ebuffer.concat(ecount);
 
    var i;
@@ -487,44 +489,44 @@ async function prepare_Encryption(datax) {
         data_line=pady(datax[i].toString(16).toUpperCase(),2);
         data_full_line=data_full_line.concat(data_line);
    }
-   server.logea(chalk.cyan("Orden original:"+data_full_line));
+   os.logea(chalk.cyan("Orden original:"+data_full_line));
    if(data_full_line.length>=0 && data_full_line.length<=9){
-  server.logea(chalk.cyan("el paquete requiere encryptar 16"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 16"));
   numero_de_packs=1;
    }
    if(data_full_line.length>=9 && data_full_line.length<=25){
-  server.logea(chalk.cyan("el paquete requiere encryptar 32"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 32"));
     numero_de_packs=2;
    }
    if(data_full_line.length>=25 && data_full_line.length<=41){
-  server.logea(chalk.cyan("el paquete requiere encryptar 48"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 48"));
     numero_de_packs=3;
    }
    if(data_full_line.length>=41 && data_full_line.length<=57){
-  server.logea(chalk.cyan("el paquete requiere encryptar 64"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 64"));
     numero_de_packs=4;
    }
    if(data_full_line.length>=57 && data_full_line.length<=73){
-  server.logea(chalk.cyan("el paquete requiere encryptar 80"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 80"));
     numero_de_packs=5;
    }
    if(data_full_line.length>=73 && data_full_line.length<=89){
-  server.logea(chalk.cyan("el paquete requiere encryptar 96"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 96"));
     numero_de_packs=6;
    }
    if(data_full_line.length>=89 && data_full_line.length<=105){
-  server.logea(chalk.cyan("el paquete requiere encryptar 112"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 112"));
     numero_de_packs=7;
    }
    if(data_full_line.length>=105 && data_full_line.length<=121){
-  server.logea(chalk.cyan("el paquete requiere encryptar 128"));
+  os.logea(chalk.cyan("el paquete requiere encryptar 128"));
     numero_de_packs=8;
    }
    ebuffer = ebuffer.concat(data_full_line);
-  // server.logea("Sin packing tiene:"+ebuffer.length/2+" Bytes");
+  // os.logea("Sin packing tiene:"+ebuffer.length/2+" Bytes");
   // console.log(chalk.yellow("Data Sin Packing:"+ebuffer));
    // if((ebuffer.length/2)/14>1 ){
-   //   server.logea("we need to pack more than 1");
+   //   os.logea("we need to pack more than 1");
    // }
       //epacking
       determinar_send_padding(ebuffer);
@@ -535,22 +537,22 @@ async function prepare_Encryption(datax) {
      ebuffer = String(ebuffer, 'hex');
      var command_clean = ebuffer;
      var hexiando = "0x" + ssp.chunk(ebuffer, 2).join('0x');
-     //server.logea("chunking:"+hexiando);
+     //os.logea("chunking:"+hexiando);
      ebuffer = hexiando.match(/.{1,4}/g);
-     //server.logea("matching:"+hexiando);
+     //os.logea("matching:"+hexiando);
      var el_crc = new Buffer.from(ssp.spectral_crc(ebuffer), 'hex').toString('hex');
     //Agrega el STX a la cadena ya preformada, culminando asi el dato completo
     var command_listo = command_clean + el_crc;
     command_listo = command_listo.toUpperCase();
-    server.logea(chalk.yellow("__+ CRC al final:"+command_listo)+ chalk.cyan(" -->ESTO SE ENCRIPTA!!! ")+command_listo.length+" Bytes");
+    os.logea(chalk.yellow("__+ CRC al final:"+command_listo)+ chalk.cyan(" -->ESTO SE ENCRIPTA!!! ")+command_listo.length+" Bytes");
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////
     var encrypted_data =await encrypt(command_listo);
-    server.logea(chalk.red("_______encrypted:"+encrypted_data.toUpperCase()));
+    os.logea(chalk.red("_______encrypted:"+encrypted_data.toUpperCase()));
   if ((encrypted_data.length/2)==16) {
-    server.logea(chalk.cyan("PAKETE COMPLETO"));
+    os.logea(chalk.cyan("PAKETE COMPLETO"));
   } else {
-    server.logea("cantidad de bytes:"+encrypted_data.length/2);
+    os.logea("cantidad de bytes:"+encrypted_data.length/2);
   }
    //Al trasmitir 17 bytes es necesario ponerlo como HEX en la cadena de envio es decir 17dec=11hex
     var the_length = (encrypted_data.length / 2) + 1;
@@ -585,10 +587,10 @@ async function prepare_Encryption(datax) {
   //  var finalizando_envio = "217E" + encrypted_data; //se usa este valor cuando se va a utilizar 48 bytes para transmision
 
     finalizando_envio = finalizando_envio.toUpperCase();
-    server.logea(chalk.green("_encrypt2send:"+finalizando_envio));
+    os.logea(chalk.green("_encrypt2send:"+finalizando_envio));
     var to_send = "0x" + ssp.chunk(finalizando_envio, 2).join('0x');
     to_send = to_send.match(/.{1,4}/g);
-    //server.logea("to send:"+to_send);
+    //os.logea("to send:"+to_send);
     var full_encrypted_data = to_send; // make this equal to the full legth data encrypted ready to be send
   //  return full_encrypted_data;
     return resolve(full_encrypted_data);
@@ -610,10 +612,10 @@ async function handleEcommand(){
 //  console.log("after_encription received:" + number_of_byte + " Bytes of responde data");
   // console.log("witch are:" + myData);
   myData=myData.substr(2,number_of_byte+ 2)
-  server.logea("cleaned recevided data:"+myData);
-  server.logea(myData.length);
+  os.logea("cleaned recevided data:"+myData);
+  os.logea(myData.length);
   var number_of_packets=myData.length/32;
-  server.logea(number_of_packets);
+  os.logea(number_of_packets);
 // if(myData.length>32){
 //   myData=myData.substr(0, 32);
 //   console.log(chalk.red.inverse("Cutted length:"+myData));
@@ -624,15 +626,15 @@ var ready=[];
 //
 // });
  for (var i = 0; i < number_of_packets; i++) {
-   server.logea(i);
+   os.logea(i);
    var from, to;
    from=i*32;
    to=from+32;
-   server.logea("From:"+from+" To:"+to);
-   server.logea(myData);
+   os.logea("From:"+from+" To:"+to);
+   os.logea(myData);
    var myData2="";
    myData2=myData.substr(from, 32);
-   server.logea("Grupo:"+(i+1)+":"+myData2);
+   os.logea("Grupo:"+(i+1)+":"+myData2);
    var tempo=await decrypt(myData2).toUpperCase();
    ready=ready+tempo;
  }
@@ -642,17 +644,17 @@ var ready=[];
   var data_length = ready.substr(0, 2);
   handler=data_length;
   data_length=parseInt(data_length,10);
-  server.logea("data length is:"+data_length);
+  os.logea("data length is:"+data_length);
   var read_ecount=ready.substr(2, 8);
   read_ecount=changeEndianness(read_ecount);
-  server.logea("reaD COUNT:"+read_ecount);
+  os.logea("reaD COUNT:"+read_ecount);
   //read_ecount=parseInt(read_ecount,10);
   slave_count=read_ecount;
   slave_count=pady(slave_count,8);
   //slave_count = parseInt(slave_count, 16);
 //  console.log("slave_read_ecount is:"+slave_count);
   var read_data=ready.substr(10,data_length*2);
-  server.logea("read_data is:"+read_data);
+  os.logea("read_data is:"+read_data);
   //exports.handleRoutingNotes(read_data);
   handler=handler+read_data; //this concant the data lentth and the data itself in order to be able to hableit by pollresponse.
   await ssp.handlepoll(handler);
@@ -669,13 +671,13 @@ try {
   number_of_byte=ssp.hex_to_dec(number_of_byte);//////////////////////
   myData = received_command.substr(2, number_of_byte + 2);
   var firstbyte = myData.substr(0, 2);
-  server.logea("after_encription received:" + number_of_byte + " Bytes of responde data");
-  server.logea("witch are:" + myData);
+  os.logea("after_encription received:" + number_of_byte + " Bytes of responde data");
+  os.logea("witch are:" + myData);
   myData=myData.substr(2,number_of_byte+ 2)
-  server.logea("cleaned recevided data:"+myData);
-  server.logea(myData.length);
+  os.logea("cleaned recevided data:"+myData);
+  os.logea(myData.length);
   var number_of_packets=myData.length/32;
-  server.logea(number_of_packets);
+  os.logea(number_of_packets);
   // if(myData.length>32){
   //   myData=myData.substr(0, 32);
   //   console.log(chalk.red.inverse("Cutted length:"+myData));
@@ -686,7 +688,7 @@ try {
   //
   // });
   for (var i = 0; i < number_of_packets; i++) {
-   server.logea(i);
+   os.logea(i);
    var from, to;
    from=i*32;
    to=from+32;
@@ -695,7 +697,7 @@ try {
    var myData2="";
    myData2=myData.substr(from, 32);
    //console.log(myData2);
-   server.logea("Grupo:"+(i+1)+":"+myData2);
+   os.logea("Grupo:"+(i+1)+":"+myData2);
    //var tempo=await decrypt(myData2).toUpperCase();
    var tempo=await decrypt(myData);
    tempo=tempo.toUpperCase();
@@ -704,11 +706,11 @@ try {
   }
   //for each
   //ready=decrypt(myData).toUpperCase();
-  server.logea(chalk.green("<-:"+ready));
+  os.logea(chalk.green("<-:"+ready));
   var data_length = ready.substr(0, 2);
   handler=data_length;
   data_length=parseInt(data_length,16);
-  server.logea("data length is:"+data_length);
+  os.logea("data length is:"+data_length);
   var read_ecount=ready.substr(2, 8);
   read_ecount=changeEndianness(read_ecount);
   //console.log("reaD COUNT:"+read_ecount);
@@ -721,7 +723,7 @@ try {
   //slave_count = parseInt(slave_count, 16);
   //  console.log("slave_read_ecount is:"+slave_count);
   var read_data=ready.substr(10,ready.length);
-  server.logea("en promise_handleEcommand read_data is:"+read_data);
+  os.logea("en promise_handleEcommand read_data is:"+read_data);
   //exports.handleRoutingNotes(read_data);
   data_length=data_length*2;
   read_data=read_data.substr(0,data_length);

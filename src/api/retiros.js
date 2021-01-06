@@ -1,3 +1,4 @@
+const socket=require('./../it/socket')
 const express= require('express');
 const router = express.Router();
 const pool= require ('../database');
@@ -48,7 +49,7 @@ router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto
         const nuevo_egreso={tienda_id,no_caja,codigo_empleado,no_remesa,monto,moneda:country_code,tebs_barcode:tebs_barcode,machine_sn:numero_de_serie,tipo:'egreso',fecha,hora,status:'recibido',no_billetes:0}
         await pool.query('INSERT INTO remesas set ?', [nuevo_egreso]);
       //  io.io.emit('aviso_de_pago',nuevo_egreso.no_remesa);
-        io.io.emit('refresh_window',nuevo_egreso.no_remesa);
+        socket.io.emit('refresh_window',nuevo_egreso.no_remesa);
         res.json(nuevo_egreso);
         return resolve();
        }else {
@@ -121,7 +122,7 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
 
                       console.log(chalk.yellow("<-:"+data));
                       var solucion=handlepayoutvalue(data);
-                      server.logea("solucion is:"+solucion);
+                      os.logea("solucion is:"+solucion);
                     if(solucion=="ok"){
                         await pool.query ("UPDATE remesas SET status='procede' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                       }
@@ -195,7 +196,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 
         if(retiro.length>0){
       const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-      io.io.emit('retiro_en_proceso'," pago en proceso");
+      socket.io.emit('retiro_en_proceso'," pago en proceso");
       res.json(retirox);
       return resolve();
           }else{
@@ -225,7 +226,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
     var data =await ssp.transmite_encriptado_y_procesa(global.receptor,arry);
     const retiro= await pool.query ("UPDATE remesas SET status='en_proceso' WHERE no_remesa=?",[no_remesa]);
     const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-    io.io.emit('retiro_en_proceso'," pago en proceso");
+    socket.io.emit('retiro_en_proceso'," pago en proceso");
     res.json(retirox);
     return resolve();
     //////////////////////////////////

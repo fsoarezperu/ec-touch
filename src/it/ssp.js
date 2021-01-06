@@ -1,42 +1,44 @@
+const sp = require('./serial_port');
+const os = require('./os');
+const socket = require('./socket');
+
 const server = require('./../server');
 const chalk=require('chalk');
-const sp = require('./serial_port');
+
 const enc = require('./encryption');
 //const io = require("./../server.js");
 const sh = require("./devices/smart_hopper");
 const pool = require('./../database');
 const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
-//const iox = require('socket.io-client');
-//const socket2=iox.connect('http://localhost:4000',{reconnect:true});
 
-//var io = require('socket.io-client');
-//var socket = io.connect('http://localhost:4000');
-//var io = require("socket.io-client")('http://localhost:4000');
 
-var client = require("socket.io-client");
-var my_server_port= "http://localhost:"+machine_port
-var socket = client.connect(my_server_port);
-module.exports.socket=socket;
-//socket.emit("test", "foo");
-
-socket.on('connect', function () {
-  // socket connected
-    console.log("connected como cliente desde otro js");
-  //  socket.emit('connected','connected');
-
-    socket.on('prueba', function (msg) {
-      // socket connected
-        console.log("si lo recibo adecuadamente");
-        //socket.emit('connected','connected');
-    });
-
-    // console.log('connect',socket.id);
-    // socket.on('connection',function (socket) {
-    //     console.log('conenction',socket.id);
-    // });
-});
-
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+// var client = require("socket.io-client");
+// var my_server_port= "http://localhost:"+machine_port
+// var socket2 = client.connect(my_server_port);
+// module.exports.socket2=socket2;
+// socket2.on('connect', function () {
+//   // socket connected
+//     console.log(chalk.magenta("connected como cliente desde otro js"));
+//   //  socket.emit('connected','connected');
+//
+//     socket2.on('prueba', function (msg) {
+//       // socket connected
+//         console.log("si lo recibo adecuadamente");
+//         //socket.emit('connected','connected');
+//     });
+//
+//     // console.log('connect',socket.id);
+//     // socket.on('connection',function (socket) {
+//     //     console.log('conenction',socket.id);
+//     // });
+// });
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 const moment=require("moment");
 const glo = require('./globals');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -119,7 +121,7 @@ function prepare_command_to_be_sent(receiver,command){
 return new Promise(function(resolve, reject) {
 
   try {
-    server.logea("en prepare command to be send:"+command);
+    os.logea("en prepare command to be send:"+command);
     var formed_command_to_send;
     sequencer();
     var seq_bit_hex = ConvertBase.dec2bin(seq_bit); //seq_bit to hex
@@ -217,8 +219,8 @@ try {
       //  console.log("current_char:"+current_char);
           if(current_char=="7F"){
             if(toggy==true){
-                server.logea(chalk.yellow("STUFF"));
-                server.logea(chalk.cyan("received command to be evaluted:"+command));
+                os.logea(chalk.yellow("STUFF"));
+                os.logea(chalk.cyan("received command to be evaluted:"+command));
                 toggy=false;
              }else{
               // console.log("received command to be evaluted:"+command);
@@ -245,7 +247,7 @@ function handlesynch(data){
 return new Promise(function(resolve, reject) {
     var poll_responde=data.match(/.{1,2}/g);
     if(poll_responde[1] == "F0"){
-      server.logea(chalk.green("Synch OK"));
+      os.logea(chalk.green("Synch OK"));
       enable_sending();
     return resolve("OK")
     }else{
@@ -642,7 +644,7 @@ return new Promise(async function(resolve, reject) {
                                   //console.log("aqui el dato es:"+poll_responde[2]);
                                   if(global.last_sent===""){
                                     console.log(chalk.yellow("Validator Disabled"));
-                                    server.io.emit('Validator_Disabled', "Validator Disabled");
+                                    io.emit('Validator_Disabled', "Validator Disabled");
                                     global.last_sent=poll_responde[2];
                                   }
                                 //  console.log(chalk.red("Validator Disabled"));
@@ -874,7 +876,7 @@ function handleprotocolversion(data){
   return new Promise(function(resolve, reject) {
     var poll_responde=data.match(/.{1,2}/g);
     if(poll_responde[1] == "F0"){
-    server.logea(chalk.green(device+" Protocol version set to version:"+hopper_protocol_version[2]));
+    os.logea(chalk.green(device+" Protocol version set to version:"+hopper_protocol_version[2]));
       return resolve("OK")
     }else{
         console.log(chalk.red("////////////ERROR/////////////"));
@@ -932,23 +934,23 @@ var firmware_version = myData.substr(4, 8);
 firmware_version = hex_to_ascii(firmware_version);
 firmware_version = parseInt(firmware_version);
 
-server.logea("firmware_version:" + firmware_version);
+os.logea("firmware_version:" + firmware_version);
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 country_code = myData.substr(12, 6);
 //console.log("Country code HEX:" + country_code);
 country_code = hex_to_ascii(country_code);
-server.logea("Country code:" + country_code);
+os.logea("Country code:" + country_code);
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 var value_multiplier = myData.substr(18, 6);
 value_multiplier = parseInt(hex_to_dec(value_multiplier));
-server.logea("value_multiplier:" + value_multiplier);
+os.logea("value_multiplier:" + value_multiplier);
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 var numbers_of_channels = myData.substr(24, 2);
 numbers_of_channels = parseInt(numbers_of_channels);
-server.logea("Numbers of channels:" + numbers_of_channels);
+os.logea("Numbers of channels:" + numbers_of_channels);
 ///////////////////////////////////////////////////////
 if(numbers_of_channels==7){
   //////////////////////////////////////////////////////
@@ -981,16 +983,16 @@ if(numbers_of_channels==7){
   var country_code_channel_seven = hex_to_ascii(channels_country_code.substr(36, 6));
 
   ///////////////////////////////////////////////////////
-  server.logea("channel_value_1:" + parseInt(first_channel, 16) + country_code_channel_one);
-  server.logea("channel_value_2:" + parseInt(second_channel, 16) + country_code_channel_two);
-  server.logea("channel_value_3:" + parseInt(third_channel, 16) + country_code_channel_three);
-  server.logea("channel_value_4:" + parseInt(fourth_channel, 16) + country_code_channel_four);
-  server.logea("channel_value_5:" + parseInt(fifth_channel, 16) + country_code_channel_five);
-  server.logea("channel_value_6:" + parseInt(sixth_channel, 16) + country_code_channel_six);
-  server.logea("channel_value_7:" + parseInt(seventh_channel, 16) + country_code_channel_seven);
+  os.logea("channel_value_1:" + parseInt(first_channel, 16) + country_code_channel_one);
+  os.logea("channel_value_2:" + parseInt(second_channel, 16) + country_code_channel_two);
+  os.logea("channel_value_3:" + parseInt(third_channel, 16) + country_code_channel_three);
+  os.logea("channel_value_4:" + parseInt(fourth_channel, 16) + country_code_channel_four);
+  os.logea("channel_value_5:" + parseInt(fifth_channel, 16) + country_code_channel_five);
+  os.logea("channel_value_6:" + parseInt(sixth_channel, 16) + country_code_channel_six);
+  os.logea("channel_value_7:" + parseInt(seventh_channel, 16) + country_code_channel_seven);
   ///////////////////////////////////////////////////////
   var protocol_version = myData.substr(52, 2);
-  server.logea("protocol version:" + "Version " + parseInt(protocol_version, 16));
+  os.logea("protocol version:" + "Version " + parseInt(protocol_version, 16));
   ///////////////////////////////////////////////////////
 }
 if(numbers_of_channels==5){
@@ -1017,14 +1019,14 @@ var country_code_channel_three = hex_to_ascii(channels_country_code.substr(12, 6
 var country_code_channel_four = hex_to_ascii(channels_country_code.substr(18, 6));
 var country_code_channel_five = hex_to_ascii(channels_country_code.substr(24, 6));
 ///////////////////////////////////////////////////////
-server.logea("channel_value_1:" + parseInt(first_channel, 16) + country_code_channel_one);
-server.logea("channel_value_2:" + parseInt(second_channel, 16) + country_code_channel_two);
-server.logea("channel_value_3:" + parseInt(third_channel, 16) + country_code_channel_three);
-server.logea("channel_value_4:" + parseInt(fourth_channel, 16) + country_code_channel_four);
-server.logea("channel_value_5:" + parseInt(fifth_channel, 16) + country_code_channel_five);
+os.logea("channel_value_1:" + parseInt(first_channel, 16) + country_code_channel_one);
+os.logea("channel_value_2:" + parseInt(second_channel, 16) + country_code_channel_two);
+os.logea("channel_value_3:" + parseInt(third_channel, 16) + country_code_channel_three);
+os.logea("channel_value_4:" + parseInt(fourth_channel, 16) + country_code_channel_four);
+os.logea("channel_value_5:" + parseInt(fifth_channel, 16) + country_code_channel_five);
 ///////////////////////////////////////////////////////
 var protocol_version = myData.substr(52, 2);
-server.logea("protocol version:" + "Version " + parseInt(protocol_version, 16));
+os.logea("protocol version:" + "Version " + parseInt(protocol_version, 16));
 ///////////////////////////////////////////////////////
 }
 //console.log("/////////////////////////////////");
@@ -1054,45 +1056,7 @@ function handleGetSerialNumber(data){
 }
 module.exports.handleGetSerialNumber=handleGetSerialNumber;
 ////////////////////////////////////////////////////
-exports.handleSetInhivits=function(data){
-  var number_of_byte = get_count_bytes_received();
-  var myData = received_command.substr(2, number_of_byte + 2);
-  var firstbyte = myData.substr(0, 2);
-  var secondbyte = myData.substr(2, 2);
-  if (firstbyte == "F0") {
-    console.log(chalk.green("OK Inhivit received"));
-  if (secondbyte == "E8") {
-    console.log("Device Disabled");
-  }
-}
-  enable_sending();
- }
-////////////////////////////////////////////////////
-//global.bag_barcode;
-exports.handleGetTebsBarcode=function(data){
-  var number_of_byte = get_count_bytes_received();
-  var myData = received_command.substr(2, number_of_byte + 2);
-  var pointer = 0;
-  for (var countery = 0; countery < 10; countery++) {
-    pointer = pointer + 2;
-    var i = myData.substr(pointer, 2);
-    i = ConvertBase.hex2bin(i);
-    i = ConvertBase.bin2dec(i);
-    if (i < 10) {
-      i = pad(i);
-    } else {
-      i = i;
-    }
-    tebs_barcode = tebs_barcode.concat(i);
-  }
-  //console.log(chalk.green("tebs barcode is:" + tebs_barcode));
-  //var mytebsbarcode = tebs_barcode;
-//  bag_barcode=tebs_barcode;
-  //exports.mytebsbarcode = mytebsbarcode;
-  //return;
-  //  enable_sending();
-}
-/////////////////////////////////////////////////////////
+
 // async function handlepoll2(data){
 //    console.log("iniciando handle poll2");
 //   return new Promise((resolve,reject)=>{
@@ -1642,7 +1606,7 @@ function ensureIsSet() {
               //  console.log("Timeout reached");
                return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
               // return resolve("OK");
-            }, 6000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
+            }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
 
       } catch (e) {
@@ -1660,19 +1624,19 @@ function ensureIsSet2() {
   var secondtimer,timerout;
   function waitForFoo(){
         secondtimer=setTimeout(waitForFoo, 1000);
-        console.log("sigo en wait for foo");
+      //  console.log("sigo en wait for foo");
       if (ready_for_sending){
-          console.log(chalk.green("Canal liberado"));
+      //    console.log(chalk.green("Canal liberado"));
         //  console.log(secondtimer);
         //  console.log(timerout);
          clearTimeout(timerout);
          //
-      //   return;
+         return;
 
       }else {
-        console.log(chalk.magenta("XXXXXXXXXXXXXXXXXXXXXXXXXX"));
+      //  console.log(chalk.magenta("XXXXXXXXXXXXXXXXXXXXXXXXXX"));
 
-        //return
+        return
       }
       clearTimeout(secondtimer);
     //  clearTimeout(timerout);
@@ -1685,7 +1649,7 @@ function ensureIsSet2() {
       //  console.log("Timeout reached");
     //   return; // reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
       // return resolve("OK");
-     }, 4000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
+    }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
     // console.log("hasta aqui llegue seteando timers.");
 
   //  return;
@@ -1694,8 +1658,8 @@ module.exports.ensureIsSet2=ensureIsSet2;
 /////////////////////////////////////////////////////////
 function set_protocol_version(receptor,version_de_receptor) {
   return new Promise( async function(resolve, reject) {
-    server.logea("set_protocol_version");
-      server.logea(receptor);
+    os.logea("set_protocol_version");
+      os.logea(receptor);
        var step1=await envia_encriptado(receptor,version_de_receptor) //<--------------------- host_protocol_version
         if (step1.length>0) {
           var step2 =await handleprotocolversion(step1);
@@ -1712,7 +1676,7 @@ module.exports.set_protocol_version=set_protocol_version;
 function setup_request_command(receptor) {
   return new Promise(async function(resolve, reject) {
 try {
-  server.logea("setup_request sent");
+  os.logea("setup_request sent");
  var step1= await envia_encriptado(receptor,setup_request) //<---- setup_request
  if (step1.length>0) {
   // console.log("step1:"+step1);
@@ -1883,25 +1847,25 @@ console.log("iniciando actualizacion de remesa hermes:");
 module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;
 /////////////////////////////////////////////////////////
 function set_coin_mech_inhibits(receptor){
-  server.logea("set_coin_mech_inhibits sent");
+  os.logea("set_coin_mech_inhibits sent");
   sp.transmision_insegura(receptor,coin_mech_global_inhibit) //<---- setup_request
     .then(data => {
-      server.logea(chalk.yellow('<-:'), chalk.yellow(data));
+      os.logea(chalk.yellow('<-:'), chalk.yellow(data));
       handles_coin_mech_inhivits(data);
-      server.logea("/////////////////////////////////");
+      os.logea("/////////////////////////////////");
     //  console.log("get_serial_number sent");
     //  return sp.transmision_insegura(receptor,get_serial_number) //<-------- get_serial_number
   //  })
     // .then(data => {
-    //   server.logea(chalk.yellow('<-:'), chalk.yellow(data));
+    //   os.logea(chalk.yellow('<-:'), chalk.yellow(data));
     //   handleGetSerialNumber(data);
     //   return sp.transmision_insegura(receptor,poll) //<----------- poll
-    //   server.logea("/////////////////////////////////");
+    //   os.logea("/////////////////////////////////");
     // })
     // .then(data => {
-    //   server.logea(chalk.yellow('<-:'), chalk.yellow(data));
+    //   os.logea(chalk.yellow('<-:'), chalk.yellow(data));
     //   handle_coin_mech_inhivits(data);
-  //    server.logea("/////////////////////////////////");
+  //    os.logea("/////////////////////////////////");
       // if (note_validator_type == "TEBS+Payout") {
       //   set_routing();
       // }
@@ -1931,7 +1895,7 @@ function envia_encriptado(receptorx,orden){
       try {
         ultimo_valor_enviado=orden;
         var  toSend =await enc.prepare_Encryption(orden);
-        server.logea("here to_sed is:"+toSend);
+        os.logea("here to_sed is:"+toSend);
           var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
           //console.log(data);
           if (data.length!=0) {
@@ -1949,6 +1913,24 @@ function envia_encriptado(receptorx,orden){
       });
 }
 module.exports.envia_encriptado=envia_encriptado;
+
+async function envia_encriptado2(receptorx,orden){
+
+        ultimo_valor_enviado=orden;
+        var  toSend =await enc.prepare_Encryption(orden);
+        os.logea("here to_sed is:"+toSend);
+          var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
+          //console.log(data);
+          if (data.length!=0) {
+            data=await enc.promise_handleEcommand(data)
+            return data;
+          }else {
+            return "no data received";
+          }
+
+
+}
+module.exports.envia_encriptado2=envia_encriptado2;
 ////////////////////////////////////////////////////////
 function sync_and_stablish_presence_of(receptor) {
 
@@ -1956,14 +1938,14 @@ function sync_and_stablish_presence_of(receptor) {
 
     try {
 
-          server.logea("/////////////////////////////////");
-          server.logea(chalk.green("sync_and_stablish_presence_of:"+device));
-          server.logea("/////////////////////////////////");
-          server.logea("SYNCH command sent to:"+device);
+          os.logea("/////////////////////////////////");
+          os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
+          os.logea("/////////////////////////////////");
+          os.logea("SYNCH command sent to:"+device);
                 for (var i = 0; i < 3; i++) {
                   ultimo_valor_enviado="synch";
                   var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
-                    server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                   var step2=await handlesynch(step1);
                   if (show_details) {
                     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
@@ -1981,6 +1963,27 @@ function sync_and_stablish_presence_of(receptor) {
   });
 };
 module.exports.sync_and_stablish_presence_of=sync_and_stablish_presence_of;
+
+async function sync_and_stablish_presence_of2(receptor) {
+          os.logea("/////////////////////////////////");
+          os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
+          os.logea("/////////////////////////////////");
+          os.logea("SYNCH command sent to:"+device);
+                for (var i = 0; i < 3; i++) {
+                  ultimo_valor_enviado="synch";
+                  var step1=await sp.transmision_insegura2(receptor,synch) //<------------------------------ synch
+                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                  var step2=await handlesynch(step1);
+                  if (show_details) {
+                    console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+                  }
+                     if (!step2=="OK") {
+                       return step2;
+                     }
+                }
+          return "OK";
+};
+module.exports.sync_and_stablish_presence_of2=sync_and_stablish_presence_of2;
 /////////////////////////////////////////////////////////
 function negociate_encryption(receptor) {
   encryptionStatus = false;
@@ -1988,22 +1991,22 @@ function negociate_encryption(receptor) {
 
            enc.getkeys();
            setGenerator = enc.set_generator_();
-           server.logea("/////////////////////////////////");
-           server.logea("SET GENERATOR command sent");
+           os.logea("/////////////////////////////////");
+           os.logea("SET GENERATOR command sent");
             ultimo_valor_enviado="setGenerator";
              var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
-               server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+               os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
              var step2=await enc.handleSetgenerator(step1);
              if (show_details) {
                console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
              }
                 if (step2=="OK") {
                   var setModulus = enc.set_modulus();
-                  server.logea("/////////////////////////////////");
-                  server.logea("SET MODULUS command sent");
+                  os.logea("/////////////////////////////////");
+                  os.logea("SET MODULUS command sent");
                               ultimo_valor_enviado="setModulus";
                   var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
-                    server.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
+                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
                     var step4=await enc.handleSetmodulus(step3);
                     if (show_details) {
                       console.log(chalk.yellow(device+'<-:'), chalk.yellow(step4));
@@ -2011,16 +2014,16 @@ function negociate_encryption(receptor) {
                        if (step4=="OK") {
                             //  var step6;
                             var rKE = await enc.send_request_key_exchange();
-                            server.logea("/////////////////////////////////");
-                            server.logea("Request Key Exchange command sent");
+                            os.logea("/////////////////////////////////");
+                            os.logea("Request Key Exchange command sent");
                             ultimo_valor_enviado="request key exchange";
                             var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
                             try {
                               var step6=await enc.handleRKE(step5);
                               if(step6.length>0){
-                                server.logea(chalk.green('KEY:'), chalk.green(step6));
+                                os.logea(chalk.green('KEY:'), chalk.green(step6));
                                 console.log(chalk.green("Encripted comunication Active"));
-                                server.logea("/////////////////////////////////");
+                                os.logea("/////////////////////////////////");
                                 encryptionStatus = true;
                                return resolve("OK")
 
@@ -2115,3 +2118,55 @@ if (bypass== false) {
 
 }
 module.exports.transmite_encriptado_y_procesa=transmite_encriptado_y_procesa;
+
+
+
+
+function handleSetInhivits(data){
+//exports.handleSetInhivits=function(data){
+  var number_of_byte = get_count_bytes_received();
+  var myData = received_command.substr(2, number_of_byte + 2);
+  var firstbyte = myData.substr(0, 2);
+  var secondbyte = myData.substr(2, 2);
+  if (firstbyte == "F0") {
+    console.log(chalk.green("OK Inhivit received"));
+  if (secondbyte == "E8") {
+    console.log("Device Disabled");
+  }
+}
+  enable_sending();
+ }
+ module.exports.handleSetInhivits=handleSetInhivits;
+////////////////////////////////////////////////////
+//global.bag_barcode;
+function handleGetTebsBarcode(data){
+//exports.handleGetTebsBarcode=function(data){
+  var number_of_byte = get_count_bytes_received();
+  var myData = received_command.substr(2, number_of_byte + 2);
+  var pointer = 0;
+  for (var countery = 0; countery < 10; countery++) {
+    pointer = pointer + 2;
+    var i = myData.substr(pointer, 2);
+    i = ConvertBase.hex2bin(i);
+    i = ConvertBase.bin2dec(i);
+    if (i < 10) {
+      i = pad(i);
+    } else {
+      i = i;
+    }
+    tebs_barcode = tebs_barcode.concat(i);
+  }
+  //console.log(chalk.green("tebs barcode is:" + tebs_barcode));
+  //var mytebsbarcode = tebs_barcode;
+//  bag_barcode=tebs_barcode;
+  //exports.mytebsbarcode = mytebsbarcode;
+  //return;
+  //  enable_sending();
+}
+module.exports.handleGetTebsBarcode=handleGetTebsBarcode;
+/////////////////////////////////////////////////////////
+
+var io;
+module.exports = function(importIO) {
+    io = importIO;
+};

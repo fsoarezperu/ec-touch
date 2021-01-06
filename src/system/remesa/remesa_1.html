@@ -18,14 +18,19 @@
 //   $('#display').load("./system/configuracion.html");
 // });
 ///////////////////////////////////////////////////////
+// $("#cancelling").click(function() {
+//   alert("Canceling");
+//   //socket.emit('disable_validator');
+//   //window.location.replace("/cancelling");
+// });
 });
 </script>
-<body  oncontextmenu="return false">
+<!-- <body  oncontextmenu="return false">
   <div class="wrapper2">
     <div class="titulo2">
     <div class="btn volver" id='config'>Configuracion</div>
     <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
-    <div class="mensaje">Remesa Hermes</div>
+    <div class="mensaje">Nueva Remesa</div>
     <div id="msg1">
       Bloqueado
     </div>
@@ -56,5 +61,39 @@
 
   </div>
 
+
+</body> -->
+
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+      <div id="message">Ingrese el dinero</div>
+      <div></div>
+    </div>
+
+    <div class="grupo2">
+    <div></div>
+        <div></div>
+            <div></div>
+        <div></div>
+        <div>
+          <div id="currency_val" class="depositado"style="float:left;"></div><div id="depositado"style="float:initial;">0.00</div>
+          <div style="font-size:28px;">Billetes Leidos:</div><div id="qty_bill" style="font-size:28px;">0</div>
+
+        </div>
+        <!-- </div> -->
+        <div></div>
+        <div></div>
+        <div>
+        <a class="btn btn-primary m-2" id="finish">Terminar REMESA</a>
+        <a class="btn btn-primary m-2" id="cancelar_remesa">Cancelar REMESA</a>
+        </div>
+    </div>
+
+  </div>
+  <!-- <div id="message">
+    <ol></ol>
+  </div> -->
 
 </body>

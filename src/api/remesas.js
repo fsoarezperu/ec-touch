@@ -1,3 +1,4 @@
+const socket=require('./../it/socket')
 const express = require('express');
 const router = express.Router();
 const pool = require('../database');
@@ -8,8 +9,8 @@ const chalk = require('chalk');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var io = require('socket.io-client');
-var socket = io.connect('http://localhost:3000');
-socket.on('connect', function () {
+var socket2 = io.connect('http://localhost:3000');
+socket2.on('connect', function () {
   // socket connected
 });
 
@@ -94,7 +95,7 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   }
 });
 
-socket.on('paso2',function(msg){
+socket2.on('paso2',function(msg){
   console.log('paso2 recivido');
 
 })
@@ -219,7 +220,7 @@ router.get('/anular_remesa/:no_remesa', async (req, res) => {
           } = req.params;
           const remesa = await pool.query("UPDATE remesas SET rms_status='anulada', status='anulada' WHERE tipo='ingreso' and no_remesa=?", [no_remesa]);
           const remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
-          io.io.emit('refresh_window', "refresh_window");
+          socket.io.emit('refresh_window', "refresh_window");
           res.json(remesax);
           return resolve();
         } else {

@@ -1,3 +1,5 @@
+const socket=require('./../socket')
+
 function start_tebs_validator() {
   logea("/////////////////////////////////");
   console.log("Startup Initiated");
@@ -294,7 +296,7 @@ function set_channel_inhivits() {
       //console.log("indica que ya no esta en startup");
       console.log("Listo...");
       /////////////////////////////////////////////////////
-      io.emit('location_reload');
+      socket.io.emit('location_reload');
       it.enable_sending();
       poll_loop(); //esto tiene que descomentarse para que sea utilizado por remesa nueva.
       //        enable_validator() //bypass the enable until a new remesa has begun.

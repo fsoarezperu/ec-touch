@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../database');
-const io = require("../server.js");
+const io = require("../it/socket.js");
 const tambox = require("../it/devices/tambox.js");
 const va = require("../it/devices/validator");
 
@@ -40,7 +40,7 @@ router.get('/', async (req, res) => {
         });
       } else {
         console.log(chalk.red("loading website"));
-        console.log(glo.my_resgistered_machine_name);
+        console.log(chalk.yellow("This Machine name is:"+glo.my_resgistered_machine_name));
         res.render('index',{my_resgistered_machine_name:glo.my_resgistered_machine_name});
       }
 
@@ -481,7 +481,7 @@ router.get('/montos',async (req, res) => {
             totbills = totbills + lod;
           }
         }
-        console.log("total billetes en reciclador:" + totbills);
+        console.log(chalk.red("total billetes en reciclador:" + totbills));
         totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
         console.log("total monto acumulado en reciclador:" + totaccum);
         console.log("/////////// ALL LEVELS ///////////////");

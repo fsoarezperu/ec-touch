@@ -1,6 +1,6 @@
 <script type="text/javascript">
   var timer_de_display_remote_conection_to_tbm;
-  var remote_TBM = io.connect('http://192.168.1.2:3000');
+  //var remote_TBM = io.connect('http://192.168.1.6:3000');
   var is_connected = false;
   var mydata;
   var mytimer;
@@ -8,6 +8,31 @@
     cargar_pantalla_guardada();
     $("#TBM_icon").css('visibility', 'hidden');
     display_remote_conection_to_TBM();
+    function enlace_a(a1) {
+      var a1x="#"+a1;
+      $(document).on("click",a1x,function(){
+        console.log("emitting:"+a1);
+        socket.emit(a1,a1);
+      });
+      socket.on(a1, function(msg){
+        console.log("receiving:"+a1);
+        $('#display').html(msg[1]);
+        mydata=msg[0];
+        console.log(mydata);
+      });
+      return;
+    }
+    function mandar_orden(a2) {
+      var a2y="#"+a2;
+      $(document).on("click",a2y,function(){
+        console.log(a2);
+        socket.emit(a2,a2);
+      });
+      socket.on(a2, function(msg){
+        display_message(msg);
+      });
+      return;
+    }
 /////////////////////////////////////////////////////////////////////
     enlace_a("main");
 /////////////////////////////////////////////////////////////////////
@@ -20,17 +45,19 @@
     enlace_a("Smart_emptied");
     enlace_a("cashbox_unlocked");
     enlace_a("Cashbox_Back_in_Service");
+    enlace_a("iniciar_nueva_remesa");
+
 
     mandar_orden("lock_cashbox");
     mandar_orden("unlock_cashbox");
     mandar_orden("smart_empty");
-    //mandar_orden("Smart_emptying");
-  //  mandar_orden("Smart_emptied");
-  //  mandar_orden("Cashbox_Back_in_Service");
-
+    mandar_orden("Smart_emptying");
+    mandar_orden("Smart_emptied");
+    mandar_orden("Cashbox_Back_in_Service");
+    mandar_orden("cancelar_remesa");
     // mandar_orden("trigger_socket");
     //
-    // mandar_orden("fer");
+     mandar_orden("fer");
     // mandar_orden("connected");
 
     socket.on('Cashbox_Unlock_Enable', function(msg) {
@@ -39,43 +66,15 @@
     display_pestillo("Desbloqueado");
     });
 
-    socket.on('Cashbox_Lock_Enable', function(msg) {
-    //  console.log("desbloqueado");
-    //  window.location.replace("/");
-  //  document.getElementById("msg1").innerHTML="pestillo desbloqueado";
-    });
-
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
       window.location.replace("/");
     });
 /////////////////////////////////////////////////////////////////////
-function enlace_a(a1) {
-  var a1x="#"+a1;
-  $(document).on("click",a1x,function(){
-    socket.emit(a1,a1);
-  });
-  socket.on(a1, function(msg){
-    $('#display').html(msg[1]);
-    mydata=msg[0];
-    console.log(mydata);
-  });
-  return;
-}
-function mandar_orden(a2) {
-  var a2y="#"+a2;
-  $(document).on("click",a2y,function(){
-    console.log(a2);
-    socket.emit(a2,a2);
-  });
-  socket.on(a2, function(msg){
-    display_message(msg);
-  });
-  return;
-}
-    remote_TBM.on('machine', function(data) {
-      console.log("ticking...");
-    });
+
+    // remote_TBM.on('machine', function(data) {
+    //   console.log("ticking...");
+    // });
     ////////////////////////////////////////////////////
     socket.on('system_running_indicator', function(msg) {
       display_system_running_indicator();
@@ -156,5 +155,5 @@ function mandar_orden(a2) {
       <!-- ESTO SE LLENA EN LINEA CON LA INFORMACION GUARDADA EN BUFFER.HTML -->
     </div>
   </div>
-<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+<!-- <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
 </body>

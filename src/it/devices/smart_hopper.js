@@ -11,8 +11,8 @@ const va = require('./validator');
 function start_smart_hopper() {
   return new Promise( async function(resolve, reject) {
     try {
-      server.logea(chalk.green("starting_smart_hopper"));
-      server.logea("/////////////////////////////////");
+      os.logea(chalk.green("starting_smart_hopper"));
+      os.logea("/////////////////////////////////");
       var stat=await ssp.sync_and_stablish_presence_of(smart_hopper_address);
       if (stat=="OK") {
         var step2=await ssp.negociate_encryption(smart_hopper_address);
@@ -60,7 +60,7 @@ function start_smart_hopper() {
 module.exports.start_smart_hopper=start_smart_hopper;
 ///////////////////////////////////////////////////////////
 function set_hopper_routing(receptor) {
-  server.logea(chalk.yellow("ROUTING COINS"));
+  os.logea(chalk.yellow("ROUTING COINS"));
   return new Promise(async function(resolve, reject) {
   await ssp.envia_encriptado(receptor,send_10_centimos_a_reciclaje);
   await ssp.envia_encriptado(receptor,send_20_centimos_a_reciclaje);
@@ -344,13 +344,13 @@ return new Promise(async function(resolve, reject) {
   // super_comando(receptor,set_coin_amount_10c)
   // .then(data =>{
   //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  //   server.logea("//////////////////////////////////////////");
+  //   os.logea("//////////////////////////////////////////");
   //   return enc.promise_handleEcommand(data)
   // })
   // .then(data => {
-  // //server.logea(chalk.yellow(device+'<-:'), chalk.yellow(data));
+  // //os.logea(chalk.yellow(device+'<-:'), chalk.yellow(data));
   // console.log(chalk.yellow(device+'<-:'), chalk.yellow(data));
-  // server.logea("RESULT:"+data);
+  // os.logea("RESULT:"+data);
   // return super_comando(receptor,set_coin_amount_20c)
   // })
   // .then(data =>{
@@ -386,16 +386,16 @@ return new Promise(async function(resolve, reject) {
 //         //  io.emit('tog_validator');
 //
 //         if (ready_for_sending) {
-//             server.logea(chalk.green('ready for sending is:'),chalk.green(ready_for_sending));
+//             os.logea(chalk.green('ready for sending is:'),chalk.green(ready_for_sending));
 //           if (ready_for_pooling) {
-//              server.logea(chalk.cyan('ready for pooling is:'),chalk.green(ready_for_pooling));
-//             server.logea(chalk.magentaBright("HOPPER POLL"));
+//              os.logea(chalk.cyan('ready for pooling is:'),chalk.green(ready_for_pooling));
+//             os.logea(chalk.magentaBright("HOPPER POLL"));
 //             // logea(chalk.magentaBright('POLL command sent'));
 //             clearTimeout(sp.timer2);
 //             //console.log(chalk.red("justo antes de supercomando, poll tiene el valor de:"+poll));
 //              super_comando(receptor,global.poll)
 //             .then(data =>{
-//               server.logea(chalk.yellow("and also from here"+device+'<-:'), chalk.yellow(data));
+//               os.logea(chalk.yellow("and also from here"+device+'<-:'), chalk.yellow(data));
 //               sp.canal_liberado();
 //               //poll_hopper(receptor);
 //               setTimeout(function(){
@@ -423,7 +423,7 @@ return new Promise(function(resolve, reject) {
     toSend = enc.prepare_Encryption(poll);
     sp.transmision_insegura(receptorx,toSend)
       .then(data =>{return enc.promise_handleEcommand(data)})
-      .then(async function(data){server.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await va.handle_poll_validator(data)})
+      .then(async function(data){os.logea(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await va.handle_poll_validator(data)})
       .then(data=>{return resolve(data);})
       .catch(function(error) {console.log(error);sp.retrial(error);});
 });

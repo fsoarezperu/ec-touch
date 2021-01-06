@@ -4,37 +4,44 @@
 // ///////////////////////////////////////////////////////////
 // exports.start_validator=function(){
 //   console.log("starting_smart_hopper");
-//   server.logea("/////////////////////////////////");
+//   os.logea("/////////////////////////////////");
 //    ssp.sync_and_stablish_presence_of(validator_address);
 // }
 // ///////////////////////////////////////////////////////////
+const sp = require('./../serial_port');
 const ssp = require('./../ssp');
+
+
 const server = require('./../../server');
 const it = require('./tambox');
-const sp = require('./../serial_port');
+
 const enc = require('./../encryption');
 const chalk=require('chalk');
 const glo = require('./../globals');
 const pool = require('./../../database');
+const os = require('./../os');
 ///////////////////////////////////////////////////////////
 function start_validator() {
   return new Promise( async function(resolve, reject) {
-    server.logea(chalk.green("starting_validator"));
-    server.logea("/////////////////////////////////");
+    os.logea(chalk.green("starting_validator"));
+    os.logea("/////////////////////////////////");
     try {
 
-      var stat=await ssp.sync_and_stablish_presence_of(validator_address);
+      var stat=await ssp.sync_and_stablish_presence_of2(validator_address);
       if (stat=="OK") {
       var step2=await ssp.negociate_encryption(validator_address);
               if (step2=="OK") {
-                var step3= await validatorpoll(validator_address);
-              //  console.log("step3 es:"+step3);
-                //console.log(step3);
-                  if (step3=="OK") {
-                //    //return resolve("TERMINADO");
+            //  await  setTimeout(async function(){
+                  var step3= await validatorpoll(validator_address);
+                //  console.log("step3 es:"+step3);
+              //  },9000);
+                   if (step3=="OK") {
+                 //return reject("TERMINADO");
                 ultimo_valor_enviado="set protocol version"
-                  var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
-                    if (step4=="OK") {
+                   var step4= await ssp.set_protocol_version(validator_address,validator_protocol_version);
+                //   console.log("step4:"+step4);
+                     if (step4=="OK") {
+
                       var step5= await ssp.setup_request_command(validator_address);
                   //   console.log("step5"+step5);
                      if (step5=="OK") {
@@ -43,16 +50,17 @@ function start_validator() {
                                      var step6= await set_validator_routing(validator_address);
                                      if (step6=="OK") {
                                        //verificar registro de maquina.
-                                            var regis=await server.is_this_machine_registered();
-                                            //console.log("resgistered is:"+regis);
+                                            var regis=await os.is_this_machine_registered();
+                                          //  console.log("resgistered is:"+regis);
                                         if(regis=="OK"){
+                                        //  console.log("entro por aqui");
                                           glo.is_regis=true;
 
                                         //  console.log(chalk.green("Registro Aprovado:"+regis));
                                           //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
                                           var my_resgistered_machine=await server.query_this_machine();
                                           //my_resgistered_machine=my_resgistered_machine[1];
-                                          server.logea(chalk.green("query:"+my_resgistered_machine));
+                                          os.logea(chalk.green("query:"+my_resgistered_machine));
                                           console.log(chalk.green("Machine registered name:"+chalk.yellow(my_resgistered_machine.name)));
                                           await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
                                           glo.my_resgistered_machine_name=my_resgistered_machine.name;
@@ -64,9 +72,11 @@ function start_validator() {
                                             // on_startup=false;
                                             var step8=await validator_poll_loop(validator_address);
                                             console.log(chalk.green("Inicio poll loop:"+step8));
+                                          //  console.log(glo.is_regis);
                                             return resolve("OK");
                                            }
                                         }else {
+                                          console.log("entro por aca");
                                           glo.is_regis=false;
                                           //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //  global.my_resgistered_machine_name=my_resgistered_machine.name;
@@ -87,10 +97,11 @@ function start_validator() {
                                         }
                                     }
                             }
-                        }
+                         }
                      }
+                  console.log("TODO OK");
                 }
-              }
+               }
       //  var stat=await ssp.negociate_encryption(smart_hopper_address);
     //  console.log("y esto?"+stat);
       }else {
@@ -105,29 +116,22 @@ function start_validator() {
 module.exports.start_validator=start_validator;
 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////
-function validatorpoll(receptor) {
-  console.log("aqui creo la promesa de validator poll");
-  return  new Promise(async function(resolve, reject) {
-    try {
-      server.logea("aqui global.poll:"+global.poll);
-      var step1= await ssp.envia_encriptado(receptor,global.poll);
-      if(step1.length>0){
-        //await handle_poll_validator(step1);
-        var data=await ssp.handlepoll(step1);
-        server.logea("esto se dispara al recibir handlepoll");
-        if(data==="OK"){
-          return resolve("OK");
-        }else {
-          //activa variable de no_cajon.
-          return resolve("OK");
-        }
-      }else {
-        return reject(step1);
-      }
-    } catch (e) {
-      return reject("07-validatorpoll ->"+e);
-    }
-    });
+async function validatorpoll(receptor) {
+  //console.log("aqui cambio la promesa de validator poll");
+  // try {
+    //  console.log("aqui global.poll:"+global.poll);
+      var step1= await ssp.envia_encriptado2(receptor,global.poll);
+    //  console.log("step1x:" +step1);
+      // await  setTimeout(async function(){
+      //     var data=await ssp.handlepoll(step1);
+      //     //console.log("esto se dispara al recibir handlepoll");
+      //     //console.log(data);
+      //   },100);
+        return "OK";
+    // } catch (e) {
+    //   return e;
+    // }
+
   }; //hace consulta de poll pero no hace bucle
   module.exports.validatorpoll=validatorpoll;
 ////////////////////////////////////////////////////////
@@ -602,7 +606,7 @@ function validatorpoll(receptor) {
 ////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 function set_validator_routing(receptor) {
-  server.logea(chalk.yellow("ROUTING bills"));
+  os.logea(chalk.yellow("ROUTING bills"));
   return new Promise(async function(resolve, reject) {
   var step1=await ssp.envia_encriptado(receptor,send_10_soles_a_cashbag);
 //  console.log("step1:"+step1);
@@ -621,7 +625,7 @@ function set_validator_routing(receptor) {
 };
 ////////////////////////////////////////////////////////
 function set_channel_inhivits(receptor) {
-  server.logea(chalk.yellow("CHANNELS INHIVITs"));
+  os.logea(chalk.yellow("CHANNELS INHIVITs"));
   return new Promise(async function(resolve, reject) {
   await ssp.envia_encriptado(receptor,set_inhivits);
   return resolve("OK")
@@ -641,7 +645,7 @@ function set_channel_inhivits(receptor) {
 ////////////////////////////////////////////////////////
 function enable_payout(receptor) {
  return new Promise( async function(resolve, reject) {
-     server.logea("Enable payout");
+     os.logea("Enable payout");
      await ssp.envia_encriptado(receptor,global.poll);
      await ssp.envia_encriptado(receptor,global.enable_payout);
      await ssp.envia_encriptado(receptor,global.poll);
@@ -659,8 +663,8 @@ async function validator_poll_loop(receptor) {
         if(step1.length>0){
           await ssp.handlepoll(step1);
           setTimeout(async function () {
-            server.logea("//////////////////////////////");
-            server.logea(chalk.green("VALIDATOR POLLING"));
+            os.logea("//////////////////////////////");
+            os.logea(chalk.green("VALIDATOR POLLING"));
             await validator_poll_loop(receptor)
           }, 300);
           ready_for_pooling=true;
