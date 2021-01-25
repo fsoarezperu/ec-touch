@@ -16,26 +16,26 @@ const tambox = require("./devices/tambox");
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-// var client = require("socket.io-client");
-// var my_server_port= "http://localhost:"+machine_port
-// var socket2 = client.connect(my_server_port);
-// module.exports.socket2=socket2;
-// socket2.on('connect', function () {
-//   // socket connected
-//     console.log(chalk.magenta("connected como cliente desde otro js"));
-//   //  socket.emit('connected','connected');
-//
-//     socket2.on('prueba', function (msg) {
-//       // socket connected
-//         console.log("si lo recibo adecuadamente");
-//         //socket.emit('connected','connected');
-//     });
-//
-//     // console.log('connect',socket.id);
-//     // socket.on('connection',function (socket) {
-//     //     console.log('conenction',socket.id);
-//     // });
-// });
+var client = require("socket.io-client");
+var my_server_port= "http://localhost:"+machine_port
+var socket2 = client.connect(my_server_port);
+module.exports.socket2=socket2;
+socket2.on('connect', function () {
+  // socket connected
+    console.log(chalk.magenta("connected como cliente desde otro js"));
+  //  socket.emit('connected','connected');
+
+    socket2.on('prueba', function (msg) {
+      // socket connected
+        console.log("si lo recibo adecuadamente");
+        //socket.emit('connected','connected');
+    });
+
+    // console.log('connect',socket.id);
+    // socket.on('connection',function (socket) {
+    //     console.log('conenction',socket.id);
+    // });
+});
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////

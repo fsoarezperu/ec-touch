@@ -4,11 +4,13 @@ const globals= require('./globals');
 const ssp =require('./ssp');
 
 module.exports = function (server) {
-let io = require('socket.io')(server,{cookie: false})
+let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
+module.exports.io=io;
 io.on('connection', async function (socket) {
-   console.log(chalk.cyan("usuario conectado"));
+
+  console.log(chalk.cyan("usuario conectado"));
   socket.on('reset', async function(msg) {
     console.log(msg);
     //  io.emit('reset', "reseting system");
@@ -176,7 +178,7 @@ io.on('connection', async function (socket) {
           var current_tebs2=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
         //  console.log(current_tebs2);
           current_tebs2=await va.handleGetTebsBarcode(current_tebs2);
-          console.log(current_tebs2);
+          console.log("CUrrents TEBS ES:"+current_tebs2);
     //      esto();
     //}, 800);
     }
@@ -377,23 +379,10 @@ io.on('connection', async function (socket) {
   os.conectar_enlace_de(socket,'cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  var totbills2;
-  var totaccum;
-  var monto_en_bolsa2;
-  var total_general2;
-//  var mis_cifras_generales=await calcular_cifras_generales();
-  var mis_montos2= {
-    totbills2:0,
-    totaccum2:0,
-    monto_en_bolsa2:0,
-    total_general2:0,
-    moneda:"PEN"
-  };
-  var mis_cifras_generales=mis_montos2;
 
-//  return mis_montos2;
-  console.log(mis_cifras_generales);
-  os.conectar_enlace_de(socket,'cifras_generales','../system/cifras_generales/cifras_generales.html',mis_cifras_generales);
+  os.conectar_enlace_de(socket,'cifras_generales','../system/cifras_generales/cifras_generales.html',global.mis_cifras_generales);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   socket.on('smart_empty', async function(msg) {
     console.log(chalk.green('will smart_empty:' + msg));
@@ -403,6 +392,7 @@ io.on('connection', async function (socket) {
   socket.on('Cashbox_Unlock_Enable', function(msg) {
     io.emit('Cashbox_Unlock_Enable',"cashbox Unlocked");
   });
+
   os.conectar_enlace_de(socket,'remesa_hermes','../system/remesa_hermes/rm_1.html',"null");
   os.conectar_enlace_de(socket,'Smart_emptying','../system/remesa_hermes/rm_2.html',"null");
   os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");

@@ -76,7 +76,7 @@ function start_validator() {
                                             return resolve("OK");
                                            }
                                         }else {
-                                          console.log("entro por aca");
+                                          console.log(chalk.green("Esta maquina ya esta registrada"));
                                           glo.is_regis=false;
                                           //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //  global.my_resgistered_machine_name=my_resgistered_machine.name;
@@ -85,11 +85,16 @@ function start_validator() {
                                             esty=esty[0].machine_name
                                             glo.my_resgistered_machine_name=esty;
                                             console.log(chalk.green("Machine registered name:"+chalk.yellow(glo.my_resgistered_machine_name)));
-                                            console.log(chalk.red("no se pudo registrar en TBM"));
+                                            console.log(chalk.cyan("no se pudo validar en Tambox Cloud"));
                                           var step7=await enable_payout(validator_address);
                                            if (step7=="OK") {
                                            //  await carga_monedas_al_hopper(validator_address);
                                            //console.log(chalk.green("payout enabled in here"));
+                                           // creo que aqui puedo poner las funciones que cargan y consultan las cifras genrales y el cuadre diario y guardarlo en las
+                                           // variables globales para que puedan ser mostrados en pantalla , seria genial tener opcion que se ejecute cuanda esa pantalla se va a cargar.
+                                           var cifras_generales_actuales=os.calcular_cifras_generales2();
+                                           console.log(cifras_generales_actuales);
+
                                            var step8=await validator_poll_loop(validator_address);
                                            console.log(chalk.green("Inicio poll loop:"+step8));
                                            return resolve("OK");

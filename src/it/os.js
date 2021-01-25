@@ -288,6 +288,7 @@ async function calcular_cifras_generales() {
         return mis_montos;
 }
 module.exports.calcular_cifras_generales = calcular_cifras_generales;
+////////////////////////////////////////////////////////////////////////////////////////////////
 async function calcular_cuadre_diario() {
   const no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
   const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
@@ -428,4 +429,21 @@ async function tambox_manager_ping() {
 
 }
 module.exports.tambox_manager_ping = tambox_manager_ping;
+/////////////////////////////////////////////////////////
+
+
+function calcular_cifras_generales2(){
+  var totbills2,totaccum,monto_en_bolsa2,total_general2;
+//  var mis_cifras_generales=await calcular_cifras_generales();
+  var mis_cifras_generales= {
+    totbills2:0,
+    totaccum2:0,
+    monto_en_bolsa2:0,
+    total_general2:0,
+    moneda:"PEN"
+  };
+  console.log("Cifras Generales obtenidas son:"+mis_cifras_generales);
+  return mis_cifras_generales;
+}
+module.exports.calcular_cifras_generales2 = calcular_cifras_generales2;
 /////////////////////////////////////////////////////////

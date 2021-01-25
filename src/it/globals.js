@@ -221,3 +221,5 @@ global.is_head_online=true;
 global.receptor="";
 global.zerox = false; //to begin countiung from zero;
 global.bypass=false; //esta variable evitara que ensure is set sea llamada multiples veces probocando fallo. solo tomara y esperara el envio de un paquete a la vez.y descartara el resto.
+
+global.mis_cifras_generales;

@@ -77,8 +77,12 @@ app.set('view engine', '.hbs');
 /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 var httpx = require('http').Server(app);
-const io = require('./it/socket')(httpx, { cookie: false });
+
+//const io = require('./it/socket')(httpx, { cookie: false });
+const io = require('./it/socket')(httpx)(io);
+
 module.exports.io=io;
+
 
 // /////////////////////////////////////////////////////////
 httpx.listen(machine_port, async function() {
@@ -95,7 +99,7 @@ httpx.listen(machine_port, async function() {
   // };
   ////////////////////////////////////////////////////////////
   let step1=await tambox.finalizar_pagos_en_proceso();
-  console.log(step1);
+  console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
   ////////////////////////////////////////////////////////////
   // Inicializando el Smart Hopper
   // try {
@@ -112,9 +116,14 @@ httpx.listen(machine_port, async function() {
   // }
   ////////////////////////////////////////////////////////////////
    try {
-     console.log(chalk.green("starting validator"));
-     var validator= await va.start_validator();
-     console.log("validator variable is:"+validator);
+     console.log(chalk.green("Iniciando Validador"));
+     // var validator= await va.start_validator();
+     // console.log(chalk.green("Validador inicio:"+validator));
+
+     console.log(chalk.green("Validador inicio:"+await va.start_validator()));
+
+
+
   //   if (validator=="OK") {
   //     console.log(chalk.green("Validator Online"));
   //     on_startup=false;
@@ -126,7 +135,7 @@ httpx.listen(machine_port, async function() {
    } catch (e) {
        console.log(chalk.cyan("01-Starting Validator->")+e);
    } finally {
-       console.log("idle");
+       console.log(chalk.green("idle"));
    }
   ////////////////////////////////////////////////////////////////
 //  console.log("ultima linea");
