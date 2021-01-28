@@ -1,13 +1,27 @@
+const fs = require('fs') //para escribir archivo.
 const chalk=require('chalk');
 const os = require('./os');
 const globals= require('./globals');
 const ssp =require('./ssp');
-
-module.exports = function (server) {
-let io = require('socket.io')(server,{cookie: false});
+const path = require('path');
+module.exports = function (io) {
+//let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
-module.exports.io=io;
+
+function  nuevo_enlace(pagina,ruta){
+  fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
+      if (err) {
+        return console.log(err);
+      }
+  var vardata="vardata";
+  var totaldata=[vardata,data];
+//  console.log(data);
+  io.emit(pagina,totaldata);
+ });
+
+}
+
 io.on('connection', async function (socket) {
 
   console.log(chalk.cyan("usuario conectado"));
@@ -341,12 +355,12 @@ io.on('connection', async function (socket) {
     //io.emit('pay_value',"pay_value");
   });
   /////////////////////////////////////////////////////////
-  socket.on('iniciar_nueva_remesa', async function(msg) {
-    console.log(msg);
-    await  os.validator_enabled_now();
-  //  io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
-    console.log("orden completada");
-  });
+  // socket.on('iniciar_nueva_remesa', async function(msg) {
+  //   console.log(msg);k
+  //   await  os.validator_enabled_now();
+  // //  io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+  //   console.log("orden completada");
+  // });
   socket.on('terminar_remesa', async function(msg) {
     console.log(msg);
     await validator_disabled_now();
@@ -359,10 +373,56 @@ io.on('connection', async function (socket) {
   //   //io.emit('main');
   // });
   /////////////////////////////////////////////////////////
-  os.conectar_enlace_de(socket,'iniciar_nueva_remesa','../system/remesa/remesa_1.html',"vardata");
+//  os.conectar_enlace_de(socket,'iniciar_nueva_remesa','../system/remesa/remesa_1.html',"vardata");
   os.conectar_enlace_de(socket,'main','../system/buffer.html',"vardata");
-  os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
-  os.conectar_enlace_de(socket,'cancelar_remesa','../system/buffer.html',"vardata");
+//  os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
+//  os.conectar_enlace_de(socket,'cancelar_remesa','../system/buffer.html',"vardata");
+
+  // socket.on('iniciar_nueva_remesax',async function(){
+  //   console.log(chalk.yellow("Orden Cancelar remesa detectado"));
+  //   await  os.validator_disabled_now();
+  //   //  io.emit("main");
+  //   fs.readFile(path.join(__dirname, '../system/remesa/remesa_1.html'), 'utf8', function (err,data) {
+  //
+  //   if (err) {
+  //     return console.log(err);
+  //   }
+  //   var vardata="vardata";
+  //       var totaldata=[vardata,data];
+  //   //console.log(chalk.green("se emite socket:"+xid+ "variable:"+totaldata));
+  //   io.emit('iniciar_nueva_remesax',totaldata);
+  //   // if(cb !== undefined){
+  //   //     cb();
+  //   // }
+  //
+  // });
+  // //  io.emit('main',path.join(__dirname, ));
+  //   //ssp.emite_como_cliente();
+  // //  io.emit('prueba','prueba');
+  //  });
+
+  socket.on('cancelar_remesa',async function(data){
+    console.log(chalk.yellow("Orden Cancelar remesa detectado"));
+    await  os.validator_disabled_now();
+    //  io.emit("main");
+    fs.readFile(path.join(__dirname, '../system/buffer.html'), 'utf8', function (err,data) {
+
+    if (err) {
+      return console.log(err);
+    }
+    var vardata="vardata";
+        var totaldata=[vardata,data];
+    //console.log(chalk.green("se emite socket:"+xid+ "variable:"+totaldata));
+    io.emit('main',totaldata);
+    // if(cb !== undefined){
+    //     cb();
+    // }
+
+   });
+  //  io.emit('main',path.join(__dirname, ));
+    //ssp.emite_como_cliente();
+  //  io.emit('prueba','prueba');
+   });
 
   var this_machine={
     machine_sn:numero_de_serie,
@@ -417,18 +477,45 @@ io.on('connection', async function (socket) {
   //   console.log(chalk.yellow("trigger_socket fired"));
   //   ssp.emite_como_cliente();
   // });
-  socket.on('fer',function(){
-    console.log(chalk.yellow("fer si funciono"));
+  socket.on('cancelling',async function(){
+    console.log(chalk.yellow("canceling si funciono"));
     //ssp.emite_como_cliente();
-    io.emit('prueba','prueba');
+    await  os.validator_disabled_now();
+   // io.emit('main','../system/buffer.html');
+   });
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+  socket.on('iniciar_nueva_remesa',async function(){
+    console.log(chalk.yellow("Nueva remesa manual iniciada"));
+    await  os.validator_enabled_now();
+    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
    });
 
-   socket.on('cancelling',async function(){
-     console.log(chalk.yellow("canceling si funciono"));
-     //ssp.emite_como_cliente();
-     await  os.validator_disabled_now();
-    // io.emit('main','../system/buffer.html');
+  socket.on('fer',async function(){
+    console.log(chalk.yellow("fer nuevo enlace si funciono"));
+    await  os.validator_enabled_now();
+    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
+
+    //ssp.emite_como_cliente();
+    //io.emit('prueba','prueba');
+   });
+
+   socket.on('config',async function(){
+     console.log(chalk.yellow("Configuration page"));
+    // await  os.validator_enabled_now();
+     nuevo_enlace('config','../system/configuracion.html');
     });
+
+    // socket.on('main',async function(){
+    //   console.log(chalk.yellow("Configuration page"));
+    //  // await  os.validator_enabled_now();
+    //   nuevo_enlace('main','../system/buffer.html');
+    //  });
+
+  // os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
+
+
 
 })
 }

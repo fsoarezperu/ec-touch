@@ -61,7 +61,7 @@ function start_validator() {
                                           var my_resgistered_machine=await server.query_this_machine();
                                           //my_resgistered_machine=my_resgistered_machine[1];
                                           os.logea(chalk.green("query:"+my_resgistered_machine));
-                                          console.log(chalk.green("Machine registered name:"+chalk.yellow(my_resgistered_machine.name)));
+                                          console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
                                           await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
                                           glo.my_resgistered_machine_name=my_resgistered_machine.name;
                                             //server.io.emit("iniciando","iniciando sistema");
@@ -71,12 +71,11 @@ function start_validator() {
                                            console.log(chalk.green("payout enabled"));
                                             // on_startup=false;
                                             var step8=await validator_poll_loop(validator_address);
-                                            console.log(chalk.green("Inicio poll loop:"+step8));
-                                          //  console.log(glo.is_regis);
+                                            os.logea(glo.is_regis);
                                             return resolve("OK");
                                            }
                                         }else {
-                                          console.log(chalk.green("Esta maquina ya esta registrada"));
+                                        os.logea(chalk.green("Esta maquina ya esta registrada"));
                                           glo.is_regis=false;
                                           //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //  global.my_resgistered_machine_name=my_resgistered_machine.name;
@@ -84,7 +83,7 @@ function start_validator() {
                                             var esty= await pool.query("SELECT machine_name FROM machine");
                                             esty=esty[0].machine_name
                                             glo.my_resgistered_machine_name=esty;
-                                            console.log(chalk.green("Machine registered name:"+chalk.yellow(glo.my_resgistered_machine_name)));
+                                            console.log("Machine registered name:"+chalk.yellow(glo.my_resgistered_machine_name));
                                             console.log(chalk.cyan("no se pudo validar en Tambox Cloud"));
                                           var step7=await enable_payout(validator_address);
                                            if (step7=="OK") {
@@ -93,10 +92,14 @@ function start_validator() {
                                            // creo que aqui puedo poner las funciones que cargan y consultan las cifras genrales y el cuadre diario y guardarlo en las
                                            // variables globales para que puedan ser mostrados en pantalla , seria genial tener opcion que se ejecute cuanda esa pantalla se va a cargar.
                                            var cifras_generales_actuales=os.calcular_cifras_generales2();
-                                           console.log(cifras_generales_actuales);
+                                            console.log(chalk.cyan("////////////////////////////////////////////"));
+                                            console.log(chalk.cyan("Cifras Generales obtenidas son:"+JSON.stringify(cifras_generales_actuales)));
+                                          //  console.log(chalk.cyan();
+                                            console.log(chalk.cyan("////////////////////////////////////////////"));
+
 
                                            var step8=await validator_poll_loop(validator_address);
-                                           console.log(chalk.green("Inicio poll loop:"+step8));
+                                           os.logea(chalk.green("Inicio poll loop:"+step8));
                                            return resolve("OK");
                                             }
                                         }

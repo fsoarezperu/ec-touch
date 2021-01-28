@@ -4,18 +4,20 @@
 //Protocol Used: Smiley Secured Protocol
 //Date: Nov 2018
 /////////////////////////////////////////////////////////////////////////////////////
-const sp = require('./it/serial_port');
-const ssp = require('./it/ssp');
-const va = require('./it/devices/validator');
-const os = require('./it/os');
+//const sp = require('./it/serial_port');
+//const ssp = require('./it/ssp');
+
+//const va = require('./it/devices/validator');
+//const os = require('./it/os');
+
 //const tbm_code = require('./it/tbm_sync/tbm_synch_socket');
 //const tbm = require('./it/tbm_sync/synchronize');
-
+const tambox = require('./it/devices/tambox');
 //const tebs = require('./it/devices/tebs');
 //const va = require('./it/devices/validator');
 //const it = require('./it/devices/tambox');
 //const sh = require('./it/devices/smart_hopper');
-const tambox = require('./it/devices/tambox');
+//const tambox = require('./it/devices/tambox');
 
 
 //const enc = require('./it/encryption');
@@ -42,6 +44,16 @@ var util = require('util')
 //var io=sockets.io;
 /////////////////////////////////////////////////////////////////////////////////////
 const fs = require('fs') //para escribir archivo.
+
+var httpx = require('http').Server(app);
+
+const io = require('socket.io')(httpx, { cookie: false });
+
+const sp= require('./it/serial_port')(io);
+const ssp = require('./it/ssp')(io);
+const va = require('./it/devices/validator');
+const os = require('./it/os');
+
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
@@ -76,17 +88,17 @@ app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'}));
 app.set('view engine', '.hbs');
 /////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
-var httpx = require('http').Server(app);
 
-//const io = require('./it/socket')(httpx, { cookie: false });
-const io = require('./it/socket')(httpx)(io);
 
-module.exports.io=io;
+const io2 = require('./it/socket')(io);
+
+
 
 
 // /////////////////////////////////////////////////////////
 httpx.listen(machine_port, async function() {
-  console.log((chalk.yellow('Tambox 1.1 Starting...on port:'+machine_port)));
+  console.log(chalk.yellow("/////////////////////////////////////////////////////////////////"));
+  console.log((chalk.yellow('Iniciando Tambox OS 1.1 en http://localhost:'+machine_port)));
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
   ////////////////////////////////////////////////////////////
@@ -99,7 +111,7 @@ httpx.listen(machine_port, async function() {
   // };
   ////////////////////////////////////////////////////////////
   let step1=await tambox.finalizar_pagos_en_proceso();
-  console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+  os.logea(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
   ////////////////////////////////////////////////////////////
   // Inicializando el Smart Hopper
   // try {
@@ -116,11 +128,11 @@ httpx.listen(machine_port, async function() {
   // }
   ////////////////////////////////////////////////////////////////
    try {
-     console.log(chalk.green("Iniciando Validador"));
+     os.logea(chalk.green("Iniciando Validador"));
      // var validator= await va.start_validator();
      // console.log(chalk.green("Validador inicio:"+validator));
 
-     console.log(chalk.green("Validador inicio:"+await va.start_validator()));
+     os.logea(chalk.green("Validador inicio:"+await va.start_validator()));
 
 
 
@@ -141,3 +153,4 @@ httpx.listen(machine_port, async function() {
 //  console.log("ultima linea");
 });
 /////////////////////////////////////////////////////////
+module.exports.io=io;

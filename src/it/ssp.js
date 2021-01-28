@@ -16,26 +16,26 @@ const tambox = require("./devices/tambox");
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-var client = require("socket.io-client");
-var my_server_port= "http://localhost:"+machine_port
-var socket2 = client.connect(my_server_port);
-module.exports.socket2=socket2;
-socket2.on('connect', function () {
-  // socket connected
-    console.log(chalk.magenta("connected como cliente desde otro js"));
-  //  socket.emit('connected','connected');
-
-    socket2.on('prueba', function (msg) {
-      // socket connected
-        console.log("si lo recibo adecuadamente");
-        //socket.emit('connected','connected');
-    });
-
-    // console.log('connect',socket.id);
-    // socket.on('connection',function (socket) {
-    //     console.log('conenction',socket.id);
-    // });
-});
+// var client = require("socket.io-client");
+// var my_server_port= "http://localhost:"+machine_port
+// var socket2 = client.connect(my_server_port);
+// module.exports.socket2=socket2;
+// socket2.on('connect', function () {
+//   // socket connected
+//     console.log(chalk.magenta("connected como cliente desde otro js"));
+//   //  socket.emit('connected','connected');
+//
+//     socket2.on('prueba', function (msg) {
+//       // socket connected
+//         console.log("si lo recibo adecuadamente");
+//         //socket.emit('connected','connected');
+//     });
+//
+//     // console.log('connect',socket.id);
+//     // socket.on('connection',function (socket) {
+//     //     console.log('conenction',socket.id);
+//     // });
+// });
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -1742,7 +1742,7 @@ function verificar_existencia_de_bolsa(receptor) {
         return resolve(chalk.red("SIN BOLSA"));
 
                                                }else {
-                                                      console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(tebs_barcode)));
+                                                      console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
                                                        const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
                                                        if(existe_remesa_hermes[0].RH ===0){
                                                       //                                     //  console.log(existe_remesa_hermes[0].RH);
@@ -2022,7 +2022,7 @@ function negociate_encryption(receptor) {
                               var step6=await enc.handleRKE(step5);
                               if(step6.length>0){
                                 os.logea(chalk.green('KEY:'), chalk.green(step6));
-                                console.log(chalk.green("Encripted comunication Active"));
+                                os.logea(chalk.green("Encripted comunication Active"));
                                 os.logea("/////////////////////////////////");
                                 encryptionStatus = true;
                                return resolve("OK")

@@ -7,7 +7,7 @@ const chalk=require('chalk');
 const pool = require('./../../database');
 //const io = require("./../socket");
 
-
+const os = require('./../os');
 
 function verifica_coneccion_validador(){
   port.write("command_ready");
@@ -116,7 +116,7 @@ exports.finalizar_pagos_en_proceso=async function(){
     try {
       await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
       await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
-      console.log(chalk.red("Finalizando los pagos inconclusos"));
+      os.logea(chalk.green("Finalizando los pagos inconclusos"));
       return resolve("ok");
     } catch (e) {
       return reject(e);

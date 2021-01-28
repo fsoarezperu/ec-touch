@@ -8,6 +8,7 @@
     cargar_pantalla_guardada();
     $("#TBM_icon").css('visibility', 'hidden');
     display_remote_conection_to_TBM();
+    /////////////////////////////////////////////////////////////
     function enlace_a(a1) {
       var a1x="#"+a1;
       $(document).on("click",a1x,function(){
@@ -22,6 +23,7 @@
       });
       return;
     }
+    ////////////////////////////////////////////////////////////
     function mandar_orden(a2) {
       var a2y="#"+a2;
       $(document).on("click",a2y,function(){
@@ -29,14 +31,19 @@
         socket.emit(a2,a2);
       });
       socket.on(a2, function(msg){
-        display_message(msg);
+        console.log("receiving:"+a2);
+        $('#display').html(msg[1]);
+        mydata=msg[0];
+      //  display_message(msg);
+    //    socket.emit(a2,msg);
+      //  console.log(msg);
       });
       return;
     }
 /////////////////////////////////////////////////////////////////////
     enlace_a("main");
 /////////////////////////////////////////////////////////////////////
-    enlace_a("config");
+    //enlace_a("config");
     enlace_a("info");
     enlace_a("cuadre_diario");
     enlace_a("cifras_generales");
@@ -45,9 +52,8 @@
     enlace_a("Smart_emptied");
     enlace_a("cashbox_unlocked");
     enlace_a("Cashbox_Back_in_Service");
-    enlace_a("iniciar_nueva_remesa");
 
-
+  //  enlace_a("iniciar_nueva_remesa");
     mandar_orden("lock_cashbox");
     mandar_orden("unlock_cashbox");
     mandar_orden("smart_empty");
@@ -58,18 +64,24 @@
     // mandar_orden("trigger_socket");
     //
      mandar_orden("fer");
+     mandar_orden("iniciar_nueva_remesa");
+     mandar_orden("config");
     // mandar_orden("connected");
 
     socket.on('Cashbox_Unlock_Enable', function(msg) {
       console.log("desbloqueado desde aqui.");
-    //  window.location.replace("/");
-    display_pestillo("Desbloqueado");
+      display_pestillo("Desbloqueado");
     });
 
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
       window.location.replace("/");
     });
+
+    // socket.on('Read', function(msg){
+    //   console.log("reading yeah!!");
+    //  display_message(msg);
+    // });
 /////////////////////////////////////////////////////////////////////
 
     // remote_TBM.on('machine', function(data) {
@@ -125,18 +137,18 @@
       return result;
     }
     function cargar_pantalla_guardada() {
-          socket.emit("main","main");
+      //  socket.emit("main");
+          $('#display').load("./system/buffer.html");
     }
     //////////////////////////////////////////
     function display_message(mes_to_display) {
       document.getElementById("message").innerHTML = mes_to_display;
-      setTimeout(clear_message, 1000);
+      setTimeout(clear_message, 5000);
     };
     function clear_message() {
-    document.getElementById("message").innerHTML = "";
-    document.getElementById("msg1").innerHTML = "Bloqueado";
+      document.getElementById("message").innerHTML = "";
+      document.getElementById("msg1").innerHTML = "Bloqueado";
     };
-
     function display_pestillo(mes_to_displayx) {
       clearTimeout(mytimer);
       document.getElementById("msg1").innerHTML = mes_to_displayx;

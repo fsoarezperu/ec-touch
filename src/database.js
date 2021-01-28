@@ -1,3 +1,5 @@
+const os = require('./it/os');
+const chalk=require('chalk');
 const mysql= require('mysql');
 const { promisify }= require('util');
 const { database }= require('./keys');
@@ -18,7 +20,7 @@ if(err){
 }
 
   if(connection) connection.release();
-  console.log('DB is conected');
+  os.logea(chalk.green('DB is conected'));
   return;
 });
 

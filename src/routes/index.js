@@ -101,7 +101,7 @@ router.get('/iniciar_remesa', (req, res) => {
 router.get('/finish/:qty_bill', async (req, res) => {
   //la linea de abajo debe solo de aplicar para las REMESAS (ingresos)
   //console.log(chalk.cyan("SOMETHING IS TRIGGERING FINISH WHAT IS IT?"));
-  new Promise(async function(resolve, reject) {
+//  new Promise(async function(resolve, reject) {
     var remesay;
     var id_remesa;
     try {
@@ -193,7 +193,7 @@ router.get('/finish/:qty_bill', async (req, res) => {
      finally {
           //return;
              }
-  });
+//  });
 
 });
 ///////////////////////////////////////////////////////////////////////////////

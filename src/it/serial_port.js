@@ -498,7 +498,7 @@ setTimeout(async function(){
      console.log(chalk.green("Validator Online"));
      on_startup=false;
      var step8=await va.validator_poll_loop(validator_address);
-     console.log(chalk.green("Inicio poll loop:"+step8));
+     os.logea(chalk.green("Inicio poll loop:"+step8));
    }else {
      console.log(chalk.red("No Validator Found"));
      return reject();

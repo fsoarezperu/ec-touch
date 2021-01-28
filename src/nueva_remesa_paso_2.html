@@ -4,24 +4,14 @@ $(document).ready(function() {
     socket.emit("terminar_remesa",'terminar_remesa');
   });
 
-  $("#cancelar_remesa").click(function() {
-    socket.emit("cancelar_remesa",'cancelar_remesa');
-  });
+  // $("#cancelar_remesa").click(function() {
+  //   socket.emit("cancelar_remesa",'cancelar_remesa');
+  // });
 
   // socket.on('iniciar_nueva_remesa_paso2', function(msg){
   //   $('#pizarra').load("./iniciar_nueva_remesa_paso2.html");
   // });
-  // socket.on('system_running_indicator', function(msg) {
-  //   display_system_running_indicator()
-  // });
-  //
-  // function display_system_running_indicator(){
-  //   $("#system_running_indicator").show();
-  //     setTimeout(clear_system_running_indicator,200);
-  //   };
-  //   function clear_system_running_indicator(){
-  //       $("#system_running_indicator").hide();
-  //     };
+
  });
  </script>
 <body oncontextmenu="return false">

@@ -8,11 +8,11 @@ const ssp = require("../it/ssp");
 const chalk = require('chalk');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-var io = require('socket.io-client');
-var socket2 = io.connect('http://localhost:3000');
-socket2.on('connect', function () {
-  // socket connected
-});
+// var io = require('socket.io-client');
+// var socket2 = io.connect('http://localhost:3000');
+// socket2.on('connect', function () {
+//   // socket connected
+// });
 
 //const glo = require('./globals');
 function getAsDate(day, time) {
@@ -95,10 +95,10 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   }
 });
 
-socket2.on('paso2',function(msg){
-  console.log('paso2 recivido');
-
-})
+// socket2.on('paso2',function(msg){
+//   console.log('paso2 recivido');
+//
+// })
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/consultar_remesa/:no_remesa', async (req, res) => {

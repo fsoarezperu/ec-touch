@@ -334,6 +334,7 @@ module.exports.calcular_cuadre_diario = calcular_cuadre_diario;
 function conectar_enlace_de(xsocket,xid,xpath,vardata,cb) {
   xsocket.on(xid, async function(msg) {
   console.log(chalk.green("se recivio socket:"+msg));
+  console.log("cargando file en ruta:"+path.join(__dirname, xpath));
 //  fs.readFile(__dirname + xpath, 'utf8', function (err,data) {
     fs.readFile(path.join(__dirname, xpath), 'utf8', function (err,data) {
 
@@ -341,7 +342,10 @@ function conectar_enlace_de(xsocket,xid,xpath,vardata,cb) {
       return console.log(err);
     }
     var totaldata=[vardata,data];
-    console.log(chalk.green("se emite socket:"+xid));
+    console.log("DATA IS:");
+    console.log(data);
+    console.log(chalk.green("se emite socket:"+xid+ "variable:"+totaldata));
+
     xsocket.emit(xid,totaldata);
     if(cb !== undefined){
         cb();
@@ -442,7 +446,9 @@ function calcular_cifras_generales2(){
     total_general2:0,
     moneda:"PEN"
   };
-  console.log("Cifras Generales obtenidas son:"+mis_cifras_generales);
+  // console.log(chalk.cyan("////////////////////////////////////////////"));
+  // console.log(chalk.cyan("Cifras Generales obtenidas son:")+mis_cifras_generales);
+  // console.log(chalk.cyan("////////////////////////////////////////////"));
   return mis_cifras_generales;
 }
 module.exports.calcular_cifras_generales2 = calcular_cifras_generales2;
