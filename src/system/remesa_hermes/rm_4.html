@@ -1,3 +1,13 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  socket.on('Cashbox_out_of_Service', function(msg){
+      console.log("Cashbox_out_of_Service");
+      //socket.emit("rm_4","rm_4");
+    //  mandar_orden("rm_4");
+  })
+});
+</script>
 <body  oncontextmenu="return false">
   <div class="wrapper">
     <div class="titulo">
@@ -12,8 +22,10 @@
           <li>Tire de la manija para retirar el cofre de dinero</li>
           <li>Retire la bolsa plástica y entregar a Hermes</li>
           <li>Tome una nueva bolsa de dinero vacía y colóquela en el cofre de dinero</li>
-          <div class="btn" id="Cashbox_out_of_Service"> siguiente</div>
-            <div class="btn" id="Cashbox_Back_in_Service"> Next</div>
+          <!-- <div class="btn" id="Cashbox_out_of_Service"> siguiente</div> -->
+            <!-- <div class="btn" id="Cashbox_Back_in_Service"> Next</div> -->
+              <!-- <div class="btn" id='rm_3' style="width:200px; align:center;">rm_3</div>
+                  <div class="btn" id='rm_4_1' style="width:200px; align:center;">rm4_1</div> -->
         </ul>
       </div>
     </div>

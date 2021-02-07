@@ -3,7 +3,7 @@
   //var remote_TBM = io.connect('http://192.168.1.6:3000');
   var is_connected = false;
   var mydata;
-  var mytimer;
+
   $(document).ready(function() {
     cargar_pantalla_guardada();
     $("#TBM_icon").css('visibility', 'hidden');
@@ -35,7 +35,34 @@
         $('#display').html(msg[1]);
         mydata=msg[0];
       //  display_message(msg);
-    //    socket.emit(a2,msg);
+      //      socket.emit(a2,msg);
+      //  console.log(msg);
+      });
+      return;
+    }
+      ////////////////////////////////////////////////////////////
+    function mandar_orden_sin_link(a2) {
+      var a2y="#"+a2;
+      $(document).on("click",a2y,function(){
+        console.log("receiving sin link:"+a2);
+        socket.emit(a2,a2);
+      });
+      return;
+    }
+    ////////////////////////////////////////////////////////////
+    function reflejar_orden(a2) {
+      var a2y="#"+a2;
+      // $(document).on("click",a2y,function(){
+      //   console.log(a2);
+      //   socket.emit(a2,a2);
+      // });
+      socket.on(a2, function(msg){
+        console.log("receiving:"+a2);
+      //  $('#display').html(msg[1]);
+      //  mydata=msg[0];
+      //  display_message(msg);
+      console.log("reflejando orden:"+a2);
+        socket.emit(a2,msg);
       //  console.log(msg);
       });
       return;
@@ -43,47 +70,59 @@
 /////////////////////////////////////////////////////////////////////
     enlace_a("main");
 /////////////////////////////////////////////////////////////////////
-    //enlace_a("config");
-    enlace_a("info");
-    enlace_a("cuadre_diario");
-    enlace_a("cifras_generales");
-    enlace_a("remesa_hermes");
-    enlace_a("Smart_emptying");
+    enlace_a("config");
+  //  enlace_a("info");
+//    enlace_a("cuadre_diario");
+//    enlace_a("cifras_generales");
+//    enlace_a("remesa_hermes");
+//    enlace_a("Smart_emptying");
     enlace_a("Smart_emptied");
     enlace_a("cashbox_unlocked");
     enlace_a("Cashbox_Back_in_Service");
 
   //  enlace_a("iniciar_nueva_remesa");
-    mandar_orden("lock_cashbox");
-    mandar_orden("unlock_cashbox");
+    mandar_orden_sin_link("lock_cashbox");
+    mandar_orden_sin_link("unlock_cashbox");
     mandar_orden("smart_empty");
-    mandar_orden("Smart_emptying");
-    mandar_orden("Smart_emptied");
-    mandar_orden("Cashbox_Back_in_Service");
+    mandar_orden_sin_link("Smart_emptying");
+  //  reflejar_orden("Smart_emptied");
+  //  mandar_orden("Cashbox_Back_in_Service");
     mandar_orden("cancelar_remesa");
     // mandar_orden("trigger_socket");
     //
      mandar_orden("fer");
      mandar_orden("iniciar_nueva_remesa");
-     mandar_orden("config");
+     mandar_orden("finish");
+
+  //   mandar_orden("config");
+     mandar_orden("info");
+  //   mandar_orden("main");
+     mandar_orden("cuadre_diario");
+     mandar_orden("cifras_generales");
+     mandar_orden("remesa_hermes");
+     mandar_orden("rm_2");
+     mandar_orden("rm_3");
+     mandar_orden("rm_4");
+     mandar_orden("rm_4_1");
+     mandar_orden("rm_5");
     // mandar_orden("connected");
-
-    socket.on('Cashbox_Unlock_Enable', function(msg) {
-      console.log("desbloqueado desde aqui.");
-      display_pestillo("Desbloqueado");
-    });
-
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
       window.location.replace("/");
     });
-
     // socket.on('Read', function(msg){
     //   console.log("reading yeah!!");
     //  display_message(msg);
     // });
-/////////////////////////////////////////////////////////////////////
+    socket.on('nuevo_billete_recivido', function(msg){
+      console.log("nuevo_billete_recivido"+JSON.stringify(msg));
+      document.getElementById("qty_bill").innerHTML = msg.qty_bill2;
+      document.getElementById("depositado").innerHTML = msg.monto_total_remesa;
 
+     display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
+
+    });
+/////////////////////////////////////////////////////////////////////
     // remote_TBM.on('machine', function(data) {
     //   console.log("ticking...");
     // });
@@ -142,18 +181,14 @@
     }
     //////////////////////////////////////////
     function display_message(mes_to_display) {
-      document.getElementById("message").innerHTML = mes_to_display;
+      document.getElementById("message2").innerHTML = mes_to_display;
       setTimeout(clear_message, 5000);
     };
     function clear_message() {
-      document.getElementById("message").innerHTML = "";
-      document.getElementById("msg1").innerHTML = "Bloqueado";
+      document.getElementById("message2").innerHTML = "";
+    //  document.getElementById("msg1").innerHTML = "Bloqueado";
     };
-    function display_pestillo(mes_to_displayx) {
-      clearTimeout(mytimer);
-      document.getElementById("msg1").innerHTML = mes_to_displayx;
-      mytimer=setTimeout(clear_message, 2000);
-    };
+
 
     //////////////////////////////////////////
   });

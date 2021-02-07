@@ -138,7 +138,9 @@ httpx.listen(machine_port, async function() {
 
   //   if (validator=="OK") {
   //     console.log(chalk.green("Validator Online"));
-  //     on_startup=false;
+       on_startup=false;
+
+       os.new_lock_cashbox();
   //     socket.io.emit("iniciando");
   //   }else {
   //     console.log(chalk.red("No Validator Found"));

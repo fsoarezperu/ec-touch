@@ -1,6 +1,7 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
+global.on_remesa_hermes=false;
 global.is_regis=false;
 global.my_resgistered_machine_name="";
 global.ultimo_valor_enviado="";

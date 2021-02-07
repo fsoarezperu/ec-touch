@@ -1,7 +1,7 @@
 const sp = require('./serial_port');
 const os = require('./os');
-const socket = require('./socket');
-
+const socketjs = require('./socket');
+//const socket = require('./server')(io);
 const server = require('./../server');
 const chalk=require('chalk');
 
@@ -13,6 +13,10 @@ const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
 
 
+function thisy3(){
+  console.log(chalk.yellow("thisy3 was trigeret"));
+  socketjs.nuevo_enlace('main','../system/buffer.html')
+}
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -23,12 +27,12 @@ const tambox = require("./devices/tambox");
 // socket2.on('connect', function () {
 //   // socket connected
 //     console.log(chalk.magenta("connected como cliente desde otro js"));
-//   //  socket.emit('connected','connected');
+//   //  server.io.emit('connected','connected');
 //
 //     socket2.on('prueba', function (msg) {
 //       // socket connected
 //         console.log("si lo recibo adecuadamente");
-//         //socket.emit('connected','connected');
+//         //server.io.emit('connected','connected');
 //     });
 //
 //     // console.log('connect',socket.id);
@@ -49,7 +53,7 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 //
 // })
 function emite_como_cliente() {
-  socket.emit('fer',"'fer'");
+  server.io.emit('fer',"'fer'");
   console.log("emitting como cliente");
 };
 module.exports.emite_como_cliente=emite_como_cliente;
@@ -303,12 +307,12 @@ return new Promise(async function(resolve, reject) {
                                   //console.log(poll_responde[i]);
                                   console.log(chalk.red.inverse("Cashbox out of Service"));
                                   // if(on_startup){
-                                     socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+                                     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
                                   //   await inicio_sin_cajon();
                                   //   console.log(chalk.red("iniciando sin cajon de dinero puesto"));
                                   //   return resolve("inicio_sin_cajon")
                                   // }else {
-                                  //   socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+                                  //   server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
                                   //   if(!global.last_sent===poll_responde[2]){
                                   //   console.log("Cashbox out of Service");
                                   //   global.last_sent=poll_responde[2];
@@ -318,16 +322,40 @@ return new Promise(async function(resolve, reject) {
                                   break;
 
                                   case("92"):
-                                  console.log(chalk.red.inverse("Cashbox Back in Service"));
-                                  socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+                                  console.log(chalk.red.cyan("Cashbox Back in Service"));
+                                //  server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
+                                if (on_remesa_hermes) {
+                                  os.new_lock_cashbox();
+                                  socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+
+
+                                  setTimeout(thisy3,10000);
+                                  on_remesa_hermes=false;
+                                }
                                   break;
 
                                   case("93"):
                                 //  if(global.last_sent===""){
-                                    console.log(chalk.green("Cashbox Unlock Enable"));
-                                    socket.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
-                                  //  global.last_sent=poll_responde[2];
-                                  //}
+                                  //  console.log(chalk.green("Cashbox Unlock Enable"));
+                                  if(global.last_sent=="93"){
+                                  //  console.log(chalk.cyan("viaset "));
+                                }else{
+                                  console.log(chalk.cyan("SENT ONCE"));
+                                  if (on_remesa_hermes) {
+                                  //  socket.super_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+                                  //console.log(last_sent);
+                                  console.log(chalk.green("Cashbox Unlock Enable desde remesa hermes"));
+                                  //global.last_sent=poll_responde[2];
+                                //  server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
+                              //    socketjs.super_enlace('cashbox_unlocked','../system/remesa_hermes/rm_4.html');
+                                    }else {
+                                    console.log(chalk.red("Cashbox Unlock Enable fuera remesa hermes"));
+                                  //  console.log(poll_responde[3]);
+                                    server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
+
+                                    }
+                                }
+                                  global.last_sent=poll_responde[3];
                                   break;
 
                                   case("A5"):
@@ -356,7 +384,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B0"):
                                   console.log(chalk.red.inverse("Jam recovery"));
-                                    socket.emit('Jam_recovery', "Jam recovery");
+                                    server.io.emit('Jam_recovery', "Jam recovery");
                                   break;
 
                                   case("B1"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -366,7 +394,7 @@ return new Promise(async function(resolve, reject) {
                                   case("B3"):
                                   //console.log(global.last_sent);
                                   //if(global.last_sent===""){
-                                    socket.emit('Smart_emptying', "Smart_emptying");
+                                  server.io.emit('Smart_emptying', "Smart_emptying");
                                     //console.log(chalk.red("Smart emptying"));
                                   //  global.last_sent=poll_responde[2];
                                   //}
@@ -388,7 +416,7 @@ return new Promise(async function(resolve, reject) {
                                      value_in_hex=value_in_hex/100;
                                      //console.log(value_in_hex);
                                     //value dispensed:
-                                    socket.emit('Smart_emptied', "Smart_emptied");
+                                    socketjs.nuevo_enlace('Smart_emptied', '../system/remesa_hermes/rm_3.html');
                                 //    global.last_sent=poll_responde[2];
                                 //  }
                                   break;
@@ -399,7 +427,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("B6"):
                                   console.log(chalk.red.inverse("Device Initializing"));
-                                  socket.emit('Device_Initializing', "Device Initializing");
+                                  server.io.emit('Device_Initializing', "Device Initializing");
                                   break;
 
                                   case("B7"):
@@ -420,12 +448,12 @@ return new Promise(async function(resolve, reject) {
 
                                   case("BF"):
                                   console.log(chalk.red.inverse("Value Added"));
-                                    socket.emit('Value_Added', "Value Added");
+                                    server.io.emit('Value_Added', "Value Added");
                                   break;
 
                                   case("C0"):
                                   console.log(chalk.cyan("Maintenance Required"));
-                                    socket.emit('Maintenance_Required', "Maintenance Required");
+                                    server.io.emit('Maintenance_Required', "Maintenance Required");
                                   break;
 
                                   case("C1"):
@@ -434,12 +462,12 @@ return new Promise(async function(resolve, reject) {
 
                                   case("C2"):
                                   console.log(chalk.cyan("emptying"));
-                                  socket.emit('emptying', "emptying");
+                                  server.io.emit('emptying', "emptying");
                                   break;
 
                                   case("C3"):
                                   console.log(chalk.cyan("emptied"));
-                                  socket.emit('emptied', "emptied");
+                                  server.io.emit('emptied', "emptied");
                                   break;
 
                                   case("C4"):
@@ -452,32 +480,32 @@ return new Promise(async function(resolve, reject) {
 
                                   case("C9"):
                                   console.log(chalk.cyan("Note Transfered to Stacker"));
-                                  socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+                                  server.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
                                   break;
 
                                   case("CA"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   console.log(chalk.cyan("Note into Stacker at Reset"));
-                                  socket.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
+                                  server.io.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
                                   break;
 
                                   case("CB"):///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   console.log(chalk.cyan("Note into Store at Reset"));
-                                  socket.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
+                                  server.io.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
                                   break;
 
                                   case("CC"):
                                   console.log(chalk.cyan("Staking y"));
-                                  socket.emit('Staking', "Staking");
+                                  //server.io.emit('Staking', "Staking");
                                   break;
 
                                   case("CE"):
                                   console.log(chalk.cyan("Note Held in Bezel"));
-                                  socket.emit('note_held_in_bezel', "Retirar Billete");
+                                  server.io.emit('note_held_in_bezel', "Retirar Billete");
                                   break;
 
                                   case("CF"):
                                   console.log(chalk.cyan("Device full"));
-                                  socket.emit('Device_full', "Device full");
+                                  server.io.emit('Device_full', "Device full");
                                   break;
 
                                   case("D1"):
@@ -505,7 +533,7 @@ return new Promise(async function(resolve, reject) {
                                   const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
                                   var id_remesa1 = remesa1[0].no_remesa;
                                   await pool.query ("UPDATE remesas SET status='completado', monto=? WHERE no_remesa=?",[value_in_hex,id_remesa1]);
-                                  socket.emit('Dispensed', value_in_hex);
+                                  server.io.emit('Dispensed', value_in_hex);
                                   //do not assign credit
                               //    global.last_sent=poll_responde[2];
                               //  }
@@ -562,7 +590,7 @@ return new Promise(async function(resolve, reject) {
                                      var id_remesa2 = remesa2[0].no_remesa;
                                      await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
                                    }
-                                  socket.emit('Dispensing', value_in_hex);
+                                  server.io.emit('Dispensing', value_in_hex);
                                   //do not assign credit
                               //    global.last_sent=poll_responde[2];
                               //  }
@@ -570,13 +598,13 @@ return new Promise(async function(resolve, reject) {
 
                                   case("DB"):
                                   console.log(chalk.green.inverse("Note Stored in Payout"));
-                                  socket.emit('Note_Stored_in_Payout', "Note Stored in Payout");
+                                  server.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
                                   //do not assign credit
                                   break;
 
                                   case("DC"):
                                   console.log(chalk.red.inverse("Incomplete payout"));
-                                  socket.emit('Incomplete_payout', "Incomplete payout");
+                                  server.io.emit('Incomplete_payout', "Incomplete payout");
                                   // 0CF0 F1 DC 00 00000058 1B 00 00 E8
                                   //do not assign credit
                                   break;
@@ -588,7 +616,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("DE"):
                                   console.log(chalk.red.inverse("cashbox paid"));
-                                  socket.emit('cashbox_paid', "cashbox paid");
+                                  server.io.emit('cashbox_paid', "cashbox paid");
                                   //do not assign credit
                                   break;
 
@@ -605,24 +633,24 @@ return new Promise(async function(resolve, reject) {
 
                                   case("E1"):
                                   console.log(chalk.red.inverse("Note cleared from front"));
-                                      socket.emit('Note_cleared_from_front', "Note cleared from front");
+                                      server.io.emit('Note_cleared_from_front', "Note cleared from front");
                                   //do not assign credit
                                   break;
 
                                   case("E2"):
                                   console.log(chalk.red.inverse("Note cleared into cashbox"));
-                                  socket.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
+                                  server.io.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
                                   //asign credit
                                   break;
 
                                   case("E3"):
                                   console.log(chalk.red.inverse("Cashbox Removedx"));
-                                  socket.emit('Cashbox_Removed', "Cashbox Removed");
+                                  server.io.emit('Cashbox_Removed', "Cashbox Removed");
                                   break;
 
                                   case("E4"):
                                   console.log(chalk.red.inverse("Cashbox Replaced"));
-                                  socket.emit('Cashbox_Replaced', "Cashbox Replaced");
+                                  server.io.emit('Cashbox_Replaced', "Cashbox Replaced");
                                   break;
 
                                   case("E5"):
@@ -635,7 +663,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("E7"):
                                   console.log(chalk.red.inverse("Stacker Full"));
-                                  socket.emit('Stacker_Full', "Stacker Full");
+                                  server.io.emit('Stacker_Full', "Stacker Full");
                                   break;
 
                                   case("E8"):
@@ -648,7 +676,7 @@ return new Promise(async function(resolve, reject) {
                                     global.last_sent=poll_responde[2];
                                   }
                                 //  console.log(chalk.red("Validator Disabled"));
-                                //  socket.emit('Validator_Disabled', "Validator Disabled");
+                                //  server.io.emit('Validator_Disabled', "Validator Disabled");
                                   break;
 
                                   case("E9"):
@@ -657,7 +685,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("EB"):
                                   console.log(chalk.cyan("Staked"));
-                                  socket.emit('Staked', "Staked");
+                                  server.io.emit('Staked', "Staked");
                                   break;
 
                                   case("EC"):
@@ -678,7 +706,7 @@ return new Promise(async function(resolve, reject) {
                                   break;
 
                                   case("EE"):
-                                  //console.log(chalk.cyan("Note credit"));
+                                  console.log(chalk.cyan("Note credit"));
                                   {
                                     var channel=poll_responde[i+1];
                                     //console.log("channel:"+channel);
@@ -689,7 +717,7 @@ return new Promise(async function(resolve, reject) {
                                       }
                                       if(channel==02){
                                         store_note(20);
-                                        console.log("20 soles");
+                                        console.log(chalk.yellow("20 soles"));
                                       }
                                       if(channel==03){
                                         store_note(50);
@@ -816,7 +844,7 @@ async function store_note(monto) {
         status: 'processing'
       }
       await pool.query('INSERT INTO creditos set ?', [nueva_note]);
-      console.log("nuevo note guardado");
+      console.log(chalk.yellow("nuevo note guardado"));
       await pool.query ("UPDATE remesas SET status='en_proceso' WHERE tipo='ingreso' and no_remesa=?",[rem1]);
       const calculando_monto = await pool.query("SELECT SUM(monto) AS totalremesa FROM creditos WHERE no_remesa=? AND status='processing'", [rem1]);
       var monto_total_remesa = calculando_monto[0].totalremesa;
@@ -827,9 +855,11 @@ async function store_note(monto) {
 
       var msg={
         monto:monto,
-        country_code:country_code
+        country_code:country_code,
+        qty_bill2:qty_result,
+        monto_total_remesa:monto_total_remesa
       }
-      socket.emit('nuevo_billete_recivido', msg);
+      server.io.emit('nuevo_billete_recivido', msg);
       console.log(chalk.cyan("SUCCESFULL"));
     }else{
        var rem2 = remesa[0].no_remesa;
@@ -852,9 +882,11 @@ async function store_note(monto) {
 
       var msg={
         monto:monto,
-        country_code:country_code
+        country_code:country_code,
+        qty_bill2:qty_result,
+        monto_total_remesa:monto_total_remesa
       }
-      socket.emit('nuevo_billete_recivido', msg);
+      server.io.emit('nuevo_billete_recivido', msg);
     }
 
     const remesa4 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso' ");
@@ -1089,17 +1121,17 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 //         case("90"):
 //         console.log(chalk.red.inverse("Cashbox out of Service"));
-//         socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+//         server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
 //         break;
 // //
 //         case("92"):
 //         console.log(chalk.red.inverse("Cashbox Back in Service"));
-//         socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+//         server.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
 //         break;
 // //
 // //         case("93"):
 // //         console.log(chalk.red.inverse("Cashbox Unlock Enable"));
-// //           socket.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
+// //           server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
 // //         break;
 // //
 // //         case("A5"):
@@ -1128,7 +1160,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 //         case("B0"):
 //         console.log(chalk.red.inverse("Jam recovery"));
-//           socket.emit('Jam_recovery', "Jam recovery");
+//           server.io.emit('Jam_recovery', "Jam recovery");
 //         break;
 // //
 // //         case("B1"):
@@ -1137,7 +1169,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 //          case("B3"):
 //          console.log(chalk.red.inverse("Smart emptying"));
-//            socket.emit('Smart_emptying', "Smart emptying");
+//            server.io.emit('Smart_emptying', "Smart emptying");
 //          break;
 // //
 //         case("B4"):
@@ -1155,7 +1187,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 //          value_in_hex=value_in_hex/100;
 //       //   console.log(value_in_hex);
 //         //value dispensed:
-//         socket.emit('Smart_emptied', "Smart emptied");
+//         server.io.emit('Smart_emptied', "Smart emptied");
 //         break;
 // //
 // //         case("B5"):
@@ -1164,7 +1196,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("B6"):
 // //         console.log(chalk.red.inverse("Device Initializing"));
-// //         socket.emit('Device_Initializing', "Device Initializing");
+// //         server.io.emit('Device_Initializing', "Device Initializing");
 // //         break;
 // //
 // //         case("B7"):
@@ -1185,12 +1217,12 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("BF"):
 // //         console.log(chalk.red.inverse("Value Added"));
-// //           socket.emit('Value_Added', "Value Added");
+// //           server.io.emit('Value_Added', "Value Added");
 // //         break;
 // //
 // //         case("C0"):
 // //         console.log(chalk.cyan("Maintenance Required"));
-// //           socket.emit('Maintenance_Required', "Maintenance Required");
+// //           server.io.emit('Maintenance_Required', "Maintenance Required");
 // //         break;
 // //
 // //         case("C1"):
@@ -1199,12 +1231,12 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 //         case("C2"):
 //         console.log(chalk.cyan("emptying"));
-//         socket.emit('emptying', "emptying");
+//         server.io.emit('emptying', "emptying");
 //         break;
 // //
 //         case("C3"):
 //         console.log(chalk.cyan("emptied"));
-//         socket.emit('emptied', "emptied");
+//         server.io.emit('emptied', "emptied");
 //         break;
 // //
 // //         case("C4"):
@@ -1217,32 +1249,32 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 //         case("C9"):
 //         console.log(chalk.cyan("Note Transfered to Stacker"));
-//         socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+//         server.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
 //         break;
 // //
 // //         case("CA"):
 // //         console.log(chalk.cyan("Note into Stacker at Reset"));
-// //         socket.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
+// //         server.io.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
 // //         break;
 // //
 // //         case("CB"):
 // //         console.log(chalk.cyan("Note into Store at Reset"));
-// //         socket.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
+// //         server.io.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
 // //         break;
 // //
 // //         case("CC"):
 // //         console.log(chalk.cyan("Staking"));
-// //         socket.emit('Staking', "Staking");
+// //         server.io.emit('Staking', "Staking");
 // //         break;
 // //
 // //         case("CE"):
 // //       //  console.log(chalk.cyan("Note Held in Bezel"));
-// //         socket.emit('note_held_in_bezel', "retirar bilete");
+// //         server.io.emit('note_held_in_bezel', "retirar bilete");
 // //         break;
 // //
 // //         case("CF"):
 // //         console.log(chalk.cyan("Device full"));
-// //         socket.emit('Device_full', "Device full");
+// //         server.io.emit('Device_full', "Device full");
 // //         break;
 // //
 // //         case("D1"):
@@ -1269,7 +1301,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //         const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
 // //         var id_remesa1 = remesa1[0].no_remesa;
 // //         await pool.query ("UPDATE remesas SET status='completado', monto=? WHERE no_remesa=?",[value_in_hex,id_remesa1]);
-// //         socket.emit('Dispensed', value_in_hex);
+// //         server.io.emit('Dispensed', value_in_hex);
 // //         //do not assign credit
 // //         break;
 // //
@@ -1323,19 +1355,19 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //            var id_remesa2 = remesa2[0].no_remesa;
 // //            await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
 // //          }
-// //         socket.emit('Dispensing', value_in_hex);
+// //         server.io.emit('Dispensing', value_in_hex);
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("DB"):
 // //         console.log(chalk.red.inverse("Note Stored in Payout"));
-// //         socket.emit('Note_Stored_in_Payout', "Note Stored in Payout");
+// //         server.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("DC"):
 // //         console.log(chalk.red.inverse("Incomplete payout"));
-// //         socket.emit('Incomplete_payout', "Incomplete payout");
+// //         server.io.emit('Incomplete_payout', "Incomplete payout");
 // //         // 0CF0 F1 DC 00 00000058 1B 00 00 E8
 // //         //do not assign credit
 // //         break;
@@ -1347,7 +1379,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("DE"):
 // //         console.log(chalk.red.inverse("cashbox paid"));
-// //         socket.emit('cashbox_paid', "cashbox paid");
+// //         server.io.emit('cashbox_paid', "cashbox paid");
 // //         //do not assign credit
 // //         break;
 // //
@@ -1364,24 +1396,24 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("E1"):
 // //         console.log(chalk.red.inverse("Note cleared from front"));
-// //             socket.emit('Note_cleared_from_front', "Note cleared from front");
+// //             server.io.emit('Note_cleared_from_front', "Note cleared from front");
 // //         //do not assign credit
 // //         break;
 // //
 // //         case("E2"):
 // //         console.log(chalk.red.inverse("Note cleared into cashbox"));
-// //         socket.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
+// //         server.io.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
 // //         //asign credit
 // //         break;
 // //
 // //         case("E3"):
 // //         console.log(chalk.red.inverse("Cashbox Removed"));
-// //         socket.emit('Cashbox_Removed', "Cashbox Removed");
+// //         server.io.emit('Cashbox_Removed', "Cashbox Removed");
 // //         break;
 // //
 // //         case("E4"):
 // //         console.log(chalk.red.inverse("Cashbox Replaced"));
-// //         socket.emit('Cashbox_Replaced', "Cashbox Replaced");
+// //         server.io.emit('Cashbox_Replaced', "Cashbox Replaced");
 // //         break;
 // //
 // //         case("E5"):
@@ -1394,13 +1426,13 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("E7"):
 // //         console.log(chalk.red.inverse("Stacker Full"));
-// //         socket.emit('Stacker_Full', "Stacker Full");
+// //         server.io.emit('Stacker_Full', "Stacker Full");
 // //         break;
 // //
 //          case("E8"):
 //          console.log(chalk.red("Validator DisabledX"));
 // // //        console.log(chalk.green("Ready"));
-// //         socket.emit('Validator_Disabled', "Validator Disabled");
+// //         server.io.emit('Validator_Disabled', "Validator Disabled");
 //          break;
 // //
 // //         case("E9"):
@@ -1409,7 +1441,7 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 // //
 // //         case("EB"):
 // //         console.log(chalk.cyan("Staked"));
-// //         socket.emit('Staked', "Staked");
+// //         server.io.emit('Staked', "Staked");
 // //         break;
 // //
 // //         case("EC"):
@@ -1519,19 +1551,19 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 //                  {
 //                     case("90"):
 //                     console.log(chalk.red.inverse("Cashbox out of Service"));
-//                     socket.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+//                     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
 //                     break;
 //                     case("92"):
 //                     console.log(chalk.red.inverse("Cashbox Back in Service"));
-//                     socket.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
+//                     server.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
 //                     break;
 //                     case("B0"):
 //                     console.log(chalk.red.inverse("Jam recovery"));
-//                       socket.emit('Jam_recovery', "Jam recovery");
+//                       server.io.emit('Jam_recovery', "Jam recovery");
 //                     break;
 //                     case("B3"):
 //                      console.log(chalk.red.inverse("Smart emptying"));
-//                        socket.emit('Smart_emptying', "Smart emptying");
+//                        server.io.emit('Smart_emptying', "Smart emptying");
 //                     break;
 //                     case("B4"):
 //                     console.log(chalk.red.inverse("Smart emptied"));
@@ -1546,19 +1578,19 @@ module.exports.handleGetSerialNumber=handleGetSerialNumber;
 //                      value_in_hex=value_in_hex/100;
 //                      //console.log(value_in_hex);
 //                     //value dispensed:
-//                     socket.emit('Smart_emptied', "Smart emptied");
+//                     server.io.emit('Smart_emptied', "Smart emptied");
 //                     break;
 //                     case("C2"):
 //                     console.log(chalk.cyan("emptying"));
-//                     socket.emit('emptying', "emptying");
+//                     server.io.emit('emptying', "emptying");
 //                     break;
 //                     case("C3"):
 //                     console.log(chalk.cyan("emptied"));
-//                     socket.emit('emptied', "emptied");
+//                     server.io.emit('emptied', "emptied");
 //                     break;
 //                     case("C9"):
 //                     console.log(chalk.cyan("Note Transfered to Stacker"));
-//                     socket.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
+//                     server.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
 //                     break;
 //                     case("E8"):
 //                      console.log(chalk.red(device+" DisabledX"));
@@ -2165,8 +2197,8 @@ function handleGetTebsBarcode(data){
 }
 module.exports.handleGetTebsBarcode=handleGetTebsBarcode;
 /////////////////////////////////////////////////////////
-
 var io;
 module.exports = function(importIO) {
     io = importIO;
+
 };

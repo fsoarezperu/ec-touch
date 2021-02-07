@@ -1,3 +1,25 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  // $("#main").on("click",function() {
+  //   socket.emit("buffer",'buffer');
+  // });
+  socket.on('Note_Transfered_to_Stacker', function(msg){
+      console.log("Note_Transfered_to_Stacker");
+    //  $('#display').innerHTML=msg;
+    //  $('#display').html(msg);
+  //  $('#display').load("./buffer.html");
+  });
+///////////////////////////////////////////////////////
+//   $("#config").click(function() {
+//   socket.emit("config",'config');
+// });
+//   socket.on('config', function(msg){
+//   $('#display').load("./system/configuracion.html");
+// });
+///////////////////////////////////////////////////////
+});
+</script>
 <body  oncontextmenu="return false">
   <div class="wrapper">
     <div class="titulo">
@@ -10,7 +32,10 @@
 
     <div class="parent">
       <div class="mensaje_centrado div2">Un momento Por Favor, Estamos acomodando los billetes en la bolsa</div>
-      <div class="btn div3" id='Smart_emptied' style="width:200px; align:center;">next step (Smart_emptied)</div>
+      <!-- <div class="btn div3" id='Smart_emptied' style="width:200px; align:center;">next step (Smart_emptied)</div>
+      <div class="btn" id='rm_3' style="width:200px; align:center;">rm3</div>
+        <div class="btn" id='rm_1' style="width:200px; align:center;">rm_1</div> -->
+
     </div>
   </div>
   <!-- <div id="message">

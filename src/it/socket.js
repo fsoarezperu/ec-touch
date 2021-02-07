@@ -21,13 +21,14 @@ function  nuevo_enlace(pagina,ruta){
  });
 
 }
+module.exports.nuevo_enlace=nuevo_enlace;
 
 io.on('connection', async function (socket) {
 
   console.log(chalk.cyan("usuario conectado"));
   socket.on('reset', async function(msg) {
     console.log(msg);
-    //  io.emit('reset', "reseting system");
+    //  io.emit('reset', "reseting system");k
     it.zerox = false;
     ecount = "00000000";
     //await  ssp.transmite_encriptado_y_procesa(validator_address,reset)
@@ -94,37 +95,37 @@ io.on('connection', async function (socket) {
   });
   /////////////////////////////////////////////////////////////
   socket.on('lock_cashbox', async function(msg) {
-    io.emit('lock_cashbox', "lock_cashbox");
     console.log(chalk.cyan("LOCKING CASHBOX"));
-    await  ssp.transmite_encriptado_y_procesa(validator_address,cashbox_lock_enable)
+    await os.new_lock_cashbox()
+    io.emit('lock_cashbox', "lock_cashbox");
   });
   socket.on('unlock_cashbox', async function(msg) {
     console.log(chalk.cyan("UNLOCKING CASHBOX"));
+    await os.new_unlock_cashbox()
+    if (on_remesa_hermes) {
+       nuevo_enlace('cashbox_unlocked','../system/remesa_hermes/rm_4.html');
+    }
     io.emit('unlock_cashbox', "unlock_cashbox");
-    console.log(global.validator_address);
-  //   await  ssp.transmite_encriptado_y_procesa(global.validator_address,global.cashbox_unlock_enable);
-     await  ssp.envia_encriptado(validator_address,cashbox_unlock_enable);
-
   });
   /////////////////////////////////////////////////////////////
-  socket.on('finish', async function(msg) {
-    await  ssp.ensureIsSet();
-    return new Promise(async function(resolve, reject) {
-      try {
-        console.log(chalk.cyan("Finalizando remesa"));
-        var t124=await  ssp.transmite_encriptado_y_procesa(validator_address,desable);
-        if (t124.length>0) {
-          io.emit('finishy', "finishy");
-          return resolve();
-        }
-
-      } catch (e) {
-        return reject(e);
-      } finally {
-      //  return;
-      }
-    });
-  });
+  // socket.on('finish', async function(msg) {
+  //   await  ssp.ensureIsSet();
+  //   return new Promise(async function(resolve, reject) {
+  //     try {
+  //       console.log(chalk.cyan("Finalizando remesa"));
+  //       var t124=await  ssp.transmite_encriptado_y_procesa(validator_address,desable);
+  //       if (t124.length>0) {
+  //         io.emit('finishy', "finishy");
+  //         return resolve();
+  //       }
+  //
+  //     } catch (e) {
+  //       return reject(e);
+  //     } finally {
+  //     //  return;
+  //     }
+  //   });
+  // });
   socket.on('refresh_window', function(msg) {
     console.log(msg);
   });
@@ -374,8 +375,21 @@ io.on('connection', async function (socket) {
   // });
   /////////////////////////////////////////////////////////
 //  os.conectar_enlace_de(socket,'iniciar_nueva_remesa','../system/remesa/remesa_1.html',"vardata");
+
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
   os.conectar_enlace_de(socket,'main','../system/buffer.html',"vardata");
-//  os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
+  os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+
+
+
+
 //  os.conectar_enlace_de(socket,'cancelar_remesa','../system/buffer.html',"vardata");
 
   // socket.on('iniciar_nueva_remesax',async function(){
@@ -444,20 +458,17 @@ io.on('connection', async function (socket) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  socket.on('smart_empty', async function(msg) {
-    console.log(chalk.green('will smart_empty:' + msg));
-    await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty);
-    console.log("aqui salgo de smart empty");
-  });
   socket.on('Cashbox_Unlock_Enable', function(msg) {
     io.emit('Cashbox_Unlock_Enable',"cashbox Unlocked");
   });
 
   os.conectar_enlace_de(socket,'remesa_hermes','../system/remesa_hermes/rm_1.html',"null");
-  os.conectar_enlace_de(socket,'Smart_emptying','../system/remesa_hermes/rm_2.html',"null");
+//  os.conectar_enlace_de(socket,'Smart_emptying','../system/remesa_hermes/rm_2.html',"null");
   os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
-  os.conectar_enlace_de(socket,'cashbox_unlocked','/..system/remesa_hermes/rm_4.html',"null");
-  os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null",os.testing_callback);
+  os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
+  //os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null",os.testing_callback);
+  os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null");
+
 
   socket.on('get_machine_information', async function(msg) {
     console.log(msg);
@@ -488,9 +499,18 @@ io.on('connection', async function (socket) {
 
   socket.on('iniciar_nueva_remesa',async function(){
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
+    os.crear_nueva_remesa(12345,999,001,8888,"2021-02-01","20:04:20");
     await  os.validator_enabled_now();
     nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
    });
+
+   socket.on('finish',async function(){
+     console.log(chalk.yellow("Nueva remesa manual terminada"));
+     os.terminar_nueva_remesa(12345);
+     await  os.validator_disabled_now();
+     nuevo_enlace('main','../system/buffer.html')
+
+    });
 
   socket.on('fer',async function(){
     console.log(chalk.yellow("fer nuevo enlace si funciono"));
@@ -501,11 +521,72 @@ io.on('connection', async function (socket) {
     //io.emit('prueba','prueba');
    });
 
-   socket.on('config',async function(){
-     console.log(chalk.yellow("Configuration page"));
-    // await  os.validator_enabled_now();
-     nuevo_enlace('config','../system/configuracion.html');
+     socket.on('smart_empty', async function(msg) {
+       on_remesa_hermes=true;
+       console.log(chalk.green('will smart_empty:' + msg));
+     //  await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty);
+       nuevo_enlace('smart_empty','../system/remesa_hermes/rm_2.html');
+       await os.begin_remesa_hermes();
+       console.log("aqui salgo de smart emptyy pASO A RM2");
+     });
+
+     socket.on('Smart_emptied',function(){
+       console.log(chalk.yellow("recibi smart emptied"));
+       nuevo_enlace('Smart_emptied','../system/remesa_hermes/rm_3.html');
+      });
+
+      socket.on('Cashbox_Back_in_Service',async function(){
+        console.log(chalk.yellow("Cashbox_Back_in_Service123"));
+    //    nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+       });
+
+    //  socket.on('smart_empty', async function(msg) {
+    //    console.log(chalk.green('will smart_empty:' + msg));
+    //  //  await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty);
+    // //   await os.begin_remesa_hermes();
+    //    console.log("aqui salgo de smart empty");
+    //  });
+
+   // socket.on('config',async function(){
+   //   console.log(chalk.yellow("Configuration page"));
+   //   nuevo_enlace('config','../system/configuracion.html');
+   //  });
+   // socket.on('info',async function(){
+   //    console.log(chalk.yellow("Configuration page"));
+   //    nuevo_enlace('info','../system/info/info.html');
+   //   });
+
+function super_enlace(orden,mensaje,ruta_de_plantilla){
+   //console.log(chalk.yellow("entrando a super enlace"));
+  socket.on(orden,async function(){
+     console.log(chalk.yellow(mensaje));
+     nuevo_enlace(orden,ruta_de_plantilla);
     });
+};
+module.exports.super_enlace=super_enlace;
+
+super_enlace('info','info','../system/info/info.html');
+super_enlace('config','config','../system/configuracion.html');
+super_enlace('main','main','../system/buffer.html');
+super_enlace('cuadre_diario','cuadre_diario','../system/cuadre_diario/cuadre_diario.html');
+super_enlace('cifras_generales','cifras_generales','../system/cifras_generales/cifras_generales.html');
+super_enlace('remesa_hermes','remesa_hermes','../system/remesa_hermes/rm_1.html');
+
+super_enlace('rm_5','rm_5','../system/remesa_hermes/rm_5.html');
+super_enlace('rm_1','rm_1','../system/remesa_hermes/rm_1.html');
+super_enlace('rm_2','rm_2','../system/remesa_hermes/rm_2.html');
+super_enlace('rm_3','rm_3','../system/remesa_hermes/rm_3.html');
+super_enlace('rm_4','rm_4','../system/remesa_hermes/rm_4.html');
+super_enlace('rm_4_1','rm_4_1','../system/remesa_hermes/rm_4_1.html');
+//super_enlace('rm_5','rm_5','../system/remesa_hermes/rm_5.html');
+//listo
+//super_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html');
+super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
+//super_enlace('Smart_emptied','../system/remesa_hermes/rm_3.html');
+//super_enlace('cashbox_unlocked','../system/remesa_hermes/rm_4.html');
+//super_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+
+
 
     // socket.on('main',async function(){
     //   console.log(chalk.yellow("Configuration page"));

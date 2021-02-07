@@ -1,4 +1,5 @@
 <script type="text/javascript">
+    var mytimer;
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
   $('#machine_sn').html(mydata.machine_sn);
@@ -8,6 +9,22 @@
   $('#given_port').html(mydata.puerto);
   $('#developer').html(mydata.creado_por);
   $('#support').html(mydata.soporte_tecnico);
+
+  function display_pestillo(mes_to_displayx) {
+    clearTimeout(mytimer);
+    document.getElementById("msg1").innerHTML = mes_to_displayx;
+    mytimer=setTimeout(clear_pestillo, 2000);
+  };
+
+  function clear_pestillo() {
+    document.getElementById("msg1").innerHTML = "Bloqueado";
+  };
+
+  socket.on('Cashbox_Unlock_Enable', function(msg) {
+    console.log("desbloqueado desde aqui.");
+    display_pestillo("Desbloqueado");
+  });
+
 });
 
  </script>

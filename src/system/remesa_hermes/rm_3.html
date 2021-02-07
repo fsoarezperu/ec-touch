@@ -1,3 +1,14 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+///////////////////////////////////////////////////////
+  socket.on('Cashbox_Unlock_Enable', function(msg){
+      console.log("Cashbox_Unlock_Enable");
+      //socket.emit("rm_4","rm_4");
+    //  mandar_orden("rm_4");
+  })
+});
+</script>
+
 <body  oncontextmenu="return false">
   <div class="wrapper">
     <div class="titulo">
@@ -18,7 +29,9 @@
         Bloqueado
       </div>
       <div class="btn smart_div4" id='unlock_cashbox'>Desbloquear Pestillo</div>
-      <div class="btn smart_div5" id="cashbox_unlocked"> Next</div>
+      <!-- <div class="btn smart_div5" id="cashbox_unlocked"> Next</div> -->
+        <!-- <div class="btn" id='rm_2' style="width:200px; align:center;">rm_2</div>
+      <div class="btn" id='rm_4' style="width:200px; align:center;">rm4</div> -->
 
     </div>
 
