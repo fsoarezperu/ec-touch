@@ -4,6 +4,13 @@
   // $("#main").on("click",function() {
   //   socket.emit("buffer",'buffer');
   // });
+    $('#tebsbarcode_valor').text(mydata[0].tebs_barcode);
+    $('#valor_fecha_creacion').text(mydata[0].fecha);
+  //  $('#dias_acumulados').text(mydata.no_billetes);
+    $('#monto_en_bolsa_valor').text(mydata[0].monto);
+  //  $('#monto_reciclador_valor').text(mydata.monto_en_reciclador);
+
+    // console.log("logeando desde la pagina de remesa:"+mydata.nombre);
   // socket.on('buffer', function(msg){
   //     console.log("en client side, recibi el buffer ");
   //   //  $('#display').innerHTML=msg;
@@ -18,6 +25,8 @@
 //   $('#display').load("./system/configuracion.html");
 // });
 ///////////////////////////////////////////////////////
+
+
 });
 </script>
 <body  oncontextmenu="return false">
@@ -35,10 +44,12 @@
 <div class="parent">
 
   <div class="current_remesa div1">
-    <div class="fecha_creacion">fecha de creacion:2/11/2020</div>
-    <div class="dias_durando">dias:1</div>
-    <div class="monto_en_bolsa">monto en bolsa:S/.3469.00</div>
-    <div class="monto_reciclador">monto en reciclador:S/.4220.00</div>
+    <div class="TEBSBarCode_label_class">TEBSBarCode:<div id="tebsbarcode_valor"> </div></div>
+
+    <div class="fecha_creacion">fecha de creacion:<div id="valor_fecha_creacion"> </div></div>
+    <div class="dias_durando">dias:<div id="dias_acumulados"> </div></div>
+    <div class="monto_en_bolsa">monto en bolsa:S/.<div id="monto_en_bolsa_valor"> </div></div>
+    <!-- <div class="monto_reciclador">monto en reciclador:<div id="monto_reciclador_valor"> </div></div> -->
   </div>
 
   <div class="div2">

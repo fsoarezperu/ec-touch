@@ -1,13 +1,33 @@
 <script type="text/javascript">
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
-  $('#no_remesas').html(mydata.no_remesas);
-  $('#monto_total_remesas').html(mydata.monto_total_remesas);
-  $('#no_egresos').html(mydata.no_egresos);
-  $('#monto_total_egresos').html(mydata.monto_total_egresos);
-  $('#trans_global').html(mydata.trans_global);
-  $('#saldo').html(mydata.saldo);
-//  $('#moneda').html(mydata.moneda);
+  $('#no_remesas').text(mydata.no_remesas);
+  //$('#monto_total_remesas').text(mydata.monto_total_remesas);
+  $('#no_egresos').text(mydata.no_egresos);
+
+  var monto_total_egreso;
+  var monto_total_remesas;
+
+  if (mydata.monto_total_egresos==null) {
+    console.log("fue NULL");
+    monto_total_egreso=0;
+    $('#monto_total_egresos').text(monto_total_egreso);
+  }else{
+      $('#monto_total_egresos').text(mydata.monto_total_egresos);
+  }
+  if (mydata.monto_total_remesas==null) {
+    console.log("fue NULL");
+    monto_total_remesas=0;
+    $('#monto_total_remesas').text(monto_total_remesas);
+  }else{
+      $('#monto_total_remesas').text(mydata.monto_total_remesas);
+  }
+
+
+
+  $('#trans_global').text(mydata.trans_global);
+  $('#saldo').text(mydata.saldo);
+  $('#moneda').text(mydata.moneda);
 });
 
  </script>
@@ -35,7 +55,7 @@
         <tr>
           <td>Egresos</td>
           <td><div id="no_egresos"></div></td>
-          <td><div class="monto_total_egresos"></div></td>
+          <td><div id="monto_total_egresos"></div></td>
         </tr>
         <tr>
           <td>Totales</td>

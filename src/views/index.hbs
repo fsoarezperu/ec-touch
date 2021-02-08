@@ -19,7 +19,7 @@
         console.log("receiving:"+a1);
         $('#display').html(msg[1]);
         mydata=msg[0];
-        console.log(mydata);
+        console.log("esto viene de enlace a:"+mydata);
       });
       return;
     }
@@ -34,6 +34,9 @@
         console.log("receiving:"+a2);
         $('#display').html(msg[1]);
         mydata=msg[0];
+        //  console.log("esto viene de enlace a:"+JSON.stringify(mydata));
+        //  console.log("Nombre:"+ mydata.nombre);
+
       //  display_message(msg);
       //      socket.emit(a2,msg);
       //  console.log(msg);
@@ -177,7 +180,8 @@
     }
     function cargar_pantalla_guardada() {
       //  socket.emit("main");
-          $('#display').load("./system/buffer.html");
+          $('#display').load("./system/buffer.html", {machine_name:"teast"});
+          //,{machine_name:"PRO_0103"});
     }
     //////////////////////////////////////////
     function display_message(mes_to_display) {

@@ -3,6 +3,8 @@ const ssp=require('./ssp');
 const server=require('./../server');
 const fs = require('fs') //para escribir archivo.
 const pool = require('./../database');
+const globals = require('./globals');
+
 const chalk=require('chalk');
 function logea(texto, variable) {
   if (typeof(variable) != 'undefined') {
@@ -288,25 +290,51 @@ async function calcular_cifras_generales() {
         return mis_montos;
 }
 module.exports.calcular_cifras_generales = calcular_cifras_generales;
+
+// function if_null_then_cero(valuez){
+//   if (valuez== null) {
+//     console.log(valuez +"was null");
+//     valuez=0;
+//     console.log("ahora valuez="+valuez);
+//   }else{
+//     console.log(valuez +"wasnt null");
+//     return valuez;
+//   }
+//
+//
+// }
 ////////////////////////////////////////////////////////////////////////////////////////////////
 async function calcular_cuadre_diario() {
-  const no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
-  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+  var no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
+  var monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
 
-  const no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
-  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  var no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  var monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
   //en PROCESO
-  const no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
-  const monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
+  var no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  var monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
 
-  const no_egresos_pend = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
-  const monto_total_egresos_pend = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  var no_egresos_pend = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
+  var monto_total_egresos_pend = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  (tipo='egreso' and status='completado' and rms_status='pendiente' and status_hermes='en_tambox')");
   ////////////////////////
+
+
+//if_null_then_cero(no_remesas[0].noRemesa);
+//if_null_then_cero(monto_total_remesas[0].totalremesax);
+//if_null_then_cero(no_egresos[0].noEgreso);
+
+//if_null_then_cero(no_remesas_pend[0].noRemesa);
+//if_null_then_cero(no_egresos_pend[0].noEgreso);
+
+//var a1=if_null_then_cero(monto_total_egresos[0].totalEgreso);
+//console.log("a1="+a1);
+
   var totales = {
     no_remesas: no_remesas[0].noRemesa,
     monto_total_remesas: monto_total_remesas[0].totalremesax,
     no_egresos: no_egresos[0].noEgreso,
     monto_total_egresos: monto_total_egresos[0].totalEgreso,
+    //monto_total_egresos:a1,
 
     saldo: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
     trans_global: no_remesas[0].noRemesa + no_egresos[0].noEgreso,
@@ -331,7 +359,7 @@ async function calcular_cuadre_diario() {
 }
 module.exports.calcular_cuadre_diario = calcular_cuadre_diario;
 
-function conectar_enlace_de(xsocket,xid,xpath,vardata,cb) {
+function conectar_enlace_de(xsocket,xid,xpath,vardatayyy,cb) {
     xsocket.on(xid, async function(msg) {
   console.log(chalk.green("se recivio socket:"+msg));
   console.log("cargando file en ruta:"+path.join(__dirname, xpath));
@@ -341,7 +369,7 @@ function conectar_enlace_de(xsocket,xid,xpath,vardata,cb) {
     if (err) {
       return console.log(err);
     }
-    var totaldata=[vardata,data];
+    var totaldata=[vardatayyy,data];
   //  console.log("DATA IS:");
   //  console.log(data);
   //  console.log(chalk.green("se emite socket:"+xid+ "variable:"+totaldata));
@@ -550,6 +578,8 @@ console.log("aqui estoy terminando una nueva remesa en la base de datos");
     if (no_remesa) {
       try {
         await pool.query("UPDATE remesas SET rms_status='finalizada', status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
+
       //  remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
       //  io.to_tbm.emit('una_remesa_mas', "transaccion satisfactoria remesa");
         //////////////////////////////////////////////////////////////////////////////
@@ -636,3 +666,17 @@ await ssp.ensureIsSet();
           });
 }
 module.exports.begin_remesa_hermes = begin_remesa_hermes;
+
+async function consulta_remesa_hermes_actual(){
+  const remesa_hermes_entambox = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tienda_id='0103'");
+  //console.log(JSON.stringify(remesa_hermes_entambox));
+  return remesa_hermes_entambox;
+}
+module.exports.consulta_remesa_hermes_actual=consulta_remesa_hermes_actual;
+
+async function consulta_this_machine(){
+  const this_machine2121 = await pool.query("SELECT * FROM machine");
+  //console.log(JSON.stringify(remesa_hermes_entambox));
+  return this_machine2121;
+}
+module.exports.consulta_this_machine=consulta_this_machine;

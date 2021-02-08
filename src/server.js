@@ -96,7 +96,7 @@ const io2 = require('./it/socket')(io);
 
 
 // /////////////////////////////////////////////////////////
-httpx.listen(machine_port, async function() {
+httpx.listen(machine_port, async function(io2) {
   console.log(chalk.yellow("/////////////////////////////////////////////////////////////////"));
   console.log((chalk.yellow('Iniciando Tambox OS 1.1 en http://localhost:'+machine_port)));
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
@@ -141,7 +141,7 @@ httpx.listen(machine_port, async function() {
        on_startup=false;
 
        os.new_lock_cashbox();
-  //     socket.io.emit("iniciando");
+       io.emit("iniciando","iniciando");
   //   }else {
   //     console.log(chalk.red("No Validator Found"));
   //     return reject("validator not found");

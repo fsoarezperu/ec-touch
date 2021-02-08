@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////
   socket.on('Cashbox_out_of_Service', function(msg){
       console.log("Cashbox_out_of_Service");
+        display_message("Note_Transfered_to_Stacker");
       //socket.emit("rm_4","rm_4");
     //  mandar_orden("rm_4");
   })
@@ -30,7 +31,7 @@
       </div>
     </div>
   </div>
-  <div id="message">
+  <div id="message2">
     <ol></ol>
   </div>
 </body>

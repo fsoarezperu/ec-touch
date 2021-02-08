@@ -832,7 +832,7 @@ async function store_note(monto) {
       //const remesa = await pool.query("SELECT * FROM remesas WHERE status='iniciada' OR status='en_proceso' ");
       // var rem1;
       // if (remesa[0].no_remesa === 'undefined'){
-         rem1="0000";
+         rem1=new_manual_remesa;
       // }else {
       //   rem1=remesa[0].no_remesa;
       // }
@@ -863,7 +863,7 @@ async function store_note(monto) {
       console.log(chalk.cyan("SUCCESFULL"));
     }else{
        var rem2 = remesa[0].no_remesa;
-    //  console.log("la remes en cuestion es:"+rem2);
+      console.log("la remes en cuestion es:"+rem2);
       const nueva_note = {
         no_remesa: rem2,
         monto: monto,
@@ -876,7 +876,8 @@ async function store_note(monto) {
       const calculando_monto = await pool.query("SELECT SUM(monto) AS totalremesa FROM creditos WHERE no_remesa=? AND status='processing'", [rem2]);
       var monto_total_remesa = calculando_monto[0].totalremesa;
       const qty_monto = await pool.query("SELECT COUNT(id) AS total_qty_remesa FROM creditos WHERE no_remesa=? AND status='processing'", [rem2]);
-      var monto_total_remesa = calculando_monto[0].totalremesa;
+    //  var monto_total_remesa = calculando_monto[0].totalremesa;
+      var qty_result=qty_monto[0].total_qty_remesa;
       await pool.query("UPDATE remesas SET monto=?,no_billetes=? WHERE status='en_proceso' AND no_remesa=?", [monto_total_remesa,qty_result, rem2]);
       console.log("se van acumulando:"+qty_result+ " billetes");
 

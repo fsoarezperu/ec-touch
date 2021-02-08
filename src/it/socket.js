@@ -2,6 +2,8 @@ const fs = require('fs') //para escribir archivo.
 const chalk=require('chalk');
 const os = require('./os');
 const globals= require('./globals');
+const tambox= require('./devices/tambox');
+
 const ssp =require('./ssp');
 const path = require('path');
 module.exports = function (io) {
@@ -9,13 +11,13 @@ module.exports = function (io) {
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
 
-function  nuevo_enlace(pagina,ruta){
+function  nuevo_enlace(pagina,ruta,vardata1){
   fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
       if (err) {
         return console.log(err);
       }
-  var vardata="vardata";
-  var totaldata=[vardata,data];
+//  var vardata="vardata";
+  var totaldata=[vardata1,data];
 //  console.log(data);
   io.emit(pagina,totaldata);
  });
@@ -380,7 +382,7 @@ io.on('connection', async function (socket) {
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
-  os.conectar_enlace_de(socket,'main','../system/buffer.html',"vardata");
+//  os.conectar_enlace_de(socket,'main','../system/buffer.html',"vardata");
   os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
@@ -449,8 +451,8 @@ io.on('connection', async function (socket) {
   }
   os.conectar_enlace_de(socket,'info','../system/info/info.html',this_machine);
   ///////////////////////////////////////////////////////////////////////////
-  var totales= await os.calcular_cuadre_diario();
-  os.conectar_enlace_de(socket,'cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales);
+  // var totales= await os.calcular_cuadre_diario();
+  // os.conectar_enlace_de(socket,'cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -462,7 +464,18 @@ io.on('connection', async function (socket) {
     io.emit('Cashbox_Unlock_Enable',"cashbox Unlocked");
   });
 
-  os.conectar_enlace_de(socket,'remesa_hermes','../system/remesa_hermes/rm_1.html',"null");
+
+
+
+  var my_remesa_hermes_now={
+    nombre:"fernando",
+    tienda_id:12345,
+    dias_acumulados:14,
+    fecha_de_creacion:"02/07/2121",
+    monto_en_bolsa:3850,
+    monto_en_reciclador:2000
+  };
+//  os.conectar_enlace_de(socket,'remesa_hermes','../system/remesa_hermes/rm_1.html',my_remesa_hermes_now);
 //  os.conectar_enlace_de(socket,'Smart_emptying','../system/remesa_hermes/rm_2.html',"null");
   os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
   os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
@@ -496,17 +509,20 @@ io.on('connection', async function (socket) {
    });
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
+//  var new_manual_remesa;
 
   socket.on('iniciar_nueva_remesa',async function(){
+    new_manual_remesa= Math.floor((Math.random() * 100) + 1);
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
-    os.crear_nueva_remesa(12345,999,001,8888,"2021-02-01","20:04:20");
+
+    os.crear_nueva_remesa(new_manual_remesa,999,001,8888,tambox.fecha_actual(),tambox.hora_actual());
     await  os.validator_enabled_now();
     nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
    });
 
    socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
-     os.terminar_nueva_remesa(12345);
+     os.terminar_nueva_remesa(new_manual_remesa);
      await  os.validator_disabled_now();
      nuevo_enlace('main','../system/buffer.html')
 
@@ -556,21 +572,48 @@ io.on('connection', async function (socket) {
    //    nuevo_enlace('info','../system/info/info.html');
    //   });
 
-function super_enlace(orden,mensaje,ruta_de_plantilla){
+function super_enlace(orden,mensaje,ruta_de_plantilla,vardataxxy,pre_call_back){
+  if(pre_call_back !== undefined){
+      pre_call_back();
+  }
    //console.log(chalk.yellow("entrando a super enlace"));
-  socket.on(orden,async function(){
-     console.log(chalk.yellow(mensaje));
-     nuevo_enlace(orden,ruta_de_plantilla);
+  socket.on(orden,async function(vardataxx){
+     console.log(chalk.yellow(mensaje)+" with data="+chalk.cyan(JSON.stringify(vardataxxy)));
+     nuevo_enlace(orden,ruta_de_plantilla,vardataxxy);
     });
 };
 module.exports.super_enlace=super_enlace;
 
 super_enlace('info','info','../system/info/info.html');
 super_enlace('config','config','../system/configuracion.html');
-super_enlace('main','main','../system/buffer.html');
-super_enlace('cuadre_diario','cuadre_diario','../system/cuadre_diario/cuadre_diario.html');
+//super_enlace('main','main','../system/buffer.html');
+//super_enlace('cuadre_diario','cuadre_diario','../system/cuadre_diario/cuadre_diario.html');
 super_enlace('cifras_generales','cifras_generales','../system/cifras_generales/cifras_generales.html');
-super_enlace('remesa_hermes','remesa_hermes','../system/remesa_hermes/rm_1.html');
+
+//super_enlace('remesa_hermes','remesa_hermes','../system/remesa_hermes/rm_1.html',my_remesa_hermes_now,os.consulta_remesa_hermes_actual);
+socket.on('cuadre_diario',async function(msg){
+  console.log(chalk.yellow("socket on cuadre_diario"));
+  //var soy_la_voz=await os.consulta_remesa_hermes_actual();
+  var totales_cuadre_diarioyy= await os.calcular_cuadre_diario();
+  console.log("totales_cuadre_diario:"+JSON.stringify(totales_cuadre_diarioyy));
+
+  nuevo_enlace('cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales_cuadre_diarioyy);
+ });
+
+
+socket.on('remesa_hermes',async function(msg){
+  console.log(chalk.yellow("socket on remesa_hermes"));
+  var soy_la_voz=await os.consulta_remesa_hermes_actual();
+  //console.log("soy la voz es:"+JSON.stringify(soy_la_voz));
+  nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',soy_la_voz);
+ });
+
+ socket.on('main',async function(msg){
+   console.log(chalk.yellow("socket on MAIN"));
+   var this_machine_info=await os.consulta_this_machine();
+   console.log("vardata de main es:"+JSON.stringify(this_machine_info));
+   nuevo_enlace('main','../system/buffer.html',this_machine_info);
+  });
 
 super_enlace('rm_5','rm_5','../system/remesa_hermes/rm_5.html');
 super_enlace('rm_1','rm_1','../system/remesa_hermes/rm_1.html');
