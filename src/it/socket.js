@@ -3,9 +3,10 @@ const chalk=require('chalk');
 const os = require('./os');
 const globals= require('./globals');
 const tambox= require('./devices/tambox');
-
+const to_tbm=require('./tbm_sync/tbm_synch_socket');
 const ssp =require('./ssp');
 const path = require('path');
+
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
@@ -25,9 +26,42 @@ function  nuevo_enlace(pagina,ruta,vardata1){
 }
 module.exports.nuevo_enlace=nuevo_enlace;
 
+io.on('connect', function(socket) {
+//    console.log(chalk.red("local_cashbox is offline..."+socket.handshake.address));
+  console.log(chalk.cyan("the client ID"+socket.id+" is connected from ip:"+socket.handshake.address));
+  socket.on('disconnect', function(reason) {
+    console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
+
+  });
+
+  socket.on('socket_to_tbm',async function(socket){
+    console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
+    console.log(chalk.yellow("orden para mandar socket to tbm detected"));
+
+
+    //await  os.validator_enabled_now();
+    //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
+  //  console.log("");
+    //ssp.emite_como_cliente();
+    //io.emit('prueba','prueba');
+//    to_tbm.socket_to_tbm.emit('Machine_alive','123456');
+  //  to_tbm.socket_to_tbm.emit('registration',"machine_en_cuestion");
+
+//    to_tbm.socektyy.emit("my other event",{ my: 'data' });
+      to_tbm.socket_to_tbm.emit("Machine_alive","vamos bien");
+
+   });
+
+});
+
+
+
 io.on('connection', async function (socket) {
 
-  console.log(chalk.cyan("usuario conectado"));
+
+
+
+//  console.log(chalk.cyan("usuario conectado, ID:"+socket.id+ " desde ip:"+socket.handshake.address+" detectada"));
   socket.on('reset', async function(msg) {
     console.log(msg);
     //  io.emit('reset', "reseting system");k
@@ -440,33 +474,21 @@ io.on('connection', async function (socket) {
   //  io.emit('prueba','prueba');
    });
 
-  var this_machine={
-    machine_sn:numero_de_serie,
-    Tebs_barcode:tebs_barcode,
-    os_version:release_version,
-    direccion_ip:machine_ip,
-    puerto:machine_port,
-    creado_por:machine_developer,
-    soporte_tecnico:machine_support
-  }
-  os.conectar_enlace_de(socket,'info','../system/info/info.html',this_machine);
+
+//  os.conectar_enlace_de(socket,'info','../system/info/info.html',this_machine);
   ///////////////////////////////////////////////////////////////////////////
   // var totales= await os.calcular_cuadre_diario();
   // os.conectar_enlace_de(socket,'cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  os.conectar_enlace_de(socket,'cifras_generales','../system/cifras_generales/cifras_generales.html',global.mis_cifras_generales);
+  //os.conectar_enlace_de(socket,'cifras_generales','../system/cifras_generales/cifras_generales.html',global.mis_cifras_generales);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   socket.on('Cashbox_Unlock_Enable', function(msg) {
     io.emit('Cashbox_Unlock_Enable',"cashbox Unlocked");
   });
-
-
-
-
   var my_remesa_hermes_now={
     nombre:"fernando",
     tienda_id:12345,
@@ -528,14 +550,7 @@ io.on('connection', async function (socket) {
 
     });
 
-  socket.on('fer',async function(){
-    console.log(chalk.yellow("fer nuevo enlace si funciono"));
-    await  os.validator_enabled_now();
-    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
 
-    //ssp.emite_como_cliente();
-    //io.emit('prueba','prueba');
-   });
 
      socket.on('smart_empty', async function(msg) {
        on_remesa_hermes=true;
@@ -584,11 +599,11 @@ function super_enlace(orden,mensaje,ruta_de_plantilla,vardataxxy,pre_call_back){
 };
 module.exports.super_enlace=super_enlace;
 
-super_enlace('info','info','../system/info/info.html');
+//super_enlace('info','info','../system/info/info.html');
 super_enlace('config','config','../system/configuracion.html');
 //super_enlace('main','main','../system/buffer.html');
 //super_enlace('cuadre_diario','cuadre_diario','../system/cuadre_diario/cuadre_diario.html');
-super_enlace('cifras_generales','cifras_generales','../system/cifras_generales/cifras_generales.html');
+//super_enlace('cifras_generales','cifras_generales','../system/cifras_generales/cifras_generales.html');
 
 //super_enlace('remesa_hermes','remesa_hermes','../system/remesa_hermes/rm_1.html',my_remesa_hermes_now,os.consulta_remesa_hermes_actual);
 socket.on('cuadre_diario',async function(msg){
@@ -600,6 +615,22 @@ socket.on('cuadre_diario',async function(msg){
   nuevo_enlace('cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales_cuadre_diarioyy);
  });
 
+ var this_machine={
+   machine_sn:numero_de_serie,
+   Tebs_barcode:tebs_barcode,
+   os_version:release_version,
+   direccion_ip:machine_ip,
+   puerto:machine_port,
+   creado_por:machine_developer,
+   soporte_tecnico:machine_support
+ }
+
+ socket.on('info',async function(msg){
+   console.log(chalk.yellow("socket on info"));
+  // var thi_info=await os.calcular_cifras_generales();
+   console.log("vardata de cifras_generales es:"+JSON.stringify(this_machine));
+   nuevo_enlace('info','../system/info/info.html',this_machine);
+  });
 
 socket.on('remesa_hermes',async function(msg){
   console.log(chalk.yellow("socket on remesa_hermes"));
@@ -607,6 +638,13 @@ socket.on('remesa_hermes',async function(msg){
   //console.log("soy la voz es:"+JSON.stringify(soy_la_voz));
   nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',soy_la_voz);
  });
+
+ socket.on('cifras_generales',async function(msg){
+   console.log(chalk.yellow("socket on cifras_generales"));
+   var thi_cifras_generales=await os.calcular_cifras_generales();
+   console.log("vardata de cifras_generales es:"+JSON.stringify(thi_cifras_generales));
+   nuevo_enlace('cifras_generales','../system/cifras_generales/cifras_generales.html',thi_cifras_generales);
+  });
 
  socket.on('main',async function(msg){
    console.log(chalk.yellow("socket on MAIN"));

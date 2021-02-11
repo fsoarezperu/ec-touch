@@ -51,63 +51,94 @@ function start_validator() {
                                      if (step6=="OK") {
                                        //verificar registro de maquina.
                                             var regis=await os.is_this_machine_registered();
-                                          //  console.log("resgistered is:"+regis);
-                                        if(regis=="OK"){
-                                        //  console.log("entro por aqui");
-                                          glo.is_regis=true;
+                                            console.log("resgistered is:"+regis);
+                                            if (regis[0]=="machine_found_on_tbm") {
+                                              console.log("encontraron una maquina en TBM con este codigo, asi que actualizare mi base de datos en funcion a esa nueva data");
+                                            //console.log(regis[1].tienda_id);
+                                            //  remesa =
+                                            var x1=regis[1].tienda_id;
+                                            var x2=regis[1].machine_sn;
+                                            var x3=regis[1].machine_name;
 
-                                        //  console.log(chalk.green("Registro Aprovado:"+regis));
-                                          //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
-                                          var my_resgistered_machine=await server.query_this_machine();
-                                          //my_resgistered_machine=my_resgistered_machine[1];
-                                          os.logea(chalk.green("query:"+my_resgistered_machine));
-                                          console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
-                                          await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
-                                          glo.my_resgistered_machine_name=my_resgistered_machine.name;
-                                            //server.io.emit("iniciando","iniciando sistema");
-                                          var step7=await enable_payout(validator_address);
-                                           if (step7=="OK") {
-                                           //  await carga_monedas_al_hopper(validator_address);
-                                           console.log(chalk.green("payout enabled"));
-                                            // on_startup=false;
-                                            var step8=await validator_poll_loop(validator_address);
-                                            os.logea(glo.is_regis);
-                                            return resolve("OK");
-                                           }
-                                        }else {
-                                        os.logea(chalk.green("Esta maquina ya esta registrada"));
-                                          glo.is_regis=false;
-                                          //  await pool.query ("UPDATE machine SET is_registered=0");
-                                        //  global.my_resgistered_machine_name=my_resgistered_machine.name;
-                                            //server.io.emit("iniciando","iniciando sistema");
-                                            var esty= await pool.query("SELECT machine_name FROM machine");
-                                            esty=esty[0].machine_name
-                                            glo.my_resgistered_machine_name=esty;
-                                            console.log("Machine registered name:"+chalk.yellow(glo.my_resgistered_machine_name));
-                                            console.log(chalk.cyan("no se pudo validar en Tambox Cloud"));
-                                          var step7=await enable_payout(validator_address);
-                                           if (step7=="OK") {
-                                           //  await carga_monedas_al_hopper(validator_address);
-                                           //console.log(chalk.green("payout enabled in here"));
-                                           // creo que aqui puedo poner las funciones que cargan y consultan las cifras genrales y el cuadre diario y guardarlo en las
-                                           // variables globales para que puedan ser mostrados en pantalla , seria genial tener opcion que se ejecute cuanda esa pantalla se va a cargar.
-                                           var cifras_generales_actuales=os.calcular_cifras_generales2();
-                                            console.log(chalk.cyan("////////////////////////////////////////////"));
-                                            console.log(chalk.cyan("Cifras Generales obtenidas son:"+JSON.stringify(cifras_generales_actuales)));
-                                          //  console.log(chalk.cyan();
-                                            console.log(chalk.cyan("////////////////////////////////////////////"));
+                                            console.log("x1 es:"+x1);
+                                            console.log("x2 es:"+x2);
+                                            console.log("x3 es:"+x3);
 
+                                            await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
+                                              console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
+                                              //   var my_resgistered_machine=await os.query_this_machine();
+                                              //   //my_resgistered_machine=my_resgistered_machine[1];
+                                              //   os.logea(chalk.green("query:"+my_resgistered_machine));
+                                              //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+                                              //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+                                              //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
 
-                                           var step8=await validator_poll_loop(validator_address);
-                                           os.logea(chalk.green("Inicio poll loop:"+step8));
-                                           return resolve("OK");
+                                              //   var step7=await enable_payout(validator_address);
+                                              //    if (step7=="OK") {
+                                              //    //  await carga_monedas_al_hopper(validator_address);
+                                              //    console.log(chalk.green("payout enabled"));
+                                              //     // on_startup=false;
+                                              //     var step8=await validator_poll_loop(validator_address);
+                                              //     os.logea(glo.is_regis);
+                                              //     return resolve("OK");
+                                              //    }
                                             }
-                                        }
+                                         if(regis=="OK"){
+                                        // //  console.log("entro por aqui");
+                                        //   glo.is_regis=true;
+                                        //
+                                        console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
+                                        //   //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
+                                        //   var my_resgistered_machine=await os.query_this_machine();
+                                        //   //my_resgistered_machine=my_resgistered_machine[1];
+                                        //   os.logea(chalk.green("query:"+my_resgistered_machine));
+                                        //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+                                        //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+                                        //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
+                                        //     //server.io.emit("iniciando","iniciando sistema");
+                                        //   var step7=await enable_payout(validator_address);
+                                        //    if (step7=="OK") {
+                                        //    //  await carga_monedas_al_hopper(validator_address);
+                                        //    console.log(chalk.green("payout enabled"));
+                                        //     // on_startup=false;
+                                        //     var step8=await validator_poll_loop(validator_address);
+                                        //     os.logea(glo.is_regis);
+                                        //     return resolve("OK");
+                                        //    }
+                                         }else {
+                                           glo.is_regis=false;
+                                        //   //  await pool.query ("UPDATE machine SET is_registered=0");
+                                        //     //server.io.emit("iniciando","iniciando sistema");
+                                             var esty= await pool.query("SELECT machine_name FROM machine");
+                                             esty=esty[0].machine_name
+                                             glo.my_resgistered_machine_name=esty;
+                                             console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(glo.my_resgistered_machine_name));
+
+                                               var step7=await enable_payout(validator_address);
+                                                if (step7=="OK") {
+                                            //    //  await carga_monedas_al_hopper(validator_address);
+                                            //    //console.log(chalk.green("payout enabled in here"));
+                                            //    // creo que aqui puedo poner las funciones que cargan y consultan las cifras genrales y el cuadre diario y guardarlo en las
+                                            //    // variables globales para que puedan ser mostrados en pantalla , seria genial tener opcion que se ejecute cuanda esa pantalla se va a cargar.
+                                            //
+                                            //   //  var cifras_generales_actuales=os.calcular_cifras_generales2();
+                                            //   //   console.log(chalk.cyan("////////////////////////////////////////////"));
+                                            //   //   console.log(chalk.cyan("Cifras Generales obtenidas son:"+JSON.stringify(cifras_generales_actuales)));
+                                            //   // //  console.log(chalk.cyan();
+                                            //   //   console.log(chalk.cyan("////////////////////////////////////////////"));
+                                            //
+                                            //
+                                                var step8=await validator_poll_loop(validator_address);
+                                                os.logea(chalk.green("Inicio poll loop:"+step8));
+                                                return resolve("OK");
+                                                 }
+                                         }
                                     }
                             }
                          }
                      }
                   console.log("TODO OK");
+                  //return reject("")
                 }
                }
       //  var stat=await ssp.negociate_encryption(smart_hopper_address);

@@ -4,6 +4,8 @@ const server=require('./../server');
 const fs = require('fs') //para escribir archivo.
 const pool = require('./../database');
 const globals = require('./globals');
+const enc = require('./encryption');
+const to_tbm=require('./tbm_sync/tbm_synch_socket');
 
 const chalk=require('chalk');
 function logea(texto, variable) {
@@ -45,42 +47,62 @@ async function is_this_machine_registered(){
   return new Promise(async function(resolve, reject) {
 //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
 try {
-  //console.log(chalk.green("intentando hacer checkin en tbm"));
-  var tbm_adress=tbm_adressx;
-  var fix= "/api/register_machine";
-  var machine_sn=global.numero_de_serie;
-  var type=global.note_validator_type;
-  const url= tbm_adress+fix+"/"+machine_sn+"/"+type
-  var esti=await fetchWithTimeout(url,3000);
-  return resolve(esti)
+  logea(chalk.green("intentando hacer checkin en tbm usando sockets.io"));
+  var machine_en_cuestion={
+    numero_de_serie:global.numero_de_serie,
+    tipo:global.note_validator_type
+  }
+  to_tbm.socket_to_tbm.emit('registration',machine_en_cuestion);
+  to_tbm.socket_to_tbm.on('registration',(msg)=>{
+    console.log("se ah recivido un mensaje desde el servidor TBM");
+    console.log(msg[1].tienda_id);
+    if(msg[0]=="machine_found_on_tbm"){
+      return resolve(msg);
+
+    }
+    return resolve("OK");
+    //return resolve(msg)
+  })
+  setTimeout(function(){
+    return resolve("no_tbm_conection_found")
+  },3000)
+
 } catch (e) {
   return resolve(e);
-} finally {
-
 }
   });
 }
 module.exports.is_this_machine_registered=is_this_machine_registered;
+
+
 //////////////////////////////////////////////////////////////////////
 async function query_this_machine(){
   return new Promise(async function(resolve, reject) {
 //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
 try {
   //console.log(chalk.green("consultando maquina"));
-  var tbm_adress=tbm_adressx;
-  var fix= "/api/query_machine";
+  //var tbm_adress=tbm_adressx;
+  //var fix= "/api/query_machine";
   var machine_sn=global.numero_de_serie;
-  const url= tbm_adress+fix+"/"+machine_sn
+  //const url= tbm_adress+fix+"/"+machine_sn
 
-  try {
-    var esti=await fetchWithTimeout2(url,3000);
-  //  console.log(esti);
-    return resolve(esti)
-  } catch (e) {
-    return resolve("no check-in")
-  } finally {
-
-  }
+  // try {
+  //   var esti=await fetchWithTimeout2(url,3000);
+  // //  console.log(esti);
+  //   return resolve(esti)
+  // } catch (e) {
+  //   return resolve("no check-in")
+  // } finally {
+  //
+  // }
+  to_tbm.socket_to_tbm.emit('query_machine',machine_sn);
+  to_tbm.socket_to_tbm.on('query_machine',function (msg) {
+  //  console.log(msg);
+    return resolve(msg)
+   })
+   setTimeout(function(){
+     return resolve("OK")
+   },3000)
 
 } catch (e) {
   return reject(chalk.red("error aqui123")+e);
@@ -90,6 +112,8 @@ try {
   });
 }
 module.exports.query_this_machine=query_this_machine;
+
+
 function consulta(url){
 
       const FETCH_TIMEOUT = 3000;
@@ -166,6 +190,7 @@ function fetchWithTimeout2( url, timeout ) {
 }
 
 async function calcular_cifras_generales() {
+  console.log("this is data from cifras generales:");
   var lod = 0;
   var totbills = 0;
   var totaccum = 0;
@@ -186,11 +211,14 @@ async function calcular_cifras_generales() {
   var acum_level5 = 0;
   var data //=await ssp.transmite_encriptado_y_procesa(validator_address, get_all_levels)
   try {
-    data=await sp.hacer_consulta_serial(validator_address, get_all_levels);
+    await ssp.ensureIsSet();
+   data=await ssp.envia_encriptado(validator_address,get_all_levels);
+
+  //console.log(data);
   } catch (e) {
     return (e)
   }
-//console.log(data);
+//console.log("this is data from cifras generales:"+data);
         var poll_responde = data.match(/.{1,2}/g);
         if (poll_responde[1] == "F0") {
           var i = 0;
@@ -272,8 +300,11 @@ async function calcular_cifras_generales() {
           }
         }
         console.log(chalk.red("total billetes en reciclador:" + totbills));
+
+
         totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
         console.log("total monto acumulado en reciclador:" + totaccum);
+
         console.log("/////////// ALL LEVELS ///////////////");
         const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
         const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
@@ -440,10 +471,10 @@ async function tambox_manager_ping() {
         setTimeout(() => {
             console.log(chalk.green('connected to TBM'));
           //  console.log(is_regis);
-          if (glo.is_regis) {
-          //  console.log("emitting");
-          socket.io.emit('show_connected_to_TBM'); //muestra que la maquina esta conectada a nube
-          to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
+          if (globals.is_regis) {
+          //  console.log(chalk.cyan("emitting in here"));
+          server.io.emit('show_connected_to_TBM'); //muestra que la maquina esta conectada a nube
+          to_tbm.socket_to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
           }
           tambox_manager_ping();
           //  is_os_running();
@@ -463,7 +494,7 @@ async function tambox_manager_ping() {
 module.exports.tambox_manager_ping = tambox_manager_ping;
 /////////////////////////////////////////////////////////
   //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
-  async function new_unlock_cashbox() {
+async function new_unlock_cashbox() {
 
   //io.emit('volver',"msg");
   await ssp.ensureIsSet();
@@ -511,22 +542,22 @@ await ssp.ensureIsSet();
 }
 module.exports.new_lock_cashbox = new_lock_cashbox;
 
-function calcular_cifras_generales2(){
-  var totbills2,totaccum,monto_en_bolsa2,total_general2;
-//  var mis_cifras_generales=await calcular_cifras_generales();
-  var mis_cifras_generales= {
-    totbills2:0,
-    totaccum2:0,
-    monto_en_bolsa2:0,
-    total_general2:0,
-    moneda:"PEN"
-  };
-  // console.log(chalk.cyan("////////////////////////////////////////////"));
-  // console.log(chalk.cyan("Cifras Generales obtenidas son:")+mis_cifras_generales);
-  // console.log(chalk.cyan("////////////////////////////////////////////"));
-  return mis_cifras_generales;
-}
-module.exports.calcular_cifras_generales2 = calcular_cifras_generales2;
+// async function calcular_cifras_generales2(){
+//   //var totbills2,totaccum,monto_en_bolsa2,total_general2;
+//   var mis_cifras_generales=await calcular_cifras_generales();
+//   // var mis_cifras_generales= {
+//   //   totbills2:0,
+//   //   totaccum2:0,
+//   //   monto_en_bolsa2:0,
+//   //   total_general2:0,
+//   //   moneda:"PEN"
+//   // };
+//   // console.log(chalk.cyan("////////////////////////////////////////////"));
+//   // console.log(chalk.cyan("Cifras Generales obtenidas son:")+mis_cifras_generales);
+//   // console.log(chalk.cyan("////////////////////////////////////////////"));
+//   return mis_cifras_generales;
+// }
+// module.exports.calcular_cifras_generales2 = calcular_cifras_generales2;
 /////////////////////////////////////////////////////////
 //no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1
 async function crear_nueva_remesa(no_remesa,tienda_id,no_caja,codigo_empleado,fechax1,horax1) {

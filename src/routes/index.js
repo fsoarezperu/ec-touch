@@ -48,6 +48,12 @@ router.get('/', async (req, res) => {
   }
 
 })
+
+router.post('/system/buffer.html', async (req, res) => {
+    console.log("detecting la carga de homepage como post! here");
+  //  res.render("./system/buffer")
+})
+
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/no_cabezal', (req, res) => {
   res.render('no_cabezal');

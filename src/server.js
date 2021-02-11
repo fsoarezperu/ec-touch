@@ -146,6 +146,7 @@ httpx.listen(machine_port, async function(io2) {
   //     console.log(chalk.red("No Validator Found"));
   //     return reject("validator not found");
   //   }
+  os.tambox_manager_ping();
    } catch (e) {
        console.log(chalk.cyan("01-Starting Validator->")+e);
    } finally {

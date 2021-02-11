@@ -42,7 +42,10 @@
       //   });
     //  socket.on('connection', () => {
         console.log("conectado con servidor");
-        console.log("mi_id:"+ socket.id); // an alphanumeric id...
+        socket.on('connect', () => {console.log("mi_id:"+socket.id)});
+        //socket.on('disconnect', (reason) => {console.log("mi_id:"+socket.reason+ " is gone...")});
+
+        //console.log("mi_id:"+ socket.id); // an alphanumeric id...
     //  });
     });
   </script>
