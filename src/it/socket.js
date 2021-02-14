@@ -506,7 +506,7 @@ io.on('connection', async function (socket) {
 
 
   socket.on('get_machine_information', async function(msg) {
-    console.log(msg);
+    console.log("fet machine information triggeret with this message:"+msg);
     var this_machine2={
       machine_sn:numero_de_serie,
       Tebs_barcode:tebs_barcode,
@@ -516,7 +516,7 @@ io.on('connection', async function (socket) {
       creado_por:machine_developer,
       soporte_tecnico:machine_support
     }
-      io.emit('get_machine_information',this_machine);
+      io.emit('get_machine_information',this_machine2);
     });
 
   // socket.on('trigger_socket', function(){
@@ -615,21 +615,40 @@ socket.on('cuadre_diario',async function(msg){
   nuevo_enlace('cuadre_diario','../system/cuadre_diario/cuadre_diario.html',totales_cuadre_diarioyy);
  });
 
+/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
  var this_machine={
-   machine_sn:numero_de_serie,
+   machine_sn:globals.numero_de_serie,
    Tebs_barcode:tebs_barcode,
    os_version:release_version,
    direccion_ip:machine_ip,
+   ip_publico:globals.public_machine_ip,
    puerto:machine_port,
    creado_por:machine_developer,
    soporte_tecnico:machine_support
  }
 
+ var this_machine3={
+   machine_sn:numero_de_serie,
+   Tebs_barcode:tebs_barcode,
+   os_version:release_version,
+   direccion_ip:machine_ip,
+   ip_publico:globals.public_machine_ip,
+   puerto:machine_port,
+   creado_por:machine_developer,
+   soporte_tecnico:machine_support
+ }
  socket.on('info',async function(msg){
    console.log(chalk.yellow("socket on info"));
   // var thi_info=await os.calcular_cifras_generales();
-   console.log("vardata de cifras_generales es:"+JSON.stringify(this_machine));
-   nuevo_enlace('info','../system/info/info.html',this_machine);
+  // var mi_objeto={
+  //   color:"negro",
+  //   tamano:"pequeño"
+  // }
+   console.log("mi nuevo objeto:"+numero_de_serie);
+   console.log("vardata de info en este punto es:"+JSON.stringify(this_machine3));
+   nuevo_enlace('info','../system/info/info.html',this_machine3);
   });
 
 socket.on('remesa_hermes',async function(msg){

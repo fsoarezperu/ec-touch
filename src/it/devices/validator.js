@@ -10,7 +10,7 @@
 // ///////////////////////////////////////////////////////////
 const sp = require('./../serial_port');
 const ssp = require('./../ssp');
-
+const to_tbm=require('./../tbm_sync/tbm_synch_socket');
 
 const server = require('./../../server');
 const it = require('./tambox');
@@ -50,6 +50,7 @@ function start_validator() {
                                      var step6= await set_validator_routing(validator_address);
                                      if (step6=="OK") {
                                        //verificar registro de maquina.
+                                            to_tbm.iniciar_handshake_con_tbm();
                                             var regis=await os.is_this_machine_registered();
                                             console.log("resgistered is:"+regis);
                                             if (regis[0]=="machine_found_on_tbm") {
@@ -109,6 +110,8 @@ function start_validator() {
                                            glo.is_regis=false;
                                         //   //  await pool.query ("UPDATE machine SET is_registered=0");
                                         //     //server.io.emit("iniciando","iniciando sistema");
+                                        //console.log(global.machine_ip);
+                                             await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [glo.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
                                              var esty= await pool.query("SELECT machine_name FROM machine");
                                              esty=esty[0].machine_name
                                              glo.my_resgistered_machine_name=esty;

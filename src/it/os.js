@@ -50,11 +50,13 @@ try {
   logea(chalk.green("intentando hacer checkin en tbm usando sockets.io"));
   var machine_en_cuestion={
     numero_de_serie:global.numero_de_serie,
-    tipo:global.note_validator_type
+    tipo:global.note_validator_type,
+    public_machine_ip:global.public_machine_ip
   }
+  console.log("this is machine en cuestion"+JSON.stringify(machine_en_cuestion));
   to_tbm.socket_to_tbm.emit('registration',machine_en_cuestion);
   to_tbm.socket_to_tbm.on('registration',(msg)=>{
-    console.log("se ah recivido un mensaje desde el servidor TBM");
+    console.log("se ah recivido un mensaje desde el servidor TBM:"+ msg);
     console.log(msg[1].tienda_id);
     if(msg[0]=="machine_found_on_tbm"){
       return resolve(msg);

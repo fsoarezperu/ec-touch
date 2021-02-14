@@ -93,15 +93,71 @@ app.set('view engine', '.hbs');
 const io2 = require('./it/socket')(io);
 
 
+async function get_my_phisical_current_ip(){
+  var detected_ip="0.0.0.0"
 
+  'use strict';
+
+  const { networkInterfaces } = require('os');
+
+  const nets = networkInterfaces();
+  const results = Object.create(null); // Or just '{}', an empty object
+
+  for (const name of Object.keys(nets)) {
+      for (const net of nets[name]) {
+          // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+          if (net.family === 'IPv4' && !net.internal) {
+              if (!results[name]) {
+                  results[name] = [];
+              }
+              results[name].push(net.address);
+          }
+      }
+  }
+
+
+  //return results;
+  //return results["en0"][0];
+  return results["wlan0"][0];
+
+};
+
+async function get_my_current_public_ip(){
+  const publicIp = require('public-ip');
+
+
+//	console.log(await publicIp.v4());
+	//=> '46.5.21.123'
+
+//	console.log(await publicIp.v6());
+	//=> 'fe80::200:f8ff:fe21:67cf'
+
+  return await publicIp.v4();
+
+};
 
 // /////////////////////////////////////////////////////////
 httpx.listen(machine_port, async function(io2) {
+  var mi_ip=await get_my_phisical_current_ip();
+  global.machine_ip=mi_ip;
+  console.dir("detecting ip assigned is:"+mi_ip);
+
+  var mi_public_ip=await get_my_current_public_ip();
+  global.public_machine_ip=mi_public_ip;
+  console.dir("detecting public ip assigned is:"+mi_public_ip);
+
+
+
   console.log(chalk.yellow("/////////////////////////////////////////////////////////////////"));
-  console.log((chalk.yellow('Iniciando Tambox OS 1.1 en http://localhost:'+machine_port)));
+  console.log((chalk.yellow('Iniciando Tambox OS 1.1 en http://'+machine_ip+":"+machine_port+ " en conexion local")));
+  console.log((chalk.yellow('Iniciando Tambox OS 1.1 en http://'+public_machine_ip+":"+machine_port+ " en conexion remota")));
+
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
   ////////////////////////////////////////////////////////////
+
+  //console.dir(mi_ip);
+
 
   ////////////////////////////////////////////////////////////
   // sp.verifica_coneccion_validador();

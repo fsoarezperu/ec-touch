@@ -2,6 +2,35 @@
     var mytimer;
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
+var ec_btn_bottom_text = $('#ec_btn_bottom').text();
+var variable_boton;
+pinta_color_en_boton();
+
+
+function pinta_color_en_boton(){
+  var variable_boton= $('#msg1').text();
+  if (variable_boton=="Bloqueado" ) {
+      console.log("el cashbox esta bloqueado");
+      $( "#lock_cashbox" ).hide();
+      $( "#unlock_cashbox" ).show();
+       $(".boton_bloqueo").css('filter', 'drop-shadow(0px 1px 15px #de2727)');
+  //    $(".boton_bloqueo").css('filter', 'drop-shadow(0px 1px 15px #269c02)');
+  }else {
+    console.log("el cashbox esta desbloqueado");
+      $( "#unlock_cashbox" ).hide();
+      $( "#lock_cashbox" ).show();
+      $(".boton_bloqueo").css('filter', 'drop-shadow(0px 1px 15px #269c02)');
+
+  }
+
+}
+$(".ec_btn").click(function(){
+    // alert("button");
+    console.log("boton presionado");
+      pinta_color_en_boton();
+});
+
+
   $('#machine_sn').html(mydata.machine_sn);
   $('#tebs').html(parseInt(mydata.Tebs_barcode, 10));
   $('#release').html(mydata.os_version);
@@ -9,56 +38,100 @@
   $('#given_port').html(mydata.puerto);
   $('#developer').html(mydata.creado_por);
   $('#support').html(mydata.soporte_tecnico);
+  $('#ip_publico').html(mydata.ip_publico);
 
   function display_pestillo(mes_to_displayx) {
     clearTimeout(mytimer);
     document.getElementById("msg1").innerHTML = mes_to_displayx;
-    mytimer=setTimeout(clear_pestillo, 2000);
+    mytimer=setTimeout(clear_pestillo, 1000);
   };
 
   function clear_pestillo() {
     document.getElementById("msg1").innerHTML = "Bloqueado";
+      pinta_color_en_boton();
+    //  $("#candado").css("color", "red");
+    // $( "#lock_cashbox" ).hide();
+    // $( "#unlock_cashbox" ).show();
+
   };
 
   socket.on('Cashbox_Unlock_Enable', function(msg) {
+     // $("#candado").css("color", "green");
     console.log("desbloqueado desde aqui.");
     display_pestillo("Desbloqueado");
+    console.log("el cashbox esta desbloqueado");
+      // $( "#unlock_cashbox" ).hide();
+      // $( "#lock_cashbox" ).show();
+        pinta_color_en_boton();
   });
 
 });
 
+
  </script>
+ <style media="screen">
+
+
+
+ </style>
+
 <body  oncontextmenu="return false">
-  <div class="wrapper">
-    <div class="titulo">
-      <div class="btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+  <div class="wrapper2">
+    <div class="titulo2">
+      <div class="ec_btn volver" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div class="">
+
+      </div>
       <div>Información General</div>
+      <div class="">
+
+      </div>
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
     </div>
-  <div class="grupo4">
-    <!-- <div class="grupo_full_width"> -->
-      <!-- <div>Mac address</div>
-      <div>Ip local</div> -->
-      <div class="texto">
-      <p class="inline-p">Tipo de maquina:<div id="machine_tipe">Tebs</div></p>
-      <p class="inline-p">Numero de Serie validador:<div id="machine_sn"></div></p>
-      <p>Tebs_barcode:<div id="tebs"></div></p>
-      <p>OS version:<div id="release"></div></p>
-      <p>Fecha de actualizacion:<div id="date_update">2/11/2020</div></p>
-      </div>
+    <!-- <div class="grupo4"> -->
+      <div class="info_template">
+        <!-- <div class="grupo_full_width"> -->
+          <!-- <div>Mac address</div>
+          <div>Ip local</div> -->
+          <div class="ec_panel info_maquina_template ">
+            <div class="ec_card">Tipo de maquina:<div id="machine_tipe">Tebs</div></div>
+            <div class="ec_card">Numero de Serie validador:<div id="machine_sn"></div></div>
+            <div class="ec_card">Tebs_barcode:<div id="tebs"></div></div>
+            <div class="ec_card">OS version:<div id="release"></div></div>
+            <div class="ec_card">Fecha de actualizacion:<div id="date_update">2/11/2020</div></div>
+          </div>
 
-      <div class="texto">
-      <p>Direccion IP:<div id="given_ip"></div></p>
-      <p>Creado Por:<div id="developer"></div></p>
-      <p>Soporte Técnico<div id="support"></div></p>
-      </div>
-  <div id="msg1">
-    Bloqueado
-  </div>
-      <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i><br> Unlock Cashbox</div>
-      <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i><br>Lock Cashbox</div>
-      <div class="btn volver" id='main'>Volver</div>
-    </div>
+          <div class="ec_panel info_conexion_template">
+            <div class="ec_card">Direccion IP:<div id="given_ip"></div></div>
+            <div class="ec_card">Direccion IP publica:<div id="ip_publico"></div></div>
+            <div class="ec_card">Creado Por:<div id="developer"></div></div>
+            <div class="ec_card">Soporte Técnico<div id="support"></div></div>
+          </div>
+
+          <div class="ec_panel locking_template">
+            <div class="texto_indicador" id="msg1">Bloqueado</div>
+            <div class="ec_btn volver boton_bloqueo" id='unlock_cashbox'>
+                <div class="ec_btn_top"><i class="fas fa-lock fa-3x candado" ></i></div>
+                <div class="ec_btn_bottom">LOCKED</div>
+            </div>
+            <div class="ec_btn volver boton_bloqueo" id='lock_cashbox'>
+                <div class="ec_btn_top"><i class="fas fa-lock-open fa-3x candado" ></i></div>
+                <div class="ec_btn_bottom">UNLOCKED</div>
+            </div>
+
+            <!-- <div class="ec_btn volver boton_bloqueo" id=''><i class="fas fa-lock fa-3x candado"></i><br>Lock Cashbox</div> -->
+          </div>
+
+          <!-- <div class="ec_panel locking_template">
+            <div class="div3" id="msg1">Bloqueado2</div>
+            <div class="btn volver div2" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i><br> Unlock Cashbox</div>
+            <div class="btn volver div1" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i><br>Lock Cashbox</div>
+          </div> -->
+    <!--
+          <div class="btn volver" id='main'>Volver</div> -->
+        </div>
+    <!-- </div> -->
+
 
   </div>
   <div id="message">

@@ -30,11 +30,12 @@
     function mandar_orden(a2) {
       var a2y="#"+a2;
       $(document).on("click",a2y,function(){
-        console.log(a2);
+        console.log("mandar order:"+a2);
         socket.emit(a2,a2);
       });
       socket.on(a2, function(msg){
-        console.log("receiving:"+a2);
+        console.log("receiving socket.on:"+a2);
+        console.log(msg);
         $('#display').html(msg[1]);
         mydata=msg[0];
         //  console.log("esto viene de enlace a:"+JSON.stringify(mydata));

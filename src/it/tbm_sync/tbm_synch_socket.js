@@ -7,29 +7,8 @@ const chalk = require('chalk');
 const pool = require('./../../database');
 //TAMBOX MANAGER
 var adrees=global.tbm_adressx;
-console.log(chalk.cyan("AQUI ME ESTOY CONECTANDO A SERVIDOR REMOTO TBM;"));
-console.log(chalk.yellow("TBM ADRESS REGISTERED IS:"+global.tbm_adressx));
-var socket_to_tbm = require("socket.io-client")(adrees);
-//var socket_to_tbm = require("socket.io-client")("http://192.168.1.9:4000");
-socket_to_tbm.on("connect",async function() {
-  socket_to_tbm.on('disconnect', function() {
-    console.log("Tambox_manager is offline...");
-    server.io.emit('show_not_connected');
-    tbm_status = false;
-  });
-  socket_to_tbm.on('machine', function(data) {
-    //io.to('lobby').emit('message', data);
-    console.log("ticking...");
-  });
-  socket_to_tbm.on('is_tbm_alive', function(data) {
-    //io.to('lobby').emit('message', data);
-    console.log("ticking...",data);
-  });
-  socket_to_tbm.on('refresh_navigators', function(data) {
-    //io.to('lobby').emit('message', data);
-    console.log("refreshing navigators from TBM...");
-  });
 
+async function iniciar_handshake_con_tbm(){
   console.log(chalk.green("Connected to Tambox Manager cloud with ID:"+socket_to_tbm.id));
 
   const current_registered_status= await pool.query("SELECT is_registered FROM machine");
@@ -55,6 +34,33 @@ socket_to_tbm.on("connect",async function() {
   server.io.emit('show_connected_to_TBM');
 
   tbm_status = true;
+}
+module.exports.iniciar_handshake_con_tbm=iniciar_handshake_con_tbm;
+
+//console.log(chalk.cyan("AQUI ME ESTOY CONECTANDO A SERVIDOR REMOTO TBM;"));
+console.log(chalk.yellow("TBM ADRESS REGISTERED IS:"+global.tbm_adressx));
+var socket_to_tbm = require("socket.io-client")(adrees);
+//var socket_to_tbm = require("socket.io-client")("http://192.168.1.9:4000");
+socket_to_tbm.on("connect",async function() {
+  socket_to_tbm.on('disconnect', function() {
+    console.log("Tambox_manager is offline...");
+    server.io.emit('show_not_connected');
+    tbm_status = false;
+  });
+  socket_to_tbm.on('machine', function(data) {
+    //io.to('lobby').emit('message', data);
+    console.log("ticking...");
+  });
+  socket_to_tbm.on('is_tbm_alive', function(data) {
+    //io.to('lobby').emit('message', data);
+    console.log("ticking...",data);
+  });
+  socket_to_tbm.on('refresh_navigators', function(data) {
+    //io.to('lobby').emit('message', data);
+    console.log("refreshing navigators from TBM...");
+  });
+
+
 //  console.log('hola desde aqui');
 
 //  await os.tambox_manager_ping();

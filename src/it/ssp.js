@@ -339,6 +339,7 @@ return new Promise(async function(resolve, reject) {
                                   //  console.log(chalk.green("Cashbox Unlock Enable"));
                                   if(global.last_sent=="93"){
                                   //  console.log(chalk.cyan("viaset "));
+                                  server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
                                 }else{
                                   console.log(chalk.cyan("SENT ONCE"));
                                   if (on_remesa_hermes) {
@@ -1079,9 +1080,10 @@ function handleGetSerialNumber(data){
     //var machine_sn = serialN;
     //exports.machine_sn = machine_sn;
     //numero_de_serie=machine_sn;
-    numero_de_serie=serialN;
+    //console.log("serialN"+serialN);
+    global.numero_de_serie=serialN;
 
-    console.log(chalk.white("The serial number is: " + chalk.yellow(serialN)));
+    console.log(chalk.white("The serial number is: " + chalk.yellow(global.numero_de_serie)));
     //console.log("/////////////////////////////////");
     return resolve(data);
   });
