@@ -6,6 +6,7 @@ const pool = require('./../database');
 const globals = require('./globals');
 const enc = require('./encryption');
 const to_tbm=require('./tbm_sync/tbm_synch_socket');
+const val = require("./devices/validator");
 
 const chalk=require('chalk');
 function logea(texto, variable) {
@@ -520,6 +521,31 @@ async function new_unlock_cashbox() {
 }
 module.exports.new_unlock_cashbox = new_unlock_cashbox;
 
+async function new_read_new_tebs() {
+
+  //io.emit('volver',"msg");
+  await ssp.ensureIsSet();
+     return  new Promise(async function(resolve, reject) {
+        try {
+        //  console.log(chalk.green("disparo de enable_validator"));
+          var data=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+          data= await val.handleGetTebsBarcode(data)
+        //  if (data=="01F0") {
+          console.log(chalk.green("new tebs read"));
+           return resolve(data);
+          //}else {
+          //  reject("el cashbox no pudo desbloquearse");
+        //  }
+        } catch (e) {
+          return reject(chalk.red("error en socket:")+e);
+        }
+        // finally {
+        // io.emit('iniciar_nueva_remesa_paso2', "iniciar_nueva_remesa_paso2");
+        // }
+            });
+}
+module.exports.new_read_new_tebs = new_read_new_tebs;
+
 async function new_lock_cashbox() {
 
 //io.emit('volver',"msg");
@@ -713,3 +739,10 @@ async function consulta_this_machine(){
   return this_machine2121;
 }
 module.exports.consulta_this_machine=consulta_this_machine;
+
+async function consulta_historial(){
+  const historial = await pool.query("SELECT * FROM remesa_hermes");
+  //console.log(JSON.stringify(remesa_hermes_entambox));
+  return historial;
+}
+module.exports.consulta_historial=consulta_historial;

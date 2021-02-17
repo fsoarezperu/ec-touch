@@ -323,7 +323,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("92"):
                                   console.log(chalk.red.cyan("Cashbox Back in Service"));
-                                //  server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
+                                  server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
                                 if (on_remesa_hermes) {
                                   os.new_lock_cashbox();
                                   socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
@@ -1768,7 +1768,7 @@ function verificar_existencia_de_bolsa(receptor) {
 
       current_tebs=await val.handleGetTebsBarcode(current_tebs)
       //verifica si existe en la base de datos esa bolsa,
-    //  console.log("current tebs es:"+current_tebs);
+      console.log("current tebs es:"+current_tebs);
       //tebs_barcode=parseInt(current_tebs);
     //  console.log(tebs_barcode.length);
       if (tebs_barcode.length===undefined) {
@@ -1931,10 +1931,13 @@ function envia_encriptado(receptorx,orden){
         ultimo_valor_enviado=orden;
         var  toSend =await enc.prepare_Encryption(orden);
         os.logea("here to_sed is:"+toSend);
-          var data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
+          var data="";
+          data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
           //console.log(data);
           if (data.length!=0) {
+            console.log("data entes de desencriptar:"+data);
             data=await enc.promise_handleEcommand(data)
+            console.log("data luego de desencriptar:"+data);
             return resolve(data);
           }else {
             return reject("no data received");

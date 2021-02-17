@@ -2,29 +2,89 @@
 <script type="text/javascript">
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
-  $('#message').text(mydata[0].machine_name);
+  $('#message').text(mydata["this_machine_info"][0].machine_name);
+  $('#tienda_id').text(mydata["this_machine_info"][0].tienda_id);
+  $('#public_machine_ip').text(mydata["this_machine_info"][0].public_machine_ip);
+
+console.log(mydata["historial"]);
+//  var no_rhs=0;
+  // forEach((mydata["historial"]), i) => {
+  //   //  no_rhs=no_rhs+1;
+  // //    console.log("sumando 1");
+  // });
+
+  function addCommas(nStr)
+  {
+      nStr += '';
+      x = nStr.split('.');
+      x1 = x[0];
+      x2 = x.length > 1 ? '.' + x[1] : '';
+      var rgx = /(\d+)(\d{3})/;
+      while (rgx.test(x1)) {
+          x1 = x1.replace(rgx, '$1' + ',' + '$2');
+      }
+      return x1 + x2;
+  }
+  var monto_formateado;
+
+  $.each(mydata["historial"], function( index, value ) {
+    var monto_formateado=addCommas(value["monto"]);
+    console.log( index + ": " + value["tebs_barcode"] + " con monto de :S/"+ value["monto"]+ " con fecha de :"+ value["fecha"]+ " con hora de :"+ value["hora"]);
+    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+//  ");
+  });
 });
-
  </script>
- <div class="wrapper2">
-   <div class="titulo2">
-     <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
-     <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
-     <div id="message">Tambox 1.0</div>
-     <!-- <div id="msg1">
-       Bloqueado
-     </div> -->
-     <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
-  </div>
-   <div class="grupo4">
-     <!-- <div class="ec_panel "> -->
-       <div class="ec_card resumen ">
-         <p>Historial</p>
-       </div>
-     <!-- </div> -->
 
-     <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
-     <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
 
+
+<!-- <div class="label_tebs">TEBSBarCode:</div>
+<div class="label_tebs">TEBSBarCode:</div>
+<div class="label_tebs">TEBSBarCode:</div> -->
+
+ <div class="ec_wrapper">
+   <div class="cabecera titulo2">
+   <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+   <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
+   <div id="message">Tambox 1.0</div>
+   <div class=""></div>
+   <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
    </div>
+   <div class="area_trabajo ec_panel">
+
+     <div class="ec_card2 resumen">
+             <p>Historial remesas hermes</p>
+             <div class="lista_remesas_hermes"></div>
+              <p>fin de la lista</p>
+     </div>
+     <div class="ec_card panel1">
+       <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
+       <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div>
+
+    </div>
+     <div class="ec_card panel2">
+       <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
+     </div>
+
+     <div class="ec_card2 resumen2">
+             <p>Historial remesas </p>
+             <div class="lista_remesas_hermes"></div>
+              <p>fin de la lista</p>
+     </div>
+    <!-- <div class="ec_card2">
+      <p>Tienda_id:</p><div id="tienda_id">tienda_id</div>
+     <p>IP Publico:</p> <div id="public_machine_ip">puclic_machine_ip</div>
+    </div> -->
+   </div>
+   <div class="pie_de_pagina titulo2">pie_de_pagina</div>
+
+
+     <!-- <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div></div>
+   <div class="grupo4"> -->
+     <!-- <div class="ec_panel "> -->
+       <!--  -->
+
+
+     <!-- -->
+</div>
  </div>

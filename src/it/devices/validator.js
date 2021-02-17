@@ -748,7 +748,7 @@ function handleGetTebsBarcode(data){
   return new Promise(function(resolve, reject) {
     try {
       var number_of_byte = ssp.get_count_bytes_received();
-      //console.log("number_of_byte:"+number_of_byte);
+      console.log("number_of_byte:"+number_of_byte);
       var myData = received_command.substr(2, number_of_byte + 2);
       var pointer = 0;
       for (var countery = 0; countery < 10; countery++) {
@@ -762,12 +762,13 @@ function handleGetTebsBarcode(data){
           i = i;
         }
 
-        //console.log("tebs_barcode current value is:"+tebs_barcode);
+        // console.log("tebs_barcode current value is:"+tebs_barcode);
         tebs_barcode = tebs_barcode.concat(i);
       }
       current_tebs_barcode=tebs_barcode;
+        console.log(chalk.green("tebs barcode is:" + tebs_barcode));
       return resolve(tebs_barcode);
-    //  console.log(chalk.green("tebs barcode is:" + tebs_barcode));
+
     } catch (e) {
       return reject(e);
     } finally {

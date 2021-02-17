@@ -15,8 +15,8 @@
 
   <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script> -->
 
-  <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/utils/Draggable.min.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.js"></script> -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/utils/Draggable.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.js"></script>
 
   <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script> -->
   <script src="js/angular-tweebmax-draggable-knob.js"></script>
@@ -27,6 +27,8 @@
   <script src="js/Chart.js"></script>
   <script type="text/javascript">
     var socket = io();
+    var is_cashbox_in_service = true;
+      var once = true;
     // var socketConnection = io.connect();
     // socketConnection.on('connect', function() {
     //   const sessionID = socketConnection.socket.sessionid; //
@@ -46,14 +48,96 @@
         console.log("conectado con servidor");
         socket.on('connect', () => {console.log("mi_id:"+socket.id)});
         //socket.on('disconnect', (reason) => {console.log("mi_id:"+socket.reason+ " is gone...")});
-
+        // socket.on('Cashbox_out_of_Service', (msg) => {
+        //   console.log("mensaje de socket:"+msg)});
         //console.log("mi_id:"+ socket.id); // an alphanumeric id...
     //  });
+    socket.on('Cashbox_out_of_Service', function(msg) {
+      is_cashbox_in_service = false;
+      if (once) {
+        //$('#out_of_service, #overlay-back').fadeIn(500);
+        $('#out_of_service, .overlay-back').fadeIn(500);
+
+        once = false;
+      }
+      //  $('#overlay, #overlay-back').fadeIn(500);
+
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Replaced', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeIn(500);
+      once = true;
+      muestra_consulta();
+      //  display_message(msg);
+    });
+    socket.on('Cashbox_Back_in_Service', function(msg) {
+      is_cashbox_in_service = true;
+      $('#out_of_service').fadeOut(500);
+      $('#overlay').fadeOut(500);
+      once = true;
+      socket.emit("read_new_tebs");
+      //  muestra_consulta();
+      //  display_message(msg);
+    });
+
     });
   </script>
+
+  <style media="screen">
+  .overlay-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: 15px;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 5;
+    display: none;
+  }
+
+  #overlay {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 100%;
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+  }
+  </style>
 </head>
 <!-- <body>
   <h1>HELLO WORLD</h1>
 </body> -->
 {{{ body }}}
+
+<div class="popup">
+  <div class="overlay-back"></div>
+  <div id="out_of_service">
+    <div class="grupo3">
+      <div></div>
+      <div id="titulo_popup" style="color:red;">No se detecta la bolsa de dinero</div>
+      <div></div>
+      <div></div>
+      <div>Retire el cajon de dinero y verifique que la bolsa se encuentra correctamente colocada.</div>
+      <div></div>
+      <div></div>
+      <div id="msg1" style="color:green;"></div>
+      <div></div>
+      <!-- <div><a class="btn" style="width:120px;" id="opc11">Si</a></div>
+      <div><a class="btn" style="width:120px;" id="testy1">No</a></div> -->
+      <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i></div>
+      <div></div>
+      <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i></div>
+    </div>
+  </div>
+
+</div>
 </html>

@@ -5,7 +5,6 @@ src: url("/fonts/font1.ttf");
 * {
   box-sizing: border-box;
 }
-
 html {
   touch-action:none;
 }
@@ -13,9 +12,8 @@ body{
   background-color:black;
   color:rgb(106, 106, 106);
   font-family: Arial, Helvetica, sans-serif;
-  max-height: 100vh;
+  /* max-height: 100vh; */
 }
-
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
@@ -38,6 +36,71 @@ td{
 li{
   padding:5px;
 }
+
+.ec_wrapper{
+  display: grid;
+  grid-row-gap: 5px;
+  grid-template-rows: minmax(60px,60px) 1fr minmax(60px,60px);
+  min-height: 98vh;
+  color:gray;
+  grid-template-areas:
+    "cabecera"
+    "area_trabajo"
+    "pie_de_pagina"
+        ;
+}
+
+.cabecera{
+background-color: rgb(201, 43, 9) ;
+  grid-area: cabecera;
+  align-content: center;
+}
+.area_trabajo{
+background-color: rgb(20, 243, 9) ;
+grid-area: area_trabajo;
+display: grid;
+grid-template-columns: 1fr 1fr;
+grid-template-rows: 1fr 1fr;
+grid-template-areas:
+  "panel1 resumen"
+  "panel2 resumen2";
+}
+
+.panel1{
+  grid-area:panel1;
+  margin:30px;
+  background-color: rgb(20, 143, 9) ;
+  justify-content: center;
+  align-content: center;
+}
+.panel2{
+  grid-area:panel2;
+  margin:30px;
+  background-color: rgb(101, 43, 9) ;
+  align-content: center;
+}
+
+.resumen{
+  grid-area:resumen;
+  margin:30px;
+  background-color: rgb(201, 143, 9) ;
+  overflow-y: hidden;
+  max-height: 400px;
+}
+.resumen2{
+  grid-area:resumen2;
+  margin:30px;
+  background-color: rgb(201, 143, 9) ;
+  overflow-y: hidden;
+  max-height: 400px;
+}
+
+}
+.pie_de_pagina{
+background-color: rgb(20, 43, 199) ;
+grid-area: pie_de_pagina;
+}
+
 .display{
   padding:0;
 }
@@ -67,6 +130,7 @@ li{
   grid-gap: 5px;
   margin : 0;
 }
+
 .titulo{
   background-color: rgba(8, 8, 8, 1);
   display: grid;
@@ -97,6 +161,7 @@ li{
   text-align:center;
   align-items: center;
 }
+
 .grupo2{
   grid-column: 1/5;
   min-height:350px;
@@ -148,6 +213,7 @@ li{
   justify-items:center;
   align-items: center;
 }
+
 .cuadre_diario{
   grid-column: 1/5;
   min-height:350px;
@@ -201,6 +267,7 @@ li{
   grid-gap:1em;
 
 }
+
 .mensaje_monto{
   font-size:48px;
   font-weight: bold;
@@ -222,6 +289,7 @@ li{
   grid-row:2/4;
   padding: 20px;
 }
+
 .mensaje_titulo{
   font-size:28px;
   font-weight: bold;
@@ -640,32 +708,111 @@ text-align: center;
   color:white;
   /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
   /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
-  background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22));
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(53,53,53));
+
   grid-gap:20px;
   filter: drop-shadow(1px 1px 15px #000000);
   /* opacity: 0.5; */
   /* grid-column-start: span 1; */
   border-radius: 12px;
-  border: 1.5px solid rgb(174, 233, 28);
+  /* border: 1.5px solid rgb(174, 233, 28); */
   border: 1.5px solid rgb(80,80,80);
 
   padding: 5px;
   margin-bottom: 5px;
 
+  /* overflow-y:scroll; */
+}
+
+.ec_panel_tarjeta_historial{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_status status status status"
+  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
+  "label_moneda label_monto label_hora_cierre hora_cierre";
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(53,53,53));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.label_status{
+  grid-area: label_status;
+
+}
+.status{
+  grid-area: status;
+
+}
+.label_tebs{
+grid-area:label_tebs;
+}
+.numero_de_tebs{
+grid-area:numero_de_tebs;
+}
+.label_fecha_cierre{
+grid-area:label_fecha_cierre;
+}
+.fecha_cierre{
+grid-area:fecha_cierre;
+}
+.hora_cierre{
+grid-area:hora_cierre;
+}
+.label_moneda{
+grid-area:label_moneda;
+}
+.label_monto{
+grid-area:label_monto;
+}
+.label_hora_cierre{
+grid-area:label_hora_cierre;
 }
 
 .ec_card{
     display:grid;
-    grid-template-columns: 50% 50%;
+    /* grid-template-columns: 50% 50%; */
     background-image: linear-gradient(to bottom, rgba(65,65,65), rgb(43, 43, 43));
     color:white;
-    grid-column-start: span 2;
+    /* grid-column-start: span 2; */
     border-radius: 12px;
-    border: 1.5px solid gray;
+    border: 1.5px solid rgb(50, 50, 50);
     padding: 10px;
-    margin:auto;
+    /* margin:auto; */
     filter: drop-shadow(1px 1px 15px #000000);
 
+}
+.ec_card2{
+    display:grid;
+    /* grid-template-columns: 50% 50%; */
+    background-image: linear-gradient(to bottom, rgba(65,65,65), rgb(43, 43, 43));
+    color:white;
+    /* grid-column-start: span 2; */
+    border-radius: 12px;
+    border: 1.5px solid rgb(50, 50, 50);
+    padding: 10px;
+    /* margin:auto; */
+    filter: drop-shadow(1px 1px 15px #000000);
+    overflow-y: scroll;
 }
 .ec_btn{
     display:grid;
@@ -703,7 +850,7 @@ text-align: center;
     max-height: 150px;
     /* min-height: 100px; */
     min-width: 100px;
-
+    margin:auto;
 }
 
 .letra_gris{

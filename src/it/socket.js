@@ -6,7 +6,7 @@ const tambox= require('./devices/tambox');
 const to_tbm=require('./tbm_sync/tbm_synch_socket');
 const ssp =require('./ssp');
 const path = require('path');
-
+const val = require("./devices/validator");
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
@@ -228,7 +228,7 @@ io.on('connection', async function (socket) {
       //  console.log(current_tebs2x);
           var current_tebs2=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
         //  console.log(current_tebs2);
-          current_tebs2=await va.handleGetTebsBarcode(current_tebs2);
+          current_tebs2=await val.handleGetTebsBarcode(current_tebs2);
           console.log("CUrrents TEBS ES:"+current_tebs2);
     //      esto();
     //}, 800);
@@ -382,9 +382,12 @@ io.on('connection', async function (socket) {
   });
   /////////////////////////////////////////////////////////////
   socket.on('read_new_tebs', async function(msg) {
-      var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
+    var data_Tebs=await os.new_read_new_tebs();
+  //  var data_Tebs2=await val.handleGetTebsBarcode(data_Tebs)
+    //var data_Tebs=await ssp.verificar_existencia_de_bolsa(receptor);
+
       console.log(data_Tebs);
-    //io.emit('pay_value',"pay_value");
+
   });
   socket.on('interno', async function(msg) {
     //  var data_Tebs=await ssp.envia_encriptado(validator_address,get_tebs_barcode);
@@ -668,8 +671,14 @@ socket.on('remesa_hermes',async function(msg){
  socket.on('main',async function(msg){
    console.log(chalk.yellow("socket on MAIN"));
    var this_machine_info=await os.consulta_this_machine();
-   console.log("vardata de main es:"+JSON.stringify(this_machine_info));
-   nuevo_enlace('main','../system/buffer.html',this_machine_info);
+//   console.log("vardata de main es:"+JSON.stringify(this_machine_info));
+   var historial=await os.consulta_historial();
+  // console.log("vardata de hisotiral es:"+JSON.stringify(historial));
+   var mi_objeto={this_machine_info,historial };
+   nuevo_enlace('main','../system/buffer.html',mi_objeto);
+  console.log("vardata de hisotiral es:"+JSON.stringify(mi_objeto));
+   // nuevo_enlace('main','../system/buffer.html',this_machine_info);
+
   });
 
 super_enlace('rm_5','rm_5','../system/remesa_hermes/rm_5.html');
