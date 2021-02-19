@@ -43,12 +43,12 @@ $(".ec_btn").click(function(){
 
   function display_pestillo(mes_to_displayx) {
     clearTimeout(mytimer);
-    document.getElementById("msg1").innerHTML = mes_to_displayx;
+    document.getElementById("msg10").innerHTML = mes_to_displayx;
     mytimer=setTimeout(clear_pestillo, 1000);
   };
 
   function clear_pestillo() {
-    document.getElementById("msg1").innerHTML = "Bloqueado";
+    document.getElementById("msg10").innerHTML = "Bloqueado";
       pinta_color_en_boton();
     //  $("#candado").css("color", "red");
     // $( "#lock_cashbox" ).hide();
@@ -105,7 +105,7 @@ $(".ec_btn").click(function(){
           </div>
 
           <div class="ec_panel locking_template">
-            <div class="texto_indicador" id="msg1">Bloqueado</div>
+            <div class="texto_indicador" id="msg10">Bloqueado</div>
             <div class="ec_btn volver boton_bloqueo" id='unlock_cashbox'>
                 <div class="ec_btn_top"><i class="fas fa-lock fa-3x candado" ></i></div>
                 <div class="ec_btn_bottom">LOCKED</div>

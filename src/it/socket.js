@@ -571,7 +571,14 @@ io.on('connection', async function (socket) {
 
       socket.on('Cashbox_Back_in_Service',async function(){
         console.log(chalk.yellow("Cashbox_Back_in_Service123"));
-    //    nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+        si_existe_bolsa=true;
+        if(on_remesa_hermes==true){
+            nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+        }else{
+          nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
+        }
+
+
        });
 
     //  socket.on('smart_empty', async function(msg) {

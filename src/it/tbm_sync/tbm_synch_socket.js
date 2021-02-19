@@ -38,7 +38,7 @@ async function iniciar_handshake_con_tbm(){
 module.exports.iniciar_handshake_con_tbm=iniciar_handshake_con_tbm;
 
 //console.log(chalk.cyan("AQUI ME ESTOY CONECTANDO A SERVIDOR REMOTO TBM;"));
-console.log(chalk.yellow("TBM ADRESS REGISTERED IS:"+global.tbm_adressx));
+console.log(chalk.yellow("TBM ADRESS HARDCODED IS:"+global.tbm_adressx));
 var socket_to_tbm = require("socket.io-client")(adrees);
 //var socket_to_tbm = require("socket.io-client")("http://192.168.1.9:4000");
 socket_to_tbm.on("connect",async function() {

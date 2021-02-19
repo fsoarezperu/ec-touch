@@ -46,6 +46,8 @@ function thisy3(){
 const moment=require("moment");
 const glo = require('./globals');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var coos;
+
 /////////////////////////////
 // var sync = false;
 // var seq_bit = 0;
@@ -295,6 +297,10 @@ return new Promise(async function(resolve, reject) {
                   for (var i =1; i< poll_responde.length; i++ ){
                               switch(poll_responde[i])
                              {
+                                 // case("02"):
+                                 // console.log(chalk.cyan("detectando codigo 02 en ssp.handlepoll"));
+                                 // break;
+
                                   case("83"):
                                   console.log(chalk.red.inverse("Calibration failed"));
                                   break;
@@ -302,12 +308,56 @@ return new Promise(async function(resolve, reject) {
                                   case("8B"):
                                   console.log(chalk.red.inverse("Escrow Active"));
                                   break;
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   case("90"):
                                   //console.log(poll_responde[i]);
-                                  console.log(chalk.red.inverse("Cashbox out of Service"));
+
                                   // if(on_startup){
-                                     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+                                //     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
+
+                                    var segundo_dato=poll_responde[i+1];
+                                  //   console.log("segundo dato de este anuncio es:"+segundo_dato);
+                                      if (segundo_dato=="01") {
+                                        //console.log("no device connected");
+                                        segundo_dato="no_device_connected";
+                                          console.log(chalk.red.inverse("Cashbox out of Service"));
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="02") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="Unable_to_read_Barcode";
+                                        server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="03") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="Cashbox_out_of_position";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="04") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="Cashbox_Removed";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="05") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="Cashbox_Unlocked";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="06") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="Currency_mismatch";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="07") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="firmware_error";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
+                                      if (segundo_dato=="08") {
+                                        //console.log("Unable to read Barcode");
+                                        segundo_dato="tebs_comms_errror";
+                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      }
                                   //   await inicio_sin_cajon();
                                   //   console.log(chalk.red("iniciando sin cajon de dinero puesto"));
                                   //   return resolve("inicio_sin_cajon")
@@ -319,18 +369,29 @@ return new Promise(async function(resolve, reject) {
                                   //    }
                                   // }
 
-                                  break;
 
+                                        if(coos==segundo_dato){
+                                          break;
+                                        }else {
+                                          console.log(chalk.cyan("Cashbox out of Service"+", "+segundo_dato));
+                                          coos =segundo_dato;
+                                        }
+
+
+
+                                  break;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   case("92"):
                                   console.log(chalk.red.cyan("Cashbox Back in Service"));
-                                  server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
+                                  //server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
                                 if (on_remesa_hermes) {
                                   os.new_lock_cashbox();
                                   socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
-
-
                                   setTimeout(thisy3,10000);
                                   on_remesa_hermes=false;
+                                }else {
+                                  console.log("cashbox back in service fuera de remesa hermes, aqui es necesario crear la nueva remesa hermes en la base de datos-");
+                                  socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
                                 }
                                   break;
 
@@ -341,7 +402,7 @@ return new Promise(async function(resolve, reject) {
                                   //  console.log(chalk.cyan("viaset "));
                                   server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
                                 }else{
-                                  console.log(chalk.cyan("SENT ONCE"));
+                                  //console.log(chalk.cyan("SENT ONCE"));
                                   if (on_remesa_hermes) {
                                   //  socket.super_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
                                   //console.log(last_sent);
@@ -350,7 +411,7 @@ return new Promise(async function(resolve, reject) {
                                 //  server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
                               //    socketjs.super_enlace('cashbox_unlocked','../system/remesa_hermes/rm_4.html');
                                     }else {
-                                    console.log(chalk.red("Cashbox Unlock Enable fuera remesa hermes"));
+                                  //  console.log(chalk.red("Cashbox Unlock Enable fuera remesa hermes"));
                                   //  console.log(poll_responde[3]);
                                     server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
 
@@ -802,9 +863,6 @@ return new Promise(async function(resolve, reject) {
 
   } catch (e) {
     return reject(e);
-  } finally {
-  //  return;
-//  last_sent="";
   }
 });
 }
@@ -1092,526 +1150,6 @@ function handleGetSerialNumber(data){
 module.exports.handleGetSerialNumber=handleGetSerialNumber;
 ////////////////////////////////////////////////////
 
-// async function handlepoll2(data){
-//    console.log("iniciando handle poll2");
-//   return new Promise((resolve,reject)=>{
-// var poll_responde=data.match(/.{1,2}/g);
-// //console.log(poll_responde);
-//
-//
-//  if(poll_responde == undefined || poll_responde.length < 1){
-//    console.log("ERROR Receiving data");
-//    return reject();
-// //   ready_for_sending=true;
-// //   ready_for_pooling=true;
-// //   return;
-//  }else{
-//    //if(poll_responde[1] == "F0"){
-//   //   console.log(chalk.green("OK received"));
-//
-//    for (var i =1; i< poll_responde.length; i++ )
-//       {
-// //     // console.log(poll_responde[i]);
-//         switch(poll_responde[i])
-//      {
-// //         case("83"):
-// //         console.log(chalk.red.inverse("Calibration failed"));
-// //         break;
-// //
-// //         case("8B"):
-// //         console.log(chalk.red.inverse("Escrow Active"));
-// //         break;
-// //
-//         case("90"):
-//         console.log(chalk.red.inverse("Cashbox out of Service"));
-//         server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
-//         break;
-// //
-//         case("92"):
-//         console.log(chalk.red.inverse("Cashbox Back in Service"));
-//         server.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
-//         break;
-// //
-// //         case("93"):
-// //         console.log(chalk.red.inverse("Cashbox Unlock Enable"));
-// //           server.io.emit('Cashbox_Unlock_Enable', "Cashbox Unlock Enable");
-// //         break;
-// //
-// //         case("A5"):
-// //         console.log(chalk.red.inverse("Ticket Printing"));
-// //         break;
-// //
-// //         case("A6"):
-// //         console.log(chalk.red.inverse("Ticket Printed"));
-// //         break;
-// //
-// //         case("A8"):
-// //         console.log(chalk.red.inverse("Ticket Printing Error"));
-// //         break;
-// //
-// //         case("AD"):
-// //         console.log(chalk.red.inverse("Ticket in Bezel"));
-// //         break;
-// //
-// //         case("AE"):
-// //         console.log(chalk.red.inverse("Print Halted"));
-// //         break;
-// //
-// //         case("AF"):
-// //         console.log(chalk.red.inverse("Printed to Cashbox"));
-// //         break;
-// //
-//         case("B0"):
-//         console.log(chalk.red.inverse("Jam recovery"));
-//           server.io.emit('Jam_recovery', "Jam recovery");
-//         break;
-// //
-// //         case("B1"):
-// //         console.log(chalk.red.inverse("Error During Payout"));
-// //         break;
-// //
-//          case("B3"):
-//          console.log(chalk.red.inverse("Smart emptying"));
-//            server.io.emit('Smart_emptying', "Smart emptying");
-//          break;
-// //
-//         case("B4"):
-//         console.log(chalk.red.inverse("Smart emptied"));
-//         //read event data
-//         var value_in_hex=data.substr(8,8);
-//         value_in_hex=enc.changeEndianness(value_in_hex);
-//         value_in_hex=value_in_hex.toString(10);
-//       //   console.log(value_in_hex);
-//         // console.log(typeof(value_in_hex));
-//          var prefix="0x";
-//         // var value="0000073D";
-//          value_in_hex=prefix.concat(value_in_hex);
-//          value_in_hex=parseInt(value_in_hex);
-//          value_in_hex=value_in_hex/100;
-//       //   console.log(value_in_hex);
-//         //value dispensed:
-//         server.io.emit('Smart_emptied', "Smart emptied");
-//         break;
-// //
-// //         case("B5"):
-// //         console.log(chalk.red("channel disabled"));
-// //         break;
-// //
-// //         case("B6"):
-// //         console.log(chalk.red.inverse("Device Initializing"));
-// //         server.io.emit('Device_Initializing', "Device Initializing");
-// //         break;
-// //
-// //         case("B7"):
-// //         console.log(chalk.red.inverse("Coin Mech Error"));
-// //         break;
-// //
-// //         case("BA"):
-// //         console.log(chalk.red.inverse("Coin Rejected"));
-// //         break;
-// //
-// //         case("BD"):
-// //         console.log(chalk.red.inverse("Attached Coin Mech Disabled"));
-// //         break;
-// //
-// //         case("BE"):
-// //         console.log(chalk.red.inverse("Attached Coin Mech enabled"));
-// //         break;
-// //
-// //         case("BF"):
-// //         console.log(chalk.red.inverse("Value Added"));
-// //           server.io.emit('Value_Added', "Value Added");
-// //         break;
-// //
-// //         case("C0"):
-// //         console.log(chalk.cyan("Maintenance Required"));
-// //           server.io.emit('Maintenance_Required', "Maintenance Required");
-// //         break;
-// //
-// //         case("C1"):
-// //         console.log(chalk.cyan("Pay-In Active"));
-// //         break;
-// //
-//         case("C2"):
-//         console.log(chalk.cyan("emptying"));
-//         server.io.emit('emptying', "emptying");
-//         break;
-// //
-//         case("C3"):
-//         console.log(chalk.cyan("emptied"));
-//         server.io.emit('emptied', "emptied");
-//         break;
-// //
-// //         case("C4"):
-// //         console.log(chalk.cyan("coin mech jam"));
-// //         break;
-// //
-// //         case("C5"):
-// //         console.log(chalk.cyan("coin mech return active"));
-// //         break;
-// //
-//         case("C9"):
-//         console.log(chalk.cyan("Note Transfered to Stacker"));
-//         server.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
-//         break;
-// //
-// //         case("CA"):
-// //         console.log(chalk.cyan("Note into Stacker at Reset"));
-// //         server.io.emit('Note_into_Stacker_at_Reset', "Note into Stacker at Reset");
-// //         break;
-// //
-// //         case("CB"):
-// //         console.log(chalk.cyan("Note into Store at Reset"));
-// //         server.io.emit('Note_into_Store_at_Reset', "Note into Store at Reset");
-// //         break;
-// //
-// //         case("CC"):
-// //         console.log(chalk.cyan("Staking"));
-// //         server.io.emit('Staking', "Staking");
-// //         break;
-// //
-// //         case("CE"):
-// //       //  console.log(chalk.cyan("Note Held in Bezel"));
-// //         server.io.emit('note_held_in_bezel', "retirar bilete");
-// //         break;
-// //
-// //         case("CF"):
-// //         console.log(chalk.cyan("Device full"));
-// //         server.io.emit('Device_full', "Device full");
-// //         break;
-// //
-// //         case("D1"):
-// //         console.log(chalk.red.inverse("Barcode Ticket Ack"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D2"):
-// //         //console.log(chalk.red.inverse("Dispensed"));
-// //         //read event data
-// //         var value_in_hex=data.substr(8,8);
-// //         value_in_hex=changeEndianness(value_in_hex);
-// //         value_in_hex=value_in_hex.toString(10);
-// //         // console.log(value_in_hex);
-// //         // console.log(typeof(value_in_hex));
-// //          var prefix="0x";
-// //         // var value="0000073D";
-// //          value_in_hex=prefix.concat(value_in_hex);
-// //          value_in_hex=parseInt(value_in_hex);
-// //          value_in_hex=value_in_hex/100;
-// //          console.log(chalk.yellow("totalmente pagado:"+value_in_hex));
-// //         //value dispensed:
-// //         //update current payment with the full value of amount dispensed;
-// //         const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
-// //         var id_remesa1 = remesa1[0].no_remesa;
-// //         await pool.query ("UPDATE remesas SET status='completado', monto=? WHERE no_remesa=?",[value_in_hex,id_remesa1]);
-// //         server.io.emit('Dispensed', value_in_hex);
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D3"):
-// //         console.log(chalk.red.inverse("Coins Low"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D5"):
-// //         console.log(chalk.red.inverse("Hopper Jam"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D6"):
-// //         console.log(chalk.red.inverse("Halted"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D7"):
-// //         console.log(chalk.red.inverse("floating"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D8"):
-// //         console.log(chalk.red.inverse("floated"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("D9"):
-// //         console.log(chalk.red.inverse("Tiempout"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DA"):
-// //         //console.log(chalk.red.inverse("Dispensing"));
-// //         //read event data
-// //         var value_in_hex=data.substr(8,8);
-// //         value_in_hex=changeEndianness(value_in_hex);
-// //         value_in_hex=value_in_hex.toString(10);
-// //         // console.log(value_in_hex);
-// //         // console.log(typeof(value_in_hex));
-// //          var prefix="0x";
-// //         // var value="0000073D";
-// //          value_in_hex=prefix.concat(value_in_hex);
-// //          value_in_hex=parseInt(value_in_hex);
-// //          value_in_hex=value_in_hex/100;
-// //     //     console.log(chalk.cyan("pago acumulado:"+value_in_hex));
-// //         //value dispensed:
-// //         const remesa2 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
-// //         if(remesa2.length>0){
-// //            var id_remesa2 = remesa2[0].no_remesa;
-// //            await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
-// //          }
-// //         server.io.emit('Dispensing', value_in_hex);
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DB"):
-// //         console.log(chalk.red.inverse("Note Stored in Payout"));
-// //         server.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DC"):
-// //         console.log(chalk.red.inverse("Incomplete payout"));
-// //         server.io.emit('Incomplete_payout', "Incomplete payout");
-// //         // 0CF0 F1 DC 00 00000058 1B 00 00 E8
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DD"):
-// //         console.log(chalk.red.inverse("Incomplete float"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DE"):
-// //         console.log(chalk.red.inverse("cashbox paid"));
-// //         server.io.emit('cashbox_paid', "cashbox paid");
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("DF"):
-// //         console.log(chalk.red.inverse("Coin Credit"));
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("E0"):
-// //         console.log(chalk.red.inverse("Note Path Open"));
-// //
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("E1"):
-// //         console.log(chalk.red.inverse("Note cleared from front"));
-// //             server.io.emit('Note_cleared_from_front', "Note cleared from front");
-// //         //do not assign credit
-// //         break;
-// //
-// //         case("E2"):
-// //         console.log(chalk.red.inverse("Note cleared into cashbox"));
-// //         server.io.emit('Note_cleared_into_cashbox', "Note cleared into cashbox");
-// //         //asign credit
-// //         break;
-// //
-// //         case("E3"):
-// //         console.log(chalk.red.inverse("Cashbox Removed"));
-// //         server.io.emit('Cashbox_Removed', "Cashbox Removed");
-// //         break;
-// //
-// //         case("E4"):
-// //         console.log(chalk.red.inverse("Cashbox Replaced"));
-// //         server.io.emit('Cashbox_Replaced', "Cashbox Replaced");
-// //         break;
-// //
-// //         case("E5"):
-// //         console.log(chalk.red.inverse("Barcode Ticket Validated"));
-// //         break;
-// //
-// //         case("E6"):
-// //         console.log(chalk.red.inverse("Fraud Attemp"));
-// //         break;
-// //
-// //         case("E7"):
-// //         console.log(chalk.red.inverse("Stacker Full"));
-// //         server.io.emit('Stacker_Full', "Stacker Full");
-// //         break;
-// //
-//          case("E8"):
-//          console.log(chalk.red("Validator DisabledX"));
-// // //        console.log(chalk.green("Ready"));
-// //         server.io.emit('Validator_Disabled', "Validator Disabled");
-//          break;
-// //
-// //         case("E9"):
-// //         console.log(chalk.cyan("Unsafe Jam"));
-// //         break;
-// //
-// //         case("EB"):
-// //         console.log(chalk.cyan("Staked"));
-// //         server.io.emit('Staked', "Staked");
-// //         break;
-// //
-// //         case("EC"):
-// //         console.log(chalk.cyan("Rejected"));
-// //         break;
-// //
-// //         case("ED"):
-// //         console.log(chalk.cyan("Rejecting"));
-// //         break;
-// //
-// //         case("EF"):
-// //         console.log(chalk.cyan("Read"));
-// //         {
-// //           var channel=poll_responde[i+1];
-// //           console.log("channel:"+channel);
-// //         }
-// //         break;
-// //
-// //         case("EE"):
-// //         console.log(chalk.cyan("Note credit"));
-// //         {
-// //           var channel=poll_responde[i+1];
-// //           console.log("channel:"+channel);
-// //           if(channel==01){
-// //             store_note(10);
-// //             console.log("10 soles");
-// //
-// //           }
-// //           if(channel==02){
-// //             store_note(20);
-// //             console.log("20 soles");
-// //           }
-// //           if(channel==03){
-// //             store_note(50);
-// //             console.log("50 soles");
-// //           }
-// //           if(channel==04){
-// //             store_note(100);
-// //             console.log("100 soles");
-// //           }
-// //           if(channel==05){
-// //             store_note(200);
-// //             console.log("200 soles");
-// //           }
-// //         //   const remesa4 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso' ");
-// //         //   var id_remesa4 = remesa4[0].no_remesa;
-// //         //   console.log("la remesa en proceso es:"+id_remesa4);
-// //         //   //consultar monto;
-// //         //   const calculando_monto = await pool.query("SELECT SUM(monto) AS totalremesa FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa4]);
-// //         //   var monto_acumulado_remesa = calculando_monto[0].totalremesa;
-// //         //
-// //         // //  var monto_acumulado=await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso' ");
-// //         //   await pool.query ("UPDATE remesas SET status='en_proceso',monto=? WHERE no_remesa=?",[monto_acumulado_remesa,id_remesa4]);
-// //         }
-// //         break;
-// //
-//           case("F0"):
-//           console.log(chalk.cyan("OK"));
-//           break;
-// //         case("F1"):
-// //         console.log(chalk.cyan("Slave Reset"));
-// //         break;
-// //                  //     case("EE"):
-// //                  //     {
-// //                  //       console.log("CREDIT NOTE");
-// //                  //       var credit=poll_responde[i+1];
-// //                  //       console.log(credit);
-// //                  //       i++;
-// //                  //       credit=poll_responde[i+1];
-// //                  //       console.log(credit);
-// //                  //       break;
-// //                  //     }
-// //                  //
-// //
-//          }//switch closing
-// //         //enable_sending();
-//     }//switch closing
-//    }//end of FOR loop
-//  //else{
-// //     console.log(chalk.red("THERE IS AN ERROR HERE"));
-// //  }//end iff
-//  //}
-//  console.log("aqui");
-//  return resolve();
-// // ///////////////////////
-// // enable_sending();
-// // //ready_for_sending=true;
-// // //console.log("habilitando next write");
-// ///////////////////////
-// });
-// }
-// module.exports.handlepoll2=handlepoll2;
-/////////////////////////////////////////////////////////
-// function handlepoll3(data){
-// //   console.log("iniciando handle poll3");
-// //   return
-//   return new Promise((resolve,reject)=>{
-//       var poll_responde=data.match(/.{1,2}/g);
-//     //  console.log(poll_responde);
-//        if(poll_responde == undefined || poll_responde.length < 1){
-//          console.log("ERROR Receiving data");
-//          return reject();
-//              }else{
-//                for (var i =1; i< poll_responde.length; i++ )
-//                   {
-//                     switch(poll_responde[i])
-//                  {
-//                     case("90"):
-//                     console.log(chalk.red.inverse("Cashbox out of Service"));
-//                     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
-//                     break;
-//                     case("92"):
-//                     console.log(chalk.red.inverse("Cashbox Back in Service"));
-//                     server.io.emit('Cashbox_Back_in_Service', "Cashbox Back in Service");
-//                     break;
-//                     case("B0"):
-//                     console.log(chalk.red.inverse("Jam recovery"));
-//                       server.io.emit('Jam_recovery', "Jam recovery");
-//                     break;
-//                     case("B3"):
-//                      console.log(chalk.red.inverse("Smart emptying"));
-//                        server.io.emit('Smart_emptying', "Smart emptying");
-//                     break;
-//                     case("B4"):
-//                     console.log(chalk.red.inverse("Smart emptied"));
-//                     //read event data
-//                     var value_in_hex=data.substr(8,8);
-//                     value_in_hex=enc.changeEndianness(value_in_hex);
-//                     value_in_hex=value_in_hex.toString(10);
-//                      //console.log(value_in_hex);
-//                      var prefix="0x";
-//                      value_in_hex=prefix.concat(value_in_hex);
-//                      value_in_hex=parseInt(value_in_hex);
-//                      value_in_hex=value_in_hex/100;
-//                      //console.log(value_in_hex);
-//                     //value dispensed:
-//                     server.io.emit('Smart_emptied', "Smart emptied");
-//                     break;
-//                     case("C2"):
-//                     console.log(chalk.cyan("emptying"));
-//                     server.io.emit('emptying', "emptying");
-//                     break;
-//                     case("C3"):
-//                     console.log(chalk.cyan("emptied"));
-//                     server.io.emit('emptied', "emptied");
-//                     break;
-//                     case("C9"):
-//                     console.log(chalk.cyan("Note Transfered to Stacker"));
-//                     server.io.emit('Note_Transfered_to_Stacker', "Note Transfered to Stacker");
-//                     break;
-//                     case("E8"):
-//                      console.log(chalk.red(device+" DisabledX"));
-//                     break;
-//                     case("F0"):
-//                     //  console.log(chalk.green("OK"));
-//                     break;
-//                   }//switch closing
-//             //         //enable_sending();
-//                 }//switch closing
-//                }//end of FOR loop
-//
-//       // console.log("fin poll_loop3");
-//       return  resolve();
-//       });
-//   //    console.log("se esta llamando esto?");
-// }
-// module.exports.handlepoll3=handlepoll3;
 /////////////////////////////////////////////////////////
 function ensureIsSet() {
     return new Promise(function (resolve, reject) {
@@ -1801,7 +1339,7 @@ function verificar_existencia_de_bolsa(receptor) {
                                                                                             return resolve("OK");
                                                     }else{
                                                       //RH ya existe con este tebs. no se creara una nueva
-                                                      //console.log("RH ya existente");
+                                                      console.log("RH ya existente");
                                                       return resolve("OK");
                                                     }
                                                  }
@@ -1935,9 +1473,9 @@ function envia_encriptado(receptorx,orden){
           data=await sp.transmision_insegura(receptorx,toSend) //aqui pasar a version await.
           //console.log(data);
           if (data.length!=0) {
-            console.log("data entes de desencriptar:"+data);
+            //console.log("data entes de desencriptar:"+data);
             data=await enc.promise_handleEcommand(data)
-            console.log("data luego de desencriptar:"+data);
+            //console.log("data luego de desencriptar:"+data);
             return resolve(data);
           }else {
             return reject("no data received");
@@ -1953,7 +1491,7 @@ function envia_encriptado(receptorx,orden){
 module.exports.envia_encriptado=envia_encriptado;
 
 async function envia_encriptado2(receptorx,orden){
-
+        await ensureIsSet();
         ultimo_valor_enviado=orden;
         var  toSend =await enc.prepare_Encryption(orden);
         os.logea("here to_sed is:"+toSend);
@@ -2156,9 +1694,6 @@ if (bypass== false) {
 
 }
 module.exports.transmite_encriptado_y_procesa=transmite_encriptado_y_procesa;
-
-
-
 
 function handleSetInhivits(data){
 //exports.handleSetInhivits=function(data){
