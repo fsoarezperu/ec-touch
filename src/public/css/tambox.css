@@ -755,6 +755,66 @@ text-align: center;
   overflow-y: scroll;
 }
 
+
+.ec_panel_tarjeta_historial_verde{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_status status status status"
+  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
+  "label_moneda label_monto label_hora_cierre hora_cierre";
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(81, 182, 43, 0.6));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.ec_panel_tarjeta_historial_roja{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_status status status status"
+  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
+  "label_moneda label_monto label_hora_cierre hora_cierre";
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(64, 22, 22),rgba(53,53,53));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
 .label_status{
   grid-area: label_status;
 

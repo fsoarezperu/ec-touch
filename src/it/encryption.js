@@ -318,7 +318,7 @@ module.exports.reenviar_ultimo_dato=reenviar_ultimo_dato;
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 function decrypt(mensaje) {
-  return new Promise(async function(resolve, reject) {
+  return new Promise( function(resolve, reject) {
     try {
       //si el mesnaje tiene tamaño estandart
       if(mensaje.length==32||mensaje.length==64||mensaje.length==96||mensaje.length==128||mensaje.length==160||mensaje.length==192||mensaje.length==224||mensaje.length==256){
@@ -357,7 +357,7 @@ function decrypt(mensaje) {
       //return ("00000000000000000000000000000000");
     }
     } catch (e) {
-      return reject(chalk.magenta("no se pudo desnciptar, ")+e);
+      return reject(chalk.magenta("no se pudo desnciptar,")+e);
     } finally {
     //  return;
     }
@@ -738,7 +738,7 @@ try {
       //reject();
 
 } catch (e) {
-  return reject(chalk.red("error 003;"+e));
+  return reject(chalk.red("error 003 en promise_handleEcommand;"+e));
 } finally {
 //  return;
 }

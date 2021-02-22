@@ -40,8 +40,8 @@ router.get('/', async (req, res) => {
         });
       } else {
         console.log(chalk.red("loading website"));
-        console.log(chalk.yellow("This Machine name is:"+glo.my_resgistered_machine_name));
-        res.render('index',{my_resgistered_machine_name:glo.my_resgistered_machine_name});
+        console.log(chalk.yellow("This Machine name is:"+global.my_resgistered_machine_name));
+        res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
       }
 
     }

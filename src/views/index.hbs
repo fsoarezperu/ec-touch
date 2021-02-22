@@ -5,9 +5,6 @@
   var mydata;
 
   $(document).ready(function() {
-
-
-
     cargar_pantalla_guardada();
     $("#TBM_icon").css('visibility', 'hidden');
     display_remote_conection_to_TBM();
@@ -118,6 +115,10 @@
       console.log("refrescando pantallas");
       window.location.replace("/");
     });
+    socket.on('go_to_main', function(msg) {
+      socket.emit('main','main');
+    });
+
     // socket.on('Read', function(msg){
     //   console.log("reading yeah!!");
     //  display_message(msg);
@@ -126,8 +127,7 @@
       console.log("nuevo_billete_recivido"+JSON.stringify(msg));
       document.getElementById("qty_bill").innerHTML = msg.qty_bill2;
       document.getElementById("depositado").innerHTML = msg.monto_total_remesa;
-
-     display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
+      display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
 
     });
 /////////////////////////////////////////////////////////////////////
@@ -148,10 +148,11 @@
     });
     function display_system_running_indicator() {
       $("#system_running_indicator").show();
-      setTimeout(clear_system_running_indicator, 200);
+      setTimeout(clear_system_running_indicator, 1000);
     };
     function clear_system_running_indicator() {
       $("#system_running_indicator").hide();
+      $('#overlay-back').fadeIn(500);
     };
     ////////////////////////////////////////////////////
     socket.on('show_connected_to_TBM', function(msg) {

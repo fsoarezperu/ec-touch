@@ -8,7 +8,7 @@ pinta_color_en_boton();
 
 
 function pinta_color_en_boton(){
-  var variable_boton= $('#msg1').text();
+  var variable_boton= $('#msg10').text();
   if (variable_boton=="Bloqueado" ) {
       console.log("el cashbox esta bloqueado");
       $( "#lock_cashbox" ).hide();
@@ -57,7 +57,6 @@ $(".ec_btn").click(function(){
   };
 
   socket.on('Cashbox_Unlock_Enable', function(msg) {
-     // $("#candado").css("color", "green");
     console.log("desbloqueado desde aqui.");
     display_pestillo("Desbloqueado");
     console.log("el cashbox esta desbloqueado");

@@ -6,6 +6,11 @@
       //socket.emit("rm_4","rm_4");
     //  mandar_orden("rm_4");
   })
+    $('.mensaje_monto').text(mydata.monto_en_bolsa);
+    $('.smart_div2').text(mydata.tebs_de_la_bolsa);
+    $('.smart_div3').text(mydata.numero_de_serie);
+
+
 });
 </script>
 
@@ -26,7 +31,7 @@
       <div class="smart_div2">tebs_barcode:12345678</div>
       <div class="smart_div3">machine_sn:2233445</div>
       <div id="msg1">
-        Bloqueado
+        <!-- Bloqueado -->
       </div>
       <div class="btn smart_div4" id='unlock_cashbox'>Desbloquear Pestillo</div>
       <!-- <div class="btn smart_div5" id="cashbox_unlocked"> Next</div> -->

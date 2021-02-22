@@ -1,11 +1,11 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
-global.si_existe_bolsa=false;
+global.existe_bolsa=false;
 global.new_manual_remesa;
 global.on_remesa_hermes=false;
 global.is_regis=false;
-global.my_resgistered_machine_name="";
+global.my_resgistered_machine_name="New machine";
 global.ultimo_valor_enviado="";
 global.ECOSVersion="1.0";
 global.last_sent="";

@@ -30,7 +30,27 @@ console.log(mydata["historial"]);
   $.each(mydata["historial"], function( index, value ) {
     var monto_formateado=addCommas(value["monto"]);
     console.log( index + ": " + value["tebs_barcode"] + " con monto de :S/"+ value["monto"]+ " con fecha de :"+ value["fecha"]+ " con hora de :"+ value["hora"]);
-    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+  if (value["status"]=="iniciada") {
+
+    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_verde'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+  }else {
+    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_roja'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+
+      }
+//  ");
+  });
+
+  $.each(mydata["remesas_from_this_tebsbarcode"], function( index, value ) {
+    var monto_formateado=addCommas(value["monto"]);
+    console.log( index + ": " + value["tebs_barcode"] + " con monto de :S/"+ value["monto"]+ " con fecha de :"+ value["fecha"]+ " con hora de :"+ value["hora"]);
+    if (value["status"]=="terminado") {
+      console.log("detectando remesa terminada");
+          $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_verde'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+    }else {
+          $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_roja'><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha"]+"</div><div class='label_hora_cierre'>Hora cierre</div><div class='hora_cierre'>"+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div>");
+    }
+
+
 //  ");
   });
 });
@@ -68,7 +88,7 @@ console.log(mydata["historial"]);
 
      <div class="ec_card2 resumen2">
              <p>Historial remesas </p>
-             <div class="lista_remesas_hermes"></div>
+             <div class="lista_remesas"></div>
               <p>fin de la lista</p>
      </div>
     <!-- <div class="ec_card2">
@@ -76,7 +96,7 @@ console.log(mydata["historial"]);
      <p>IP Publico:</p> <div id="public_machine_ip">puclic_machine_ip</div>
     </div> -->
    </div>
-   <div class="pie_de_pagina titulo2">pie_de_pagina</div>
+   <div class="pie_de_pagina titulo2" id="mesage2">pie_de_pagina</div>
 
 
      <!-- <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div></div>

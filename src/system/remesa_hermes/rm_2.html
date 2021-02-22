@@ -1,6 +1,15 @@
 <script type="text/javascript">
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
+function display_message(mes_to_display) {
+  document.getElementById("message2").innerHTML = mes_to_display;
+  setTimeout(clear_message, 1000);
+};
+function clear_message() {
+  document.getElementById("message2").innerHTML = "Procesando...";
+//  document.getElementById("msg1").innerHTML = "Bloqueado";
+};
+
   // $("#main").on("click",function() {
   //   socket.emit("buffer",'buffer');
   // });
@@ -28,7 +37,7 @@
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
       <div id="message2">Procesando...</div>
       <div id="msg1">
-        Bloqueado
+
       </div>
     </div>
 

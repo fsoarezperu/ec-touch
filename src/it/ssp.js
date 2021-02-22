@@ -47,6 +47,11 @@ const moment=require("moment");
 const glo = require('./globals');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var coos;
+var coos2;
+var coos3;
+
+
+
 
 /////////////////////////////
 // var sync = false;
@@ -281,26 +286,21 @@ return new Promise(async function(resolve, reject) {
     var data_length_on_pool=parseInt(hex_to_dec(poll_responde[0]));
     data_length_on_pool=(data_length_on_pool+1);
     poll_responde=poll_responde.slice(0,data_length_on_pool);
-  //  console.log("data length on pool data:"+data_length_on_pool);
+    //console.log("data length on pool data:"+data_length_on_pool);
     if(poll_responde == undefined || poll_responde.length < 1){
       console.log("ERROR Receiving data");
       return reject("ERROR Receiving data 001");
       }else{
-
-        if(!global.last_sent==poll_responde){
-          console.log(chalk.yellow(device+"<-:"+poll_responde));
-          global.last_sent=poll_responde;
-        }
-
+        // if(!global.last_sent==poll_responde){
+        //   console.log(chalk.yellow(device+"<-:"+poll_responde));
+        //   global.last_sent=poll_responde;
+        // }
 
         if(poll_responde[1] == "F0"){
+              //    existe_bolsa=true; //se hace false si se decteta asi.lineas abajo.
                   for (var i =1; i< poll_responde.length; i++ ){
                               switch(poll_responde[i])
                              {
-                                 // case("02"):
-                                 // console.log(chalk.cyan("detectando codigo 02 en ssp.handlepoll"));
-                                 // break;
-
                                   case("83"):
                                   console.log(chalk.red.inverse("Calibration failed"));
                                   break;
@@ -310,11 +310,6 @@ return new Promise(async function(resolve, reject) {
                                   break;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   case("90"):
-                                  //console.log(poll_responde[i]);
-
-                                  // if(on_startup){
-                                //     server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
-
                                     var segundo_dato=poll_responde[i+1];
                                   //   console.log("segundo dato de este anuncio es:"+segundo_dato);
                                       if (segundo_dato=="01") {
@@ -324,74 +319,150 @@ return new Promise(async function(resolve, reject) {
                                           server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
                                       if (segundo_dato=="02") {
+                                        existe_bolsa=false;
                                         //console.log("Unable to read Barcode");
                                         segundo_dato="Unable_to_read_Barcode";
                                         server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
                                       if (segundo_dato=="03") {
                                         //console.log("Unable to read Barcode");
-                                        segundo_dato="Cashbox_out_of_position";
+                                          existe_bolsa=false;
+                                          segundo_dato="Cashbox_out_of_position";
                                           server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
                                       if (segundo_dato=="04") {
                                         //console.log("Unable to read Barcode");
+                                        existe_bolsa=false;
                                         segundo_dato="Cashbox_Removed";
-                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                      //  console.log(chalk.cyan("Cashbox out of Service"+", "+segundo_dato));
+                                        server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                        //crear una remesa nueva usando el nuevo tebs
+                                        //await verificar_existencia_de_bolsa(validator_address);
+                                        //  server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                          if(coos3==segundo_dato){
+                                        //    console.log("pasando nada aqui 321....");
+                                          //  break;
+                                          }else {
+                                                  if (on_remesa_hermes) {
+                                                    var el_tebs=await os.consulta_remesa_hermes_actual();
+                                                    console.log("el tebs que se fue es:"+el_tebs[0].tebs_barcode);
+                                                    el_tebs=el_tebs[0].tebs_barcode;
+                                                    if (el_tebs== undefined) {
+                                                      console.log("EL TEBS fue undefined");
+                                                      console.log("si se encontro una remesa hermes que cancelar.");
+                                                  }else {
+                                                    //avisar a las remesas de esa bolsa que cambie esttus a entregada
+                                                    await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox' and tebs_barcode=?",[el_tebs]);
+                                                    //daR por terminadas las remesas existentes en la base de datos.
+                                                    await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[tambox.fecha_actual(), tambox.hora_actual(),el_tebs]);
+
+                                                    }
+                                            }else {
+                                            //  await os.new_unlock_cashbox();
+
+
+                                            }
+                                          //
+                                            coos3 =segundo_dato;
+                                          }
                                       }
                                       if (segundo_dato=="05") {
                                         //console.log("Unable to read Barcode");
+                                          existe_bolsa=false;
                                         segundo_dato="Cashbox_Unlocked";
-                                          server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                        server.io.emit('Cashbox_out_of_Service',segundo_dato);
+                                        // if(coos2==segundo_dato){
+                                        //   console.log("pasando nada aqui....456");
+                                        // //  break;
+                                        // }else {
+                                        //   if (on_remesa_hermes) {
+                                        //
+                                        //   }else {
+                                        //     await os.new_unlock_cashbox();
+                                        //
+                                        //
+                                        //   }
+                                        // //  console.log(chalk.cyan("Cashbox out of Service"+", "+segundo_dato));
+                                        //   coos2 =segundo_dato;
+                                        // }
+
+
                                       }
                                       if (segundo_dato=="06") {
                                         //console.log("Unable to read Barcode");
+                                          existe_bolsa=false;
                                         segundo_dato="Currency_mismatch";
                                           server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
                                       if (segundo_dato=="07") {
+                                          existe_bolsa=false;
                                         //console.log("Unable to read Barcode");
                                         segundo_dato="firmware_error";
                                           server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
                                       if (segundo_dato=="08") {
+                                          existe_bolsa=false;
                                         //console.log("Unable to read Barcode");
                                         segundo_dato="tebs_comms_errror";
                                           server.io.emit('Cashbox_out_of_Service',segundo_dato);
                                       }
-                                  //   await inicio_sin_cajon();
-                                  //   console.log(chalk.red("iniciando sin cajon de dinero puesto"));
-                                  //   return resolve("inicio_sin_cajon")
-                                  // }else {
-                                  //   server.io.emit('Cashbox_out_of_Service', "Cashbox out of Service");
-                                  //   if(!global.last_sent===poll_responde[2]){
-                                  //   console.log("Cashbox out of Service");
-                                  //   global.last_sent=poll_responde[2];
-                                  //    }
-                                  // }
-
 
                                         if(coos==segundo_dato){
                                           break;
                                         }else {
                                           console.log(chalk.cyan("Cashbox out of Service"+", "+segundo_dato));
                                           coos =segundo_dato;
+
                                         }
-
-
-
                                   break;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   case("92"):
                                   console.log(chalk.red.cyan("Cashbox Back in Service"));
-                                  //server.io.emit('Cashbox_Back_in_Service', "Cashbox_Back_in_Service");
+                                    existe_bolsa=true;
                                 if (on_remesa_hermes) {
-                                  os.new_lock_cashbox();
-                                  socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
-                                  setTimeout(thisy3,10000);
-                                  on_remesa_hermes=false;
+                                          os.new_lock_cashbox();
+                                          socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+                                          setTimeout(thisy3,5000);
+                                          on_remesa_hermes=false;
                                 }else {
-                                  console.log("cashbox back in service fuera de remesa hermes, aqui es necesario crear la nueva remesa hermes en la base de datos-");
-                                  socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
+                                  console.log("cashbox back in service fuera de remesa hermes, aqui es necesario crear la nueva remesa hermes en la base de datos");
+                                //  server.io.emit('Cashbox_Back_in_Service','Cashbox_Back_in_Service');
+                                //  server.io.emit('go_to_main','estoy aqui');
+
+
+                                  var mi_objeto=await os.carga_informacion_para_main();
+                                   socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html', mi_objeto);
+
+
+                                //  socketjs.nuevo_enlace('main');
+
+                                  //  server.io.emit('Cashbox_Back_in_Service','Cashbox_Back_in_Service');
+                                //  server.arranca_tambox_os();
+                                  // socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
+                                  //       // await detectar nueva BOLSA
+                                  //       // await detectar nueva BOLSA
+                                  //       //detectar que remesa estaba activa
+                                  // var el_tebs=await os.consulta_remesa_hermes_actual();
+                                  // console.log("el tebs que se fue es:"+el_tebs[0].tebs_barcode);
+                                  // el_tebs=el_tebs[0].tebs_barcode;
+                                  // if (!el_tebs== undefined) {
+                                  //   console.log("si se encontro una remesa hermes que cancelar.");
+                                  //   //avisar a las remesas de esa bolsa que cambie esttus a entregada
+                                  //   await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox' and tebs_barcode=?",[el_tebs]);
+                                  //   //daR por terminadas las remesas existentes en la base de datos.
+                                  //   await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[tambox.fecha_actual(), tambox.hora_actual(),el_tebs]);
+                                  // }else {
+                                  //   console.log("esta es la primera rh ever..");
+                                  // }
+                                  //         //crear una remesa nueva usando el nuevo tebs
+                                  // await verificar_existencia_de_bolsa(validator_address);
+                                  // await os.new_lock_cashbox();
+                                  //         // existe_bolsa=true;
+                                  //         // setTimeout(function () {
+                                  //         //   process.exit(1);
+                                  //         // }, 10000);
+                                  //         //await envia_encriptado2(validator_address,reset);
+                                  //         //server.arranca_tambox_os();
                                 }
                                   break;
 
@@ -478,7 +549,16 @@ return new Promise(async function(resolve, reject) {
                                      value_in_hex=value_in_hex/100;
                                      //console.log(value_in_hex);
                                     //value dispensed:
-                                    socketjs.nuevo_enlace('Smart_emptied', '../system/remesa_hermes/rm_3.html');
+                                    // consultar valores de cierre de remesa hermes.
+
+                                     var rh_actual=await os.consulta_remesa_hermes_actual();
+
+                                    var resultado_de_smart_empty={
+                                      monto_en_bolsa:rh_actual[0].monto,
+                                      tebs_de_la_bolsa:rh_actual[0].tebs_barcode,
+                                      numero_de_serie:numero_de_serie
+                                    }
+                                    socketjs.nuevo_enlace('Smart_emptied', '../system/remesa_hermes/rm_3.html',resultado_de_smart_empty);
                                 //    global.last_sent=poll_responde[2];
                                 //  }
                                   break;
@@ -707,7 +787,7 @@ return new Promise(async function(resolve, reject) {
 
                                   case("E3"):
                                   console.log(chalk.red.inverse("Cashbox Removedx"));
-                                  server.io.emit('Cashbox_Removed', "Cashbox Removed");
+                                  // server.io.emit('Cashbox_Removed', "Cashbox Removed");
                                   break;
 
                                   case("E4"):
@@ -734,6 +814,7 @@ return new Promise(async function(resolve, reject) {
                                   //console.log("aqui el dato es:"+poll_responde[2]);
                                   if(global.last_sent===""){
                                     console.log(chalk.yellow("Validator Disabled"));
+                                    //existe_bolsa=true;
                                     io.emit('Validator_Disabled', "Validator Disabled");
                                     global.last_sent=poll_responde[2];
                                   }
@@ -846,23 +927,21 @@ return new Promise(async function(resolve, reject) {
                                   break;
                           }
                          };
-                         return resolve(data);
-        };
+
+                       };
         if(poll_responde[1] == "F5"){
-          if (poll_responde[2] == "01") {
-          console.log("NO HAY DINERO SUFICIENTE");
-        }
-        console.log("OPERACION NO SE PUEDE PROCESAR");
-        return resolve(poll_responde);
-      }
-        else{
-          console.log(chalk.red("THERE IS AN ERROR HERE:"+poll_responde));
-        };
-          return resolve(poll_responde);
+                  if (poll_responde[2] == "01") {
+                      console.log("NO HAY DINERO SUFICIENTE");
+                      }
+                      console.log("OPERACION NO SE PUEDE PROCESAR");
+                      // return resolve(poll_responde);
+                    }
         }
 
   } catch (e) {
-    return reject(e);
+    return reject("rejecting habdlepoolhere ->:"+e);
+  }finally{
+    return resolve(data);
   }
 });
 }
@@ -1262,6 +1341,22 @@ try {
        if (step4="OK") {
          if(note_validator_type == "TEBS+Payout"){
                                                    //console.log("si es tebs");
+                                                   var el_tebs=await os.consulta_remesa_hermes_actual();
+                                                   console.log("el tebs que se fue es:"+el_tebs);
+                                                   el_tebs=el_tebs[0].tebs_barcode;
+                                                   if (el_tebs== undefined) {
+                                                     console.log("esta es la primera rh ever..xy");
+                                                      return resolve("NO bolsa");
+                                                      }else {
+                                                        console.log("si se encontro una remesa hermes que cancelar.");
+                                                        //avisar a las remesas de esa bolsa que cambie esttus a entregada
+                                                        await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox' and tebs_barcode=?",[el_tebs]);
+                                                        //daR por terminadas las remesas existentes en la base de datos.
+                                                        await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[tambox.fecha_actual(), tambox.hora_actual(),el_tebs]);
+
+                                                   }
+
+                                                   //AQui creo que tengo que cerrar la remesa anterior antes de crear la nueva tambien.
                                                    var step5= await verificar_existencia_de_bolsa(receptor);
 
                                                    }else {
@@ -1302,11 +1397,10 @@ function verificar_existencia_de_bolsa(receptor) {
   return new Promise(async function(resolve, reject) {
     try {
       var current_tebs=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
-    //  console.log("current tebs es:"+current_tebs);
-
+      console.log("current tebs es:"+current_tebs);
       current_tebs=await val.handleGetTebsBarcode(current_tebs)
       //verifica si existe en la base de datos esa bolsa,
-      console.log("current tebs es:"+current_tebs);
+      //console.log("current tebs es:"+current_tebs);
       //tebs_barcode=parseInt(current_tebs);
     //  console.log(tebs_barcode.length);
       if (tebs_barcode.length===undefined) {
@@ -1314,44 +1408,43 @@ function verificar_existencia_de_bolsa(receptor) {
         //return resolve("OK");
         return resolve(chalk.red("SIN BOLSA"));
 
-                                               }else {
-                                                      console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
-                                                       const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
-                                                       if(existe_remesa_hermes[0].RH ===0){
-                                                      //                                     //  console.log(existe_remesa_hermes[0].RH);
-                                                                                             const this_machine= await pool.query("SELECT * FROM machine");
-                                                                                             console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
-                                                                                             const nueva_res_hermes={
-                                                                                                                      tienda_id:this_machine[0].tienda_id,
-                                                                                                                      monto:0,
-                                                                                                                      moneda:country_code,
-                                                                                                                      status:"iniciada",
-                                                                                                                      tebs_barcode:tebs_barcode,
-                                                                                                                      machine_sn:numero_de_serie,
-                                                                                                                      //fecha:moment().format('YYYY-MM-DD'),
-                                                                                                                      //hora:moment().format('h:mm:ss a'),
-                                                                                                                      fecha:tambox.fecha_actual(),
-                                                                                                                      hora:tambox.hora_actual(),
-                                                                                                                      no_billetes:0
-                                                                                                                    }
-                                                                                            await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
-                                                                                            await sincroniza_remesa_hermes([nueva_res_hermes]);
-                                                                                            return resolve("OK");
-                                                    }else{
-                                                      //RH ya existe con este tebs. no se creara una nueva
-                                                      console.log("RH ya existente");
-                                                      return resolve("OK");
-                                                    }
-                                                 }
+                   }else {
+                          console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
+                           const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
+                           if(existe_remesa_hermes[0].RH ===0){
+                          //                                     //  console.log(existe_remesa_hermes[0].RH);
+                                                                 const this_machine= await pool.query("SELECT * FROM machine");
+                                                                 console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
+                                                                 const nueva_res_hermes={
+                                                                                          tienda_id:this_machine[0].tienda_id,
+                                                                                          monto:0,
+                                                                                          moneda:country_code,
+                                                                                          status:"iniciada",
+                                                                                          tebs_barcode:tebs_barcode,
+                                                                                          machine_sn:numero_de_serie,
+                                                                                          //fecha:moment().format('YYYY-MM-DD'),
+                                                                                          //hora:moment().format('h:mm:ss a'),
+                                                                                          fecha:tambox.fecha_actual(),
+                                                                                          hora:tambox.hora_actual(),
+                                                                                          no_billetes:0
+                                                                                        }
+                                                                await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                                                                await sincroniza_remesa_hermes([nueva_res_hermes]);
+                                                                return resolve("OK");
+                        }else{
+                          //RH ya existe con este tebs. no se creara una nueva
+                          console.log("RH ya existente");
+                          return resolve("OK");
+                        }
+                     }
     } catch (e) {
       //return reject(chalk.red("no se pudo verificar la existencia de la bolsa:")+e);
       return resolve("no_bolsa");
-    } finally {
-
     }
   });
 
 }
+module.exports.verificar_existencia_de_bolsa=verificar_existencia_de_bolsa;
 /////////////////////////////////////////////////////////
 async function sincroniza_remesa_hermes(res){
 var  res2=await res.json();
@@ -1509,114 +1602,118 @@ async function envia_encriptado2(receptorx,orden){
 module.exports.envia_encriptado2=envia_encriptado2;
 ////////////////////////////////////////////////////////
 function sync_and_stablish_presence_of(receptor) {
-
-  return new Promise(async function(resolve, reject) {
-
-    try {
-
-          os.logea("/////////////////////////////////");
-          os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
-          os.logea("/////////////////////////////////");
-          os.logea("SYNCH command sent to:"+device);
-                for (var i = 0; i < 3; i++) {
-                  ultimo_valor_enviado="synch";
-                  var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
-                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
-                  var step2=await handlesynch(step1);
-                  if (show_details) {
-                    console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+    return new Promise(async function(resolve, reject) {
+      try {
+            os.logea("/////////////////////////////////");
+            os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
+            os.logea("/////////////////////////////////");
+            // os.logea("SYNCH command sent to:"+device);
+                  for (var i = 0; i < 3; i++) {
+                    ultimo_valor_enviado="synch";
+                    var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
+                    //  os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                    var step2=await handlesynch(step1);
+                    if (show_details) {
+                      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+                    }
+                       if (!step2=="OK") {
+                         return reject(step2)
+                       }
                   }
-                     if (!step2=="OK") {
-                       return reject(step2)
-                     }
-                }
-          return resolve("OK")
-    } catch (e) {
-    return  reject(chalk.cyan("03-Error en sync_and_stablish_presence_of:")+e);
-    } finally {
-    //  return;
-    }
-  });
-};
+        //    return resolve("OK")
+      } catch (e) {
+      return  reject(chalk.cyan("03-Error en sync_and_stablish_presence_of:")+e);
+      } finally {
+        return resolve();
+      }
+    });
+ };
 module.exports.sync_and_stablish_presence_of=sync_and_stablish_presence_of;
 
-async function sync_and_stablish_presence_of2(receptor) {
-          os.logea("/////////////////////////////////");
-          os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
-          os.logea("/////////////////////////////////");
-          os.logea("SYNCH command sent to:"+device);
-                for (var i = 0; i < 3; i++) {
-                  ultimo_valor_enviado="synch";
-                  var step1=await sp.transmision_insegura2(receptor,synch) //<------------------------------ synch
-                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
-                  var step2=await handlesynch(step1);
-                  if (show_details) {
-                    console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
-                  }
-                     if (!step2=="OK") {
-                       return step2;
-                     }
-                }
-          return "OK";
-};
-module.exports.sync_and_stablish_presence_of2=sync_and_stablish_presence_of2;
+// async function sync_and_stablish_presence_of2(receptor) {
+//           os.logea("/////////////////////////////////");
+//           os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
+//           os.logea("/////////////////////////////////");
+//           os.logea("SYNCH command sent to:"+device);
+//                 for (var i = 0; i < 3; i++) {
+//                   ultimo_valor_enviado="synch";
+//                   var step1=await sp.transmision_insegura2(receptor,synch) //<------------------------------ synch
+//                     os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+//                   var step2=await handlesynch(step1);
+//                   if (show_details) {
+//                     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+//                   }
+//                      if (!step2=="OK") {
+//                        return step2;
+//                      }
+//                 }
+//           return "OK";
+// };
+// module.exports.sync_and_stablish_presence_of2=sync_and_stablish_presence_of2;
 /////////////////////////////////////////////////////////
 function negociate_encryption(receptor) {
   encryptionStatus = false;
   return new Promise( async function(resolve, reject) {
+//try{
+//  return reject("no negociation");
+      try {
+        enc.getkeys();
+        setGenerator = enc.set_generator_();
+        os.logea("/////////////////////////////////");
+        os.logea("SET GENERATOR command sent");
+         ultimo_valor_enviado="setGenerator";
+          var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
+            os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+          var step2=await enc.handleSetgenerator(step1);
+          if (show_details) {
+            console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+          }
+             if (step2=="OK") {
+               var setModulus = enc.set_modulus();
+               os.logea("/////////////////////////////////");
+               os.logea("SET MODULUS command sent");
+                           ultimo_valor_enviado="setModulus";
+               var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
+                 os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
+                 var step4=await enc.handleSetmodulus(step3);
+                 if (show_details) {
+                   console.log(chalk.yellow(device+'<-:'), chalk.yellow(step4));
+                 }
+                    if (step4=="OK") {
+                         //  var step6;
+                         var rKE = await enc.send_request_key_exchange();
+                         os.logea("/////////////////////////////////");
+                         os.logea("Request Key Exchange command sent");
+                         ultimo_valor_enviado="request key exchange";
+                         var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
+                         try {
+                           var step6=await enc.handleRKE(step5);
+                           if(step6.length>0){
+                             os.logea(chalk.green('KEY:'), chalk.green(step6));
+                             os.logea(chalk.green("Encripted comunication Active"));
+                             os.logea("/////////////////////////////////");
+                             encryptionStatus = true;
+                            //return resolve("OK")
 
-           enc.getkeys();
-           setGenerator = enc.set_generator_();
-           os.logea("/////////////////////////////////");
-           os.logea("SET GENERATOR command sent");
-            ultimo_valor_enviado="setGenerator";
-             var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
-               os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
-             var step2=await enc.handleSetgenerator(step1);
-             if (show_details) {
-               console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+                          }else {
+                            return reject("NO KEY:"+step6)
+                          }
+                         } catch (e) {
+                           return reject(chalk.cyan("06-negociate encription")+e);
+                         } finally {
+                         //  return;
+                         }
+                     }else {
+                       return reject(step4)
+                     }
+             }else{
+             return  reject(step2)
              }
-                if (step2=="OK") {
-                  var setModulus = enc.set_modulus();
-                  os.logea("/////////////////////////////////");
-                  os.logea("SET MODULUS command sent");
-                              ultimo_valor_enviado="setModulus";
-                  var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
-                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
-                    var step4=await enc.handleSetmodulus(step3);
-                    if (show_details) {
-                      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step4));
-                    }
-                       if (step4=="OK") {
-                            //  var step6;
-                            var rKE = await enc.send_request_key_exchange();
-                            os.logea("/////////////////////////////////");
-                            os.logea("Request Key Exchange command sent");
-                            ultimo_valor_enviado="request key exchange";
-                            var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
-                            try {
-                              var step6=await enc.handleRKE(step5);
-                              if(step6.length>0){
-                                os.logea(chalk.green('KEY:'), chalk.green(step6));
-                                os.logea(chalk.green("Encripted comunication Active"));
-                                os.logea("/////////////////////////////////");
-                                encryptionStatus = true;
-                               return resolve("OK")
-
-                             }else {
-                               return reject("NO KEY:"+step6)
-                             }
-                            } catch (e) {
-                              return reject(chalk.cyan("06-negociate encription")+e);
-                            } finally {
-                            //  return;
-                            }
-                        }else {
-                          return reject(step4)
-                        }
-                }else{
-                return  reject(step2)
-                }
+} catch (e) {
+  return reject("No se pudo negociar la encriptacion:"+e);
+}finally{
+  return resolve();
+}
 
   });
 };

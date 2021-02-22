@@ -31,45 +31,17 @@
       var once = true;
       var indicador_unico=false;
       var caja_devuelta=false;
-    // var socketConnection = io.connect();
-    // socketConnection.on('connect', function() {
-    //   const sessionID = socketConnection.socket.sessionid; //
-    // console.log(sessionID);
-    // });
     $(document).ready(function() {
-      function send_once(orden){
-
+    function send_once(orden){
         if (indicador_unico==false) {
           socket.emit(orden);
           indicador_unico=true;
         }
       }
-
-      console.log("cargando homesite 2020");
-      // socket.on('iniciando', function(msg) {
-      //   setTimeout(function () {
-      //     //alert("por resetear");
-      //     console.log("por resetear");
-      //   //  window.location.replace("/");
-      //   }, 5000);
-      //   });
-    //  socket.on('connection', () => {
-        console.log("conectado con servidor");
-        socket.on('connect', () => {console.log("mi_id:"+socket.id)});
-        //socket.on('disconnect', (reason) => {console.log("mi_id:"+socket.reason+ " is gone...")});
-        // socket.on('Cashbox_out_of_Service', (msg) => {
-        //   console.log("mensaje de socket:"+msg)});
-        //console.log("mi_id:"+ socket.id); // an alphanumeric id...
-    //  });
+    socket.on('connect', () => {console.log("mi_id:"+socket.id)});
     socket.on('Cashbox_out_of_Service', function(msg) {
-      console.log(msg);
-        //socket.emit();
-        send_once("unlock_cashbox");
-//      if (msg="Cashbox_Unlocked") {
-         //$('#Cashbox_Unlocked, .overlay-back').fadeIn(500);
-         //$('#out_of_service').fadeOut(500);
+        console.log(msg);
          $('#out_of_service, .overlay-back').fadeIn(500);
-        // $('#Cashbox_Unlocked').fadeOut(500);
         document.getElementById('msg11').innerHTML=msg;
         if (msg=="Unable_to_read_Barcode") {
           document.getElementById('msg11').innerHTML="No se detecta bolsa, Será necesario que ingrese una bolsa nueva, verifique que el codigo de barras se encuentre en buen estado.<br> Utilizando la llave desbloquee el pestillo iluminado en color verde";
@@ -88,47 +60,19 @@
           caja_devuelta=true;
           document.getElementById('msg11').innerHTML="Detecto que ya saco el cajon de dinero, coloque la nueva bolsa adecuadamente, confirmando que el codigo de barras quede en la posicion correcta.(verificar el sticker en la parte superior del cajon del dinero para mas detalles de como colocar la bolsa)";
         }
-
         if (msg=="Cashbox_out_of_position") {
-        //  caja_devuelta=true;
-          document.getElementById('msg11').innerHTML="Tire de la manija suavemente pero con firmeza, hasta retirar el cajon del dinero.";
-        }
-
-  //    }
-      // is_cashbox_in_service = false;
-      // if (once) {
-      //   //$('#out_of_service, #overlay-back').fadeIn(500);
-      //   $('#out_of_service, .overlay-back').fadeIn(500);
-      //
-      //   once = false;
-      // }
-      //  $('#overlay, #overlay-back').fadeIn(500);
-
-      //  display_message(msg);
+          //  caja_devuelta=true;
+            document.getElementById('msg11').innerHTML="Tire de la manija suavemente pero con firmeza, hasta retirar el cajon del dinero.";
+          }
     });
-    // socket.on('Cashbox_Replaced', function(msg) {
-    //   is_cashbox_in_service = true;
-    //   $('#out_of_service').fadeOut(500);
-    //   $('#overlay').fadeIn(500);
-    //   once = true;
-    //   muestra_consulta();
-    //   //  display_message(msg);
-    // });
     socket.on('Cashbox_Back_in_Service', function(msg) {
-    //  is_cashbox_in_service = true;
       $('#out_of_service').fadeOut(500);
-      $('#overlay').fadeOut(500);
-  //    once = true;
-  //    socket.emit("read_new_tebs");
-      //  muestra_consulta();
-      //  display_message(msg);
+      $('#overlay, .overlay-back').fadeOut(500);
     });
-
     });
   </script>
-
   <style media="screen">
-  .overlay-back {
+    .overlay-back {
     position: absolute;
     top: 0;
     left: 0;
@@ -140,9 +84,8 @@
     filter: alpha(opacity=60);
     z-index: 5;
     display: none;
-  }
-
-  #overlay {
+    }
+    #overlay {
     position: absolute;
     top: 10%;
     left: 10%;
@@ -152,12 +95,10 @@
     z-index: 10;
     display: none;
     margin: 0 auto;
-  }
+    }
   </style>
 </head>
-<!-- <body>
-  <h1>HELLO WORLD</h1>
-</body> -->
+
 {{{ body }}}
 
 <div class="popup">
@@ -173,11 +114,7 @@
       <div></div>
       <div id="msg11" style="color:green;"></div>
       <div></div>
-      <!-- <div><a class="btn" style="width:120px;" id="opc11">Si</a></div>
-      <div><a class="btn" style="width:120px;" id="testy1">No</a></div> -->
-      <!-- <div class="btn volver" id='unlock_cashbox'><i class="fas fa-lock-open fa-3x"></i></div> -->
       <div></div>
-      <!-- <div class="btn volver" id='lock_cashbox'><i class="fas fa-lock fa-3x"></i></div> -->
     </div>
   </div>
 

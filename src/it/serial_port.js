@@ -107,7 +107,7 @@ module.exports.transmision_insegura2=transmision_insegura2;
 function canal_ocupado(){
   ready_for_sending=false;
 //  ready_for_pooling=false;
-os.logea("Canal ocupado");
+//os.logea("Canal ocupado");
 }
 module.exports.canal_ocupado=canal_ocupado;
 //////////////////////////////////////////////////////////////////////////
@@ -292,7 +292,7 @@ function prepare_command_to_be_sent(receiver,command){
 return new Promise(function(resolve, reject) {
 
   try {
-    os.logea("en prepare command to be send:"+command);
+  //  os.logea("en prepare command to be send:"+command);
     var formed_command_to_send;
     sequencer();
     var seq_bit_hex = ConvertBase.dec2bin(seq_bit); //seq_bit to hex
@@ -357,22 +357,21 @@ return new Promise(function(resolve, reject) {
 }
 module.exports.prepare_command_to_be_sent=prepare_command_to_be_sent;
 
-
-
 async function hacer_consulta_serial(receiver,command){
-  await ensureIsSet3();
+
   return new Promise(async(resolve,reject)=>{
 
     try {
+              await ensureIsSet3();
     //  console.log("en este punto rfs:"+ready_for_sending);
               canal_ocupado();
-              os.logea("hasta aqui command es:"+command);
+              //os.logea("hasta aqui command es:"+command);
               const command_ready =await prepare_command_to_be_sent(receiver,command);
               io.emit("system_running_indicator","system_running_indicator")
               //port.write(command_ready, function(err) {if (err) {return reject(err)}});
               await port.write(command_ready);
 
-              os.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
+              //os.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
 
               var mytime=setTimeout(()=>{
                 const error= "No se recibio respuesta en puerto serial.";
@@ -416,8 +415,6 @@ async function hacer_consulta_serial(receiver,command){
 
     } catch (e) {
       return reject(chalk.cyan("05-Error en hacer_consulta_serial:")+e);
-    } finally {
-    //  return;
     }
   });
 };
