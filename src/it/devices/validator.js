@@ -223,12 +223,18 @@ function set_validator_routing(receptor) {
 };
 ////////////////////////////////////////////////////////
 function set_channel_inhivits(receptor) {
-  os.logea(chalk.yellow("CHANNELS INHIVITs"));
+  console.log(chalk.yellow("CHANNELS INHIVITs"));
   return new Promise(async function(resolve, reject) {
-  await ssp.envia_encriptado(receptor,set_inhivits);
-  return resolve("OK")
+    try {
+      await ssp.envia_encriptado(receptor,set_inhivits);
+      return resolve("OK");
+    } catch (e) {
+      return reject("no funciono set_channel_inhivits");
+    }
+
   });
 };
+module.exports.set_channel_inhivits=set_channel_inhivits;
 ////////////////////////////////////////////////////////
 // function enable_validator(receptor) {
 //  return new Promise( async function(resolve, reject) {

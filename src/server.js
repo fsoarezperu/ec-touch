@@ -67,6 +67,7 @@ httpx.listen(machine_port, async function(io2) {
     await os.obtener_datos_de_conexion();
     await os.habilita_sockets();
     await os.arranca_tambox_os();
+    console.log(chalk.green("El sistema arranco sin problemas"));
 //    await os.arrancando_tambox_nuevamente();
   } catch (e) {
     console.log("error General de OS:"+e);

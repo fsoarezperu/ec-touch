@@ -297,7 +297,7 @@ return new Promise(async function(resolve, reject) {
         // }
 
         if(poll_responde[1] == "F0"){
-              //    existe_bolsa=true; //se hace false si se decteta asi.lineas abajo.
+                  existe_bolsa=true; //se hace false si se decteta asi.lineas abajo.
                   for (var i =1; i< poll_responde.length; i++ ){
                               switch(poll_responde[i])
                              {
@@ -1310,94 +1310,119 @@ module.exports.ensureIsSet2=ensureIsSet2;
 /////////////////////////////////////////////////////////
 function set_protocol_version(receptor,version_de_receptor) {
   return new Promise( async function(resolve, reject) {
-    os.logea("set_protocol_version");
-      os.logea(receptor);
-       var step1=await envia_encriptado(receptor,version_de_receptor) //<--------------------- host_protocol_version
-        if (step1.length>0) {
-          var step2 =await handleprotocolversion(step1);
-          if(step2=="OK"){
-            return resolve("OK");
+    try {
+      os.logea("set_protocol_version");
+        os.logea(receptor);
+         var step1=await envia_encriptado(receptor,version_de_receptor) //<--------------------- host_protocol_version
+          if (step1.length>0) {
+            var step2 =await handleprotocolversion(step1);
+            if(step2=="OK"){
+              //console.log("protocol version set!");
+              return resolve("OK");
+            }
           }
-        }
+    } catch (e) {
+      return reject("no se pudo set protocol version");
+    }
 
   });
-
 };
 module.exports.set_protocol_version=set_protocol_version;
 /////////////////////////////////////////////////////////
 function setup_request_command(receptor) {
   return new Promise(async function(resolve, reject) {
 try {
-  os.logea("setup_request sent");
- var step1= await envia_encriptado(receptor,setup_request) //<---- setup_request
- if (step1.length>0) {
-  // console.log("step1:"+step1);
-   var step2=await handlesetuprequest(step1);
-   //return resolve("TERMINADO");
-   if(step2=="OK"){
-     var step3=await envia_encriptado(receptor,get_serial_number) //<-------- get_serial_number
-     if (step3.length>0) {
-       var step4=await handleGetSerialNumber(step3);
-       if (step4="OK") {
-         if(note_validator_type == "TEBS+Payout"){
-                                                   //console.log("si es tebs");
-                                                   var el_tebs=await os.consulta_remesa_hermes_actual();
-                                                   console.log("el tebs que se fue es:"+el_tebs);
-                                                   el_tebs=el_tebs[0].tebs_barcode;
-                                                   if (el_tebs== undefined) {
-                                                     console.log("esta es la primera rh ever..xy");
-                                                      return resolve("NO bolsa");
-                                                      }else {
-                                                        console.log("si se encontro una remesa hermes que cancelar.");
-                                                        //avisar a las remesas de esa bolsa que cambie esttus a entregada
-                                                        await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox' and tebs_barcode=?",[el_tebs]);
-                                                        //daR por terminadas las remesas existentes en la base de datos.
-                                                        await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[tambox.fecha_actual(), tambox.hora_actual(),el_tebs]);
+  console.log("setup_request sent");
+   var step1= await envia_encriptado(receptor,setup_request) //<---- setup_request
+   if (step1.length>0) {
+    // console.log("step1:"+step1);
+     var step2=await handlesetuprequest(step1);
+     if(step2=="OK"){
+       var step3=await envia_encriptado(receptor,get_serial_number) //<-------- get_serial_number
+       if (step3.length>0) {
+         var step4=await handleGetSerialNumber(step3);
+         if (step4="OK") {
+           if(note_validator_type == "TEBS+Payout"){
+                 //console.log("si es tebs");
+                 //var el_tebs=await os.consulta_remesa_hermes_actual();
+                 //console.log("el tebs que se fue es:"+el_tebs);
+                 //el_tebs=el_tebs[0].tebs_barcode;
 
-                                                   }
+                 // if (el_tebs== undefined) {
+                 //   console.log("esta es la primera rh ever..xy");
+                 //    return resolve("NO bolsa");
+                 //    }else {
+                 //      console.log("si se encontro una remesa hermes que cancelar.");
+                 //      //avisar a las remesas de esa bolsa que cambie esttus a entregada
+                 //      await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox' and tebs_barcode=?",[el_tebs]);
+                 //      //daR por terminadas las remesas existentes en la base de datos.
+                 //      await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[tambox.fecha_actual(), tambox.hora_actual(),el_tebs]);
+                 //
+                 // }
 
-                                                   //AQui creo que tengo que cerrar la remesa anterior antes de crear la nueva tambien.
-                                                   var step5= await verificar_existencia_de_bolsa(receptor);
+                 //AQui creo que tengo que cerrar la remesa anterior antes de crear la nueva tambien.
+                 var step5= await verificar_existencia_de_bolsa(receptor);
 
-                                                   }else {
-                                                         //  console.log("RH si existe en db");
-                                                           step5="OK";
-                                                         }
-                 //si existe, no pasa nada,
-                 //si no existe, se crea una remesa hermes nueva, con el valor del tebsbarcode.
-           //  console.log(step5);
-             if (step5=="OK"){
-               //  console.log(step5);
-                 return resolve("OK");
-             }else {
-               //return reject(chalk.red("NO HAY BOLSA"));
-               //setear variable nobolsa!
-               return resolve("OK");
-
-             }
-
-         }else {
-           return resolve("OK");
+                 }else {
+                       //  console.log("RH si existe en db");
+                         step5="OK";
+                       }
+                   //si existe, no pasa nada,
+                   //si no existe, se crea una remesa hermes nueva, con el valor del tebsbarcode.
+             //  console.log(step5);
+               if (step5=="OK"){
+                 //  console.log(step5);
+                   return resolve("OK");
+               }else {
+                 //return reject(chalk.red("NO HAY BOLSA"));
+                 //setear variable nobolsa!
+                    return resolve("OK");
+                  }
+           }else {
+             return resolve("OK");
+           }
          }
-
        }
      }
-   }
- //}
 } catch (e) {
   return reject(e);
-} finally {
-  //return;
 }
   });
 };
 module.exports.setup_request_command=setup_request_command;
 /////////////////////////////////////////////////////////
+function setup_request_command2(receptor) {
+  return new Promise(async function(resolve, reject) {
+try {
+//  console.log("setup_request sent");
+   var step1= await envia_encriptado(receptor,setup_request) //<---- setup_request
+   if (step1.length>0) {
+    // console.log("step1:"+step1);
+     var step2=await handlesetuprequest(step1);
+     if(step2=="OK"){
+       var step3=await envia_encriptado(receptor,get_serial_number) //<-------- get_serial_number
+       if (step3.length>0) {
+         var step4=await handleGetSerialNumber(step3);
+         if (step4="OK") {
+            return resolve("OK");
+           }else {
+             return reject("no se pudo manehjar el handleGetSerialNumber");
+           }
+         }
+       }
+     }
+} catch (e) {
+  return reject(e);
+}
+  });
+};
+module.exports.setup_request_command2=setup_request_command2;
+/////////////////////////////////////////////////////////
 function verificar_existencia_de_bolsa(receptor) {
   return new Promise(async function(resolve, reject) {
     try {
       var current_tebs=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
-      console.log("current tebs es:"+current_tebs);
+      // console.log("current tebs es:"+current_tebs);
       current_tebs=await val.handleGetTebsBarcode(current_tebs)
       //verifica si existe en la base de datos esa bolsa,
       //console.log("current tebs es:"+current_tebs);
