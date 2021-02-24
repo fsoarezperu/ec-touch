@@ -332,7 +332,7 @@ async function calcular_cifras_generales() {
 module.exports.calcular_cifras_generales = calcular_cifras_generales;
 ////////////////////////////////////////////////////////////////////////////////////////////////
 async function calcular_cuadre_diario() {
-  var no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox'");
+  var no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox' and monto>'0'");
   var monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
 
   var no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
@@ -564,6 +564,8 @@ async function new_lock_cashbox() {
 module.exports.new_lock_cashbox = new_lock_cashbox;
 //no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1
 async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado, fechax1, horax1) {
+  // dando por terminada, cualquier operacion que este como iniciada inadecuadamente.
+  await pool.query("UPDATE remesas SET rms_status='finalizada', status='terminado' WHERE status='iniciada'");
   console.log("aqui estoy creando una nueva remesa en la base de datos");
   console.log(chalk.yellow("iniciando NUEVA REMESA:" + no_remesa));
   if (on_startup == false) {
@@ -724,36 +726,49 @@ module.exports.consulta_historial = consulta_historial;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesas_de_ese_tebsbarcode() {
   //console.log("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
-  const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=?", [current_tebs_barcode]);
+  const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=? and monto>'0' ORDER BY id DESC", [current_tebs_barcode]);
   //console.log(JSON.stringify(remesa_hermes_entambox));
   return remesas_de_tebs;
 }
 module.exports.consulta_remesas_de_ese_tebsbarcode = consulta_remesas_de_ese_tebsbarcode;
 /////////////////////////////////////////////////////////////////
 async function idle_poll_loop(receptor) {
-    await ssp.ensureIsReadyForPolling();
-    if (ready_for_pooling == true) {
-      ready_for_pooling = false;
-      return new Promise(async function(resolve, reject) {
-        //var step1= await ssp.envia_encriptado(receptor,global.poll);
-        var step1 = await sp.hacer_consulta_serial(receptor, global.poll);
-        if (step1.length > 0) {
-          await ssp.handlepoll(step1);
-          setTimeout(async function() {
-            logea("//////////////////////////////");
-            logea(chalk.green("VALIDATOR POLLING"));
-            await idle_poll_loop(receptor);
-          }, 500);
-          ready_for_pooling = true;
-          return resolve("OK");
-        } else {
-          return reject(step1);
-        }
-      });
+//  console.log("entrando a idel poll loop");
+  try {
+            await ssp.ensureIsReadyForPolling();
+            if (ready_for_pooling == true) {
+  //            console.log("resdy for pooling es true");
+              ready_for_pooling = false;
+              return new Promise(async function(resolve, reject) {
+                try {
+                  var step1 = await sp.hacer_consulta_serial(receptor, global.poll);
+                  console.log("step1:"+step1);
+                      if (step1.length > 0) {
+                              await ssp.handlepoll(step1);
+                              setTimeout(async function() {
+                                logea("//////////////////////////////");
+                                logea(chalk.green("VALIDATOR POLLING"));
+                                await idle_poll_loop(validator_address);
+                              //  console.log("idle poll loop");
+                              }, 500);
+                        ready_for_pooling = true;
+                        return resolve("OK");
+                      } else {
+                        return resolve("OK");
+                      }
+                } catch (e) {
+                  return reject("error en idle poll loop");
+                }
+                //var step1= await ssp.envia_encriptado(receptor,global.poll);
+              });
 
-    } else {
-      console.log("ready for polling NOT READY");
-    }
+            } else {
+    //          console.log("ready for polling NOT READY");
+            }
+  } catch (e) {
+    return reject("Iddle poll loop error:")
+  }
+
 } ;
 module.exports.idle_poll_loop = idle_poll_loop;
 /////////////////////////////////////////////////////////////////
@@ -843,12 +858,15 @@ async function arranca_tambox_os() {
       console.log(chalk.green("Validador inicio:" + validator));
       console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
-      var regis=await is_this_machine_registered();
-      console.log("resgistered is:"+regis);
-      console.log("***************************************");
+      // var regis=await is_this_machine_registered();
+      // console.log("resgistered is:"+regis);
+      // console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
-      // on_startup=false;
-      // io.emit("iniciando","iniciando");
+      var step7=await enable_payout2(validator_address);
+      if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
+
+       on_startup=false;
+       server.io.emit("iniciando","iniciando");
       //  os.tambox_manager_ping();
 
       return resolve (validator);
@@ -860,29 +878,13 @@ async function arranca_tambox_os() {
 }
 module.exports.arranca_tambox_os = arranca_tambox_os;
 /////////////////////////////////////////////////////////////////
-async function arrancando_tambox_nuevamente() {
-  return new Promise(async function(resolve, reject) {
-    try {
-      promesa1().then(function(){
-        console.log("ejecutando then");
-        return resolve("fernando");
-      });
-
-    } catch (e) {
-      return reject(chalk.cyan("01-Starting Validator->") + e);
-    }
-  });
-
-}
-module.exports.arrancando_tambox_nuevamente = arrancando_tambox_nuevamente;
-/////////////////////////////////////////////////////////////////
 async function start_validator2() {
   return new Promise(async function(resolve, reject) {
     try {
       await ssp.sync_and_stablish_presence_of(validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
-      // console.log("estoy es la respuesta de validator poll:"+validatorpoll_var);
+
       if (validatorpoll_var == "no existe bolsa detectada") {
             // console.log("Aqui compruebo que no hay bolsa");
             await bolsa_retrial();
@@ -942,7 +944,8 @@ async function validatorpoll2(receptor) {
 };
 module.exports.validatorpoll2 = validatorpoll2;
 ////////////////////////////////////////////////////
-const sleep = m => new Promise(r => setTimeout(r, m))
+const sleep = m => new Promise(r => setTimeout(r, m));
+module.exports.sleep=sleep;
 async function bolsa_retrial(){
   return new Promise(async function(resolve, reject) {
 
@@ -1013,3 +1016,17 @@ function set_validator_routing2(receptor) {
   });
 };
 //////////////////////////////////////////////////////////
+function enable_payout2(receptor) {
+ return new Promise( async function(resolve, reject) {
+   try {
+     // console.log("Enable payout2");
+     await ssp.envia_encriptado(receptor,global.poll);
+     await ssp.envia_encriptado(receptor,global.enable_payout);
+     await ssp.envia_encriptado(receptor,global.poll);
+     await ssp.envia_encriptado(receptor,global.poll);
+     return resolve("OK");
+   } catch (e) {
+     return reject("no se pudo hacer enable_payout2")
+   }
+ });
+}

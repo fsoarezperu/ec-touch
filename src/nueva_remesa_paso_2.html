@@ -1,16 +1,10 @@
 <script type="text/javascript">
 $(document).ready(function() {
-  // $("#terminar_remesa").click(function() {
-  //   socket.emit("terminar_remesa",'terminar_remesa');
-  // });
 
-  // $("#cancelar_remesa").click(function() {
-  //   socket.emit("cancelar_remesa",'cancelar_remesa');
-  // });
+  socket.on('reading_bill', function(msg){
+      display_message(msg);
+  });
 
-  // socket.on('iniciar_nueva_remesa_paso2', function(msg){
-  //   $('#pizarra').load("./iniciar_nueva_remesa_paso2.html");
-  // });
 
  });
  </script>
@@ -18,7 +12,7 @@ $(document).ready(function() {
   <div class="wrapper">
     <div class="titulo">
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
-      <div id="message">Ingrese el dinero</div>
+      <div id="message2">Ingrese el dinero</div>
       <div></div>
     </div>
 

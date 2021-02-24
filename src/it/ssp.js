@@ -13,9 +13,11 @@ const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
 
 
-function thisy3(){
+async function thisy3(){
   console.log(chalk.yellow("thisy3 was trigeret"));
-  socketjs.nuevo_enlace('main','../system/buffer.html')
+//  socketjs.nuevo_enlace('main','../system/buffer.html')
+  var mi_objeto=await os.carga_informacion_para_main();
+   socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html', mi_objeto);
 }
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -417,15 +419,21 @@ return new Promise(async function(resolve, reject) {
                                   break;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                   case("92"):
-                                  console.log(chalk.red.cyan("Cashbox Back in Service"));
+                                  console.log(chalk.cyan("Cashbox Back in Service"));
                                     existe_bolsa=true;
                                 if (on_remesa_hermes) {
                                           os.new_lock_cashbox();
+                                          await cambio_de_bolsa(validator_address);
                                           socketjs.nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
                                           setTimeout(thisy3,5000);
                                           on_remesa_hermes=false;
+
+
                                 }else {
                                   console.log("cashbox back in service fuera de remesa hermes, aqui es necesario crear la nueva remesa hermes en la base de datos");
+                                  // await ssp.verificar_existencia_de_bolsa(validator_address);
+
+                                  await cambio_de_bolsa(validator_address);
                                 //  server.io.emit('Cashbox_Back_in_Service','Cashbox_Back_in_Service');
                                 //  server.io.emit('go_to_main','estoy aqui');
 
@@ -845,6 +853,7 @@ return new Promise(async function(resolve, reject) {
                                     var channel=poll_responde[i+1];
                                     console.log("channel:"+channel);
                                     console.log("Leyendo billete");
+                                    server.io.emit("reading_bill","procesando billete")
                                   }
                                   break;
 
@@ -1208,7 +1217,7 @@ return resolve("OK");
 module.exports.handlesetuprequest=handlesetuprequest;
 ////////////////////////////////////////////////////
 function handleGetSerialNumber(data){
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
     var number_of_byte = get_count_bytes_received();
     var myData = data.substr(2, number_of_byte + 2);
     var firstbyte = myData.substr(0, 2);
@@ -1219,7 +1228,8 @@ function handleGetSerialNumber(data){
     //numero_de_serie=machine_sn;
     //console.log("serialN"+serialN);
     global.numero_de_serie=serialN;
-
+    // await pool.query("UPDATE machine SET machine_sn=?", [global.numero_de_serie]);
+    await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
     console.log(chalk.white("The serial number is: " + chalk.yellow(global.numero_de_serie)));
     //console.log("/////////////////////////////////");
     return resolve(data);
@@ -1418,50 +1428,53 @@ try {
 };
 module.exports.setup_request_command2=setup_request_command2;
 /////////////////////////////////////////////////////////
-function verificar_existencia_de_bolsa(receptor) {
+async function verificar_existencia_de_bolsa(receptor) {
+  // console.log("sntes del sleep");
+  // await os.sleep(200);
+  // console.log("luego del sleep");
   return new Promise(async function(resolve, reject) {
     try {
+      //  await ssp.ensureIsReadyForPolling();
+      //  canal_ocupado
+      //  await sp.ensureIsSet3();
       var current_tebs=await sp.transmision_insegura(receptor,get_tebs_barcode) //<-------- get_serial_number
-      // console.log("current tebs es:"+current_tebs);
       current_tebs=await val.handleGetTebsBarcode(current_tebs)
       //verifica si existe en la base de datos esa bolsa,
-      //console.log("current tebs es:"+current_tebs);
-      //tebs_barcode=parseInt(current_tebs);
-    //  console.log(tebs_barcode.length);
-      if (tebs_barcode.length===undefined) {
-        //console.log(chalk.red("NO HAY BOLSA DETECTADA"));
-        //return resolve("OK");
-        return resolve(chalk.red("SIN BOLSA"));
 
-                   }else {
-                          console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
-                           const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
-                           if(existe_remesa_hermes[0].RH ===0){
-                          //                                     //  console.log(existe_remesa_hermes[0].RH);
-                                                                 const this_machine= await pool.query("SELECT * FROM machine");
-                                                                 console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
-                                                                 const nueva_res_hermes={
-                                                                                          tienda_id:this_machine[0].tienda_id,
-                                                                                          monto:0,
-                                                                                          moneda:country_code,
-                                                                                          status:"iniciada",
-                                                                                          tebs_barcode:tebs_barcode,
-                                                                                          machine_sn:numero_de_serie,
-                                                                                          //fecha:moment().format('YYYY-MM-DD'),
-                                                                                          //hora:moment().format('h:mm:ss a'),
-                                                                                          fecha:tambox.fecha_actual(),
-                                                                                          hora:tambox.hora_actual(),
-                                                                                          no_billetes:0
-                                                                                        }
-                                                                await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
-                                                                await sincroniza_remesa_hermes([nueva_res_hermes]);
-                                                                return resolve("OK");
-                        }else{
-                          //RH ya existe con este tebs. no se creara una nueva
-                          console.log("RH ya existente");
-                          return resolve("OK");
-                        }
-                     }
+      if (tebs_barcode.length===undefined) {
+        return resolve(chalk.red("SIN BOLSA"));
+       }else {
+              console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
+               const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
+               if(existe_remesa_hermes[0].RH ===0){
+              //       //  console.log(existe_remesa_hermes[0].RH);
+                      await pool.query("UPDATE creditos SET status='processed'");
+                      await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
+                      await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual()]);
+
+                       const this_machine= await pool.query("SELECT * FROM machine");
+                       console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
+                       const nueva_res_hermes={
+                                                tienda_id:this_machine[0].tienda_id,
+                                                monto:0,
+                                                moneda:country_code,
+                                                status:"iniciada",
+                                                tebs_barcode:tebs_barcode,
+                                                machine_sn:numero_de_serie,
+                                                fecha:tambox.fecha_actual(),
+                                                hora:tambox.hora_actual(),
+                                                no_billetes:0
+                                              }
+
+                      await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                      await sincroniza_remesa_hermes([nueva_res_hermes]);
+                      return resolve("OK");
+            }else{
+              //RH ya existe con este tebs. no se creara una nueva
+              console.log("RH ya existente");
+              return resolve("OK");
+            }
+         }
     } catch (e) {
       //return reject(chalk.red("no se pudo verificar la existencia de la bolsa:")+e);
       return resolve("no_bolsa");
@@ -1471,6 +1484,62 @@ function verificar_existencia_de_bolsa(receptor) {
 }
 module.exports.verificar_existencia_de_bolsa=verificar_existencia_de_bolsa;
 /////////////////////////////////////////////////////////
+async function cambio_de_bolsa(receptor) {
+  await ensureIsSet();
+  return new Promise(async function(resolve, reject) {
+    try {
+      //  await ssp.ensureIsReadyForPolling();
+      //  canal_ocupado
+      //  await sp.ensureIsSet3();
+      console.log("entrando a cambo de bolsa");
+      var current_tebsxy=await sp.hacer_consulta_serial(receptor,get_tebs_barcode) //<-------- get_serial_number
+      console.log("esto"+current_tebsxy);
+      current_tebsxy=await val.handleGetTebsBarcode(current_tebsxy)
+      //verifica si existe en la base de datos esa bolsa,
+      console.log("tebs es:"+current_tebsxy);
+      if (current_tebsxy.length===undefined) {
+        return resolve(chalk.red("SIN BOLSA"));
+       }else {
+              console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(current_tebsxy))));
+               const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[current_tebsxy]);
+               if(existe_remesa_hermes[0].RH ===0){
+              //       //  console.log(existe_remesa_hermes[0].RH);
+                      await pool.query("UPDATE creditos SET status='processed'");
+                      await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
+                      await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual()]);
+
+                       const this_machine= await pool.query("SELECT * FROM machine");
+                       console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+current_tebsxy));
+                       const nueva_res_hermes={
+                                                tienda_id:this_machine[0].tienda_id,
+                                                monto:0,
+                                                moneda:country_code,
+                                                status:"iniciada",
+                                                tebs_barcode:current_tebsxy,
+                                                machine_sn:numero_de_serie,
+                                                fecha:tambox.fecha_actual(),
+                                                hora:tambox.hora_actual(),
+                                                no_billetes:0
+                                              }
+
+                      await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                      await sincroniza_remesa_hermes([nueva_res_hermes]);
+                      return resolve("OK");
+            }else{
+              //RH ya existe con este tebs. no se creara una nueva
+              console.log("RH ya existente");
+              return resolve("OK");
+            }
+         }
+    } catch (e) {
+      //return reject(chalk.red("no se pudo verificar la existencia de la bolsa:")+e);
+      return resolve("no_bolsa");
+    }
+  });
+
+}
+module.exports.cambio_de_bolsa=cambio_de_bolsa;
+
 async function sincroniza_remesa_hermes(res){
 var  res2=await res.json();
 console.log("iniciando sincronizacion a nube:"+res2);
@@ -1601,8 +1670,6 @@ function envia_encriptado(receptorx,orden){
 
       } catch (e) {
         return reject(chalk.red("error 0054:")+e);
-      } finally {
-          return;
       }
       });
 }
@@ -1654,27 +1721,6 @@ function sync_and_stablish_presence_of(receptor) {
     });
  };
 module.exports.sync_and_stablish_presence_of=sync_and_stablish_presence_of;
-
-// async function sync_and_stablish_presence_of2(receptor) {
-//           os.logea("/////////////////////////////////");
-//           os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
-//           os.logea("/////////////////////////////////");
-//           os.logea("SYNCH command sent to:"+device);
-//                 for (var i = 0; i < 3; i++) {
-//                   ultimo_valor_enviado="synch";
-//                   var step1=await sp.transmision_insegura2(receptor,synch) //<------------------------------ synch
-//                     os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
-//                   var step2=await handlesynch(step1);
-//                   if (show_details) {
-//                     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
-//                   }
-//                      if (!step2=="OK") {
-//                        return step2;
-//                      }
-//                 }
-//           return "OK";
-// };
-// module.exports.sync_and_stablish_presence_of2=sync_and_stablish_presence_of2;
 /////////////////////////////////////////////////////////
 function negociate_encryption(receptor) {
   encryptionStatus = false;

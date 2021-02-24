@@ -170,6 +170,7 @@ function ensureIsSet3() {
 
     });
 };
+module.exports.ensureIsSet3=ensureIsSet3;
 function received_byte_stuffing(command){
   return new Promise(function(resolve, reject) {
     //console.log("received command to be evaluted:"+command);
@@ -421,18 +422,16 @@ async function hacer_consulta_serial(receiver,command){
 module.exports.hacer_consulta_serial=hacer_consulta_serial;
 //////////////////////////////////////////////////////////////////////////
 async function hacer_consulta_serial2(receiver,command){
-  await ssp.ensureIsSet();
+
   return new Promise(async(resolve,reject)=>{
 
     try {
-    //  console.log("en este punto rfs:"+ready_for_sending);
+              await ssp.ensureIsSet();
               canal_ocupado();
               os.logea("hasta aqui command es:"+command);
               const command_ready =await ssp.prepare_command_to_be_sent(receiver,command);
               socket.io.emit("system_running_indicator","system_running_indicator")
-              //port.write(command_ready, function(err) {if (err) {return reject(err)}});
               await port.write(command_ready);
-
               os.logea("aqui ya se transmitio el dato"+command_ready+" a puerto");
 
               var mytime=setTimeout(()=>{
@@ -441,36 +440,28 @@ async function hacer_consulta_serial2(receiver,command){
                 },7000);
 
               parser.once('data', async function(data){
-                                                clearTimeout(mytime);
-                                                received_cleaned = new Buffer.from(data, 'hex').toString('hex').toUpperCase();
-                                                var receiver_adress= received_cleaned.slice(2, -8);
-                                                  if (receiver_adress=='10' || receiver_adress=='90' ) {device="Hopper";}
-                                                  if (receiver_adress=='00' || receiver_adress=='80') {device="Validator";}
-                                                  received_command = received_cleaned.slice(4, -4);
-                                                  var data=await ssp.received_byte_stuffing(received_command)
-                                                  received_command=data;
-                                                  parser.removeAllListeners('data');
-                                                  //////////////////////////////
-                                                  if(received_command.length>0){
-
-                                                    ready_for_sending=true;
-                                                    return resolve(received_command);
-                                                  //  }, 20);
-                                                  }else{
-                                                    console.log("salgo por aqui1234");
-
-                                                    const error= "no respuesta, necesario reintentar...";
-                                                      setTimeout(()=>{return reject(error); retrial(error); },3000);
-                                                    }
-                                              //  })
-
-                                              //  .catch(function(error) {console.log(error);sp.retrial(error);});
-                                                });
+                    clearTimeout(mytime);
+                    received_cleaned = new Buffer.from(data, 'hex').toString('hex').toUpperCase();
+                    var receiver_adress= received_cleaned.slice(2, -8);
+                    if (receiver_adress=='10' || receiver_adress=='90' ) {device="Hopper";}
+                    if (receiver_adress=='00' || receiver_adress=='80') {device="Validator";}
+                    received_command = received_cleaned.slice(4, -4);
+                    var data=await ssp.received_byte_stuffing(received_command)
+                    received_command=data;
+                    parser.removeAllListeners('data');
+                    //////////////////////////////
+                    if(received_command.length>0){
+                      ready_for_sending=true;
+                      return resolve(received_command);
+                    }else{
+                        console.log("salgo por aqui1234");
+                        const error= "no respuesta, necesario reintentar...";
+                        setTimeout(()=>{return reject(error); retrial(error); },3000);
+                      }
+                  });
 
     } catch (e) {
       return reject(chalk.cyan("05-Error en hacer_consulta_serial:")+e);
-    } finally {
-    //  return;
     }
   });
 };

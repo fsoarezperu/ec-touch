@@ -411,7 +411,7 @@ io.on('connection', async function (socket) {
      Tebs_barcode:tebs_barcode,
      os_version:release_version,
      direccion_ip:machine_ip,
-     ip_publico:globals.public_machine_ip,
+     ip_publico:global.public_machine_ip,
      puerto:machine_port,
      creado_por:machine_developer,
      soporte_tecnico:machine_support
@@ -436,7 +436,10 @@ io.on('connection', async function (socket) {
     nuevo_enlace('main','../system/buffer.html',mi_objeto);
   });
 
-os.conectar_enlace_de(socket,'config','../system/configuracion.html',"vardata");
+  var config_data={
+    current_tebs:"global.current_tebs"
+  }
+os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
 os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
 os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null");
@@ -452,7 +455,8 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
     });
 };
   module.exports.super_enlace=super_enlace;
-  super_enlace('config','config','../system/configuracion.html');
+
+//  super_enlace('config','config','../system/configuracion.html',config_data);
   super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
 
 })

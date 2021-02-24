@@ -97,32 +97,20 @@ function start_validator() {
                                                       //    }
                                                     }
                                                  if(regis=="OK"){
-                                                // //  console.log("entro por aqui");
-                                                //   glo.is_regis=true;
-                                                //
+
                                                 console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
                                                 //   //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
                                                 //   var my_resgistered_machine=await os.query_this_machine();
                                                 //   //my_resgistered_machine=my_resgistered_machine[1];
-                                                //   os.logea(chalk.green("query:"+my_resgistered_machine));
                                                 //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
                                                 //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
                                                 //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
-                                                //     //server.io.emit("iniciando","iniciando sistema");
                                                 //   var step7=await enable_payout(validator_address);
-                                                //    if (step7=="OK") {
-                                                //    //  await carga_monedas_al_hopper(validator_address);
-                                                //    console.log(chalk.green("payout enabled"));
-                                                //     // on_startup=false;
-                                                //     var step8=await validator_poll_loop(validator_address);
-                                                //     os.logea(glo.is_regis);
-                                                //     return resolve("OK");
-                                                //    }
+
                                                  }else {
                                                    glo.is_regis=false;
-                                                //   //  await pool.query ("UPDATE machine SET is_registered=0");
-                                                //     //server.io.emit("iniciando","iniciando sistema");
-                                                //console.log(global.machine_ip);
+
+
                                                      await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [glo.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
                                                      var esty= await pool.query("SELECT machine_name FROM machine");
                                                      esty=esty[0].machine_name
@@ -130,23 +118,9 @@ function start_validator() {
                                                      console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(glo.my_resgistered_machine_name));
 
                                                        var step7=await enable_payout(validator_address);
-                                                        if (step7=="OK") {
-                                                    //    //  await carga_monedas_al_hopper(validator_address);
-                                                    //    //console.log(chalk.green("payout enabled in here"));
-                                                    //    // creo que aqui puedo poner las funciones que cargan y consultan las cifras genrales y el cuadre diario y guardarlo en las
-                                                    //    // variables globales para que puedan ser mostrados en pantalla , seria genial tener opcion que se ejecute cuanda esa pantalla se va a cargar.
-                                                    //
-                                                    //   //  var cifras_generales_actuales=os.calcular_cifras_generales2();
-                                                    //   //   console.log(chalk.cyan("////////////////////////////////////////////"));
-                                                    //   //   console.log(chalk.cyan("Cifras Generales obtenidas son:"+JSON.stringify(cifras_generales_actuales)));
-                                                    //   // //  console.log(chalk.cyan();
-                                                    //   //   console.log(chalk.cyan("////////////////////////////////////////////"));
-                                                    //
-                                                    //
-                                                        var step8=await validator_poll_loop(validator_address);
-                                                        os.logea(chalk.green("Inicio poll loop:"+step8));
-                                                        return resolve("OK");
-                                                         }
+                                                       if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
+
+
                                                  }
                                             }
                                             }
