@@ -756,15 +756,76 @@ text-align: center;
 }
 
 
+.ec_panel_tarjeta_historial_remesa_hermes_verde{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_status status label_fecha_creacion fecha_creacion "
+  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
+  "label_moneda label_monto  label_monto label_monto";
+
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(81, 182, 43, 0.6));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+.ec_panel_tarjeta_historial_remesa_hermes_roja{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_status status label_fecha_creacion fecha_creacion "
+  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
+  "label_moneda label_monto  label_monto label_monto";
+
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom,  rgb(64, 22, 22),rgba(53,53,53));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
 .ec_panel_tarjeta_historial_verde{
   display: grid;
   /* background-color: rgb(43, 43, 43); */
   grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas:
-  "label_status status status status"
-  "label_tebs  numero_de_tebs label_fecha_cierre fecha_cierre"
-  "label_moneda label_monto label_hora_cierre hora_cierre";
+  "label_tipo tipo label_status status "
+  "label_tebs  numero_de_tebs label_fecha_creacion fecha_creacion"
+  "label_moneda label_monto label_monto label_monto";
 
   color:white;
   /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
@@ -815,37 +876,84 @@ text-align: center;
   max-height: 400px;
   overflow-y: scroll;
 }
+.ec_panel_tarjeta_historial_azul{
+  display: grid;
+  /* background-color: rgb(43, 43, 43); */
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-areas:
+  "label_tipo tipo label_status status "
+  "label_tebs  numero_de_tebs label_fecha_creacion fecha_creacion"
+  "label_moneda label_monto label_hora_creacion hora_creacion";
+
+  color:white;
+  /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
+  /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
+  /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
+  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(43, 92, 182, 0.94));
+
+  grid-gap:6px;
+  filter: drop-shadow(1px 1px 15px #000000);
+  /* opacity: 0.5; */
+  /* grid-column-start: span 1; */
+  border-radius: 12px;
+  /* border: 1.5px solid rgb(174, 233, 28); */
+  border: 1.5px solid rgb(80,80,80);
+
+  padding: 5px;
+  margin-bottom: 5px;
+  max-height: 400px;
+  overflow-y: scroll;
+}
+
+.label_tipo{
+  grid-area: label_tipo;
+}
+.tipo{
+  grid-area: tipo;
+}
+.label_fecha_creacion{
+  grid-area:label_fecha_creacion;
+}
+.fecha_creacion{
+  grid-area:fecha_creacion;
+}
+.label_hora_creacion{
+  grid-area:label_hora_creacion;
+}
+.hora_creacion{
+  grid-area:hora_creacion;
+}
+
 .label_status{
   grid-area: label_status;
-
 }
 .status{
   grid-area: status;
-
 }
 .label_tebs{
-grid-area:label_tebs;
+  grid-area:label_tebs;
 }
 .numero_de_tebs{
-grid-area:numero_de_tebs;
+  grid-area:numero_de_tebs;
 }
 .label_fecha_cierre{
-grid-area:label_fecha_cierre;
+  grid-area:label_fecha_cierre;
 }
 .fecha_cierre{
-grid-area:fecha_cierre;
+  grid-area:fecha_cierre;
 }
 .hora_cierre{
-grid-area:hora_cierre;
+  grid-area:hora_cierre;
 }
 .label_moneda{
-grid-area:label_moneda;
+  grid-area:label_moneda;
 }
 .label_monto{
-grid-area:label_monto;
+  grid-area:label_monto;
 }
 .label_hora_cierre{
-grid-area:label_hora_cierre;
+  grid-area:label_hora_cierre;
 }
 
 .ec_card{
@@ -879,8 +987,7 @@ grid-area:label_hora_cierre;
     grid-auto-rows: 1fr 1fr;
     border-radius: 12px;
     /* background-color:rgba(12, 51, 247, 1); */
-
-/*  Muy buen skin !!!! */
+    /*  Muy buen skin !!!! */
     /* background-image: linear-gradient(to right, rgb(43, 43, 43), rgba(65,65,65)); */
 
     background-image: linear-gradient(to right, rgb(72, 100, 215), rgb(22, 58, 204));
@@ -956,12 +1063,12 @@ grid-area:label_hora_cierre;
  }
 
 .locking_template {
-/* grid-area: 1 / 9 / span 1 / 12; */
-display: grid;
-grid-template-columns: repeat(5, 1fr);
-grid-template-rows: repeat(4, 1fr);
-grid-column-gap: 0px;
-grid-row-gap: 0px;
+  /* grid-area: 1 / 9 / span 1 / 12; */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
 }
 
 /* .div1 { grid-area: 4 / 2 / 9 / 6; } */

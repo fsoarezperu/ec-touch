@@ -1,0 +1,94 @@
+<script type="text/javascript">
+  var socket = io();
+$(document).ready(function() {
+  $("#parci").show();
+  $("#full").hide();
+  socket.on('note_held_in_bezel', function(msg) {
+    //display_message(msg);
+    document.getElementById("cabecera").innerHTML=msg;
+  });
+  socket.on('Dispensing', function(msg) {
+    //display_message("pagado hasta el momento:" + msg);
+    agregar_parcial(msg);
+    actualizar_parcial();
+    $("#full").hide();
+    $("#parci").show();
+    document.getElementById("cabecera").innerHTML="PAGANDO...";
+  });
+  socket.on('Dispensed', function(msg) {
+    //display_message("pagado hasta el momento:"+msg);
+    //alert("se pago:"+msg+".00 Soles");
+    agregar_pagado(msg);
+    calcular_pagado();
+    $("#parci").hide();
+    $("#full").show();
+    document.getElementById("cabecera").innerHTML="PAGO COMPLETO";
+    setTimeout(function() {
+      window.location.replace("/");
+    }, 10000);
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+});
+  function display_message(mes_to_display) {
+    document.getElementById("message").innerHTML = mes_to_display;
+    setTimeout(clear_message, 1000);
+  };
+  function clear_message() {
+    document.getElementById("message").innerHTML = ""
+  };
+  var pagado = 0;
+  function agregar_pagado(monto) {
+    pagado = pagado + monto;
+  };
+  function calcular_pagado() {
+    document.getElementById('pagado').innerHTML = "S/." + pagado + ".00";
+  };
+  var parcial = 0;
+  function agregar_parcial(monto) {
+    parcial = monto;
+    actualizar_parcial();
+    //  socket.emit('agregar', parcial);
+  };
+  function actualizar_parcial() {
+    document.getElementById('parcial').innerHTML = "S/." + parcial + ".00";
+  };
+  function display_system_running_indicator(){
+        $("#system_running_indicator").show();
+  //    document.getElementById("system_running_indicator").innerHTML="." ;
+      setTimeout(clear_system_running_indicator,200);
+    };
+  function clear_system_running_indicator(){
+        $("#system_running_indicator").hide();
+    //  document.getElementById("system_running_indicator").innerHTML="";
+    };
+</script>
+
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+      <div id="cabecera">Pago en proceso</div>
+      <div></div>
+    </div>
+    <div class="grupo2">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <!-- <div id="parci"><label>Pagando:</label> -->
+        <div id="parci"><label></label>
+        <div id="parcial">S/.000.00</div>
+      </div>
+      <!-- <div id="full"><label>Pago total:</label> -->
+        <div id="full"><label></label>
+        <div id="pagado">S/.000.00</div>
+      </div>
+    </div>
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+</body>

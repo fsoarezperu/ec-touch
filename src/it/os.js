@@ -565,7 +565,7 @@ module.exports.new_lock_cashbox = new_lock_cashbox;
 //no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1
 async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado, fechax1, horax1) {
   // dando por terminada, cualquier operacion que este como iniciada inadecuadamente.
-  await pool.query("UPDATE remesas SET rms_status='finalizada', status='terminado' WHERE status='iniciada'");
+  await pool.query("UPDATE remesas SET status='terminado' WHERE status='iniciada'");
   console.log("aqui estoy creando una nueva remesa en la base de datos");
   console.log(chalk.yellow("iniciando NUEVA REMESA:" + no_remesa));
   if (on_startup == false) {
@@ -592,7 +592,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
           // ts:tsx
         }
         await pool.query('INSERT INTO remesas set ?', [nueva_res]);
-        console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa" + nueva_res);
+        console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa" + JSON.stringify(nueva_res));
         //return;
       } else {
         console.log('Datos incompletos, revise documentacion');
@@ -607,13 +607,13 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
 module.exports.crear_nueva_remesa = crear_nueva_remesa;
 /////////////////////////////////////////////////////////////////
 async function terminar_nueva_remesa(no_remesa) {
-  console.log("aqui estoy terminando una nueva remesa en la base de datos");
+  console.log("aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
   //return new Promise(async function(resolve, reject) {
   console.log("al momento de terminar nueva remesa hermes se detecta un current_tebs_barcode:" + current_tebs_barcode);
   if (on_startup === false) {
     if (no_remesa) {
       try {
-        await pool.query("UPDATE remesas SET rms_status='finalizada', status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
 
         //  remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
@@ -637,7 +637,7 @@ async function terminar_nueva_remesa(no_remesa) {
         console.log("actualizando el monto de remesa hermes:" + monto_remesa_hermes + " y numero de billetes es:" + no_billetes_en_remesa_hermes);
         await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada' and tebs_barcode=?", [monto_remesa_hermes, no_billetes_en_remesa_hermes, current_tebs_barcode]);
         var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
-        console.log("voy a actualizar rh con estos datos:" + nueva_res_hermes);
+        console.log("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes));
         await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
         //  res.json(remesax);
         //  return resolve();
@@ -680,6 +680,33 @@ async function terminar_nueva_remesa(no_remesa) {
   //});
 }
 module.exports.terminar_nueva_remesa = terminar_nueva_remesa;
+///////////////////////////////////////////////////////////////////
+async function finalizar_nueva_remesa(no_remesa) {
+  console.log("aqui estoy finalizando desde RMS la remesa numero:"+no_remesa);
+  //return new Promise(async function(resolve, reject) {
+  console.log("al momento de terminar nueva remesa hermes se detecta un current_tebs_barcode:" + current_tebs_barcode);
+  if (on_startup === false) {
+    if (no_remesa) {
+      try {
+        await pool.query("UPDATE remesas SET rms_status='finalizada'WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+      } catch (e) {
+        console.log(chalk.cyan("ERROR 002- No se pudo sincronizar transaccion") + e);
+      } finally {
+        //  return;
+      }
+    } else {
+      //  res.json('Datos incompletos');
+      console.log('Datos incompletos')
+      //  return reject('Datos incompletos');
+    }
+  } else {
+    //res.send('Estoy en Startup');
+    console.log('Estoy en Startup')
+    //  return reject('Estoy en Startup');
+  }
+  //});
+}
+module.exports.finalizar_nueva_remesa = finalizar_nueva_remesa;
 /////////////////////////////////////////////////////////////////
 async function begin_remesa_hermes() {
 
@@ -718,7 +745,7 @@ async function consulta_this_machine() {
 module.exports.consulta_this_machine = consulta_this_machine;
 /////////////////////////////////////////////////////////////////
 async function consulta_historial() {
-  const historial = await pool.query("SELECT * FROM remesa_hermes");
+  const historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
   //console.log(JSON.stringify(remesa_hermes_entambox));
   return historial;
 }
@@ -742,7 +769,7 @@ async function idle_poll_loop(receptor) {
               return new Promise(async function(resolve, reject) {
                 try {
                   var step1 = await sp.hacer_consulta_serial(receptor, global.poll);
-                  console.log("step1:"+step1);
+                //  console.log("step1:"+step1);
                       if (step1.length > 0) {
                               await ssp.handlepoll(step1);
                               setTimeout(async function() {
@@ -1030,3 +1057,40 @@ function enable_payout2(receptor) {
    }
  });
 }
+
+function pruebita(){
+  return new Promise(function(resolve, reject) {
+    return resolve("OK");
+  });
+}
+module.exports.pruebita=pruebita;
+////////////////////////////////////////////////////////////////////
+async function transmite_encriptado_y_procesa2(receptorx,polly){
+  // await ssp.ensureIsSet()
+return new Promise(async function(resolve, reject) {
+  try {
+      if (bypass== false) {
+        var toSendw =await enc.prepare_Encryption(polly);
+        //console.log("aqui toSend:"+toSendw);
+          var data=await sp.transmision_insegura(receptorx,toSendw);
+        //  console.log("aqui toSend_response:"+data);
+              data=await enc.promise_handleEcommand(data);
+              //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+              data= await ssp.handlepoll(data);
+
+              if (data.length>0) {
+                  return resolve(data);
+              }
+
+      }else {
+            return reject("bypassed");
+      }
+
+  } catch (e) {
+    return reject("error en transmite encriptado y procesa"+e);
+  }
+
+});
+
+}
+module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;

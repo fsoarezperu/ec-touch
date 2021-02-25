@@ -95,24 +95,22 @@ io.on('connection', async function (socket) {
   socket.on('habilita_validador',async function(msg) {
     await ssp.ensureIsSet();
     return new Promise(async function(resolve, reject) {
-    try {
-      var data=await ssp.envia_encriptado(validator_address,enable);
-      if (data=="01F0") {
-      //  console.log(chalk.green(data));
-        console.log(chalk.cyan("ENABLE VALIDATOR"));
-      //  io.emit('validator_enabled', "validator_enabled");
-        io.emit('paso2', "paso2");
-        return resolve();
-      }else {
-        reject("el validador no se habilito");
+      try {
+        var data=await ssp.envia_encriptado(validator_address,enable);
+        if (data=="01F0") {
+        //  console.log(chalk.green(data));
+          console.log(chalk.cyan("ENABLE VALIDATOR"));
+        //  io.emit('validator_enabled', "validator_enabled");
+          io.emit('paso2', "paso2");
+          return resolve();
+        }else {
+          reject("el validador no se habilito");
+        }
+
+      } catch (e) {
+        return reject(chalk.red("error en socket:")+e);
       }
-
-    } catch (e) {
-      return reject(chalk.red("error en socket:")+e);
-    } finally {
-
-    }
-        });
+    });
   });
   socket.on('disable_validator',async function(msg) {
      await ssp.ensureIsSet();
@@ -343,12 +341,12 @@ io.on('connection', async function (socket) {
    // io.emit('main','../system/buffer.html');
    });
   socket.on('iniciar_nueva_remesa',async function(){
-    new_manual_remesa= Math.floor((Math.random() * 100) + 1);
+    new_manual_remesa= Math.floor((Math.random() * 10000) + 1);
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
 
     os.crear_nueva_remesa(new_manual_remesa,999,001,8888,tambox.fecha_actual(),tambox.hora_actual());
     await  os.validator_enabled_now();
-    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
+    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
    });
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
@@ -435,7 +433,11 @@ io.on('connection', async function (socket) {
     var mi_objeto=await os.carga_informacion_para_main();
     nuevo_enlace('main','../system/buffer.html',mi_objeto);
   });
-
+  socket.on('retiro_en_proceso', function(msg) {
+  //  window.location.replace("/retiro_en_proceso");
+    var mi_objeto={ nombre:"pago"};
+    nuevo_enlace('retiro_en_proceso','../system/retiro/retiro_en_proceso.html',mi_objeto);
+  });
   var config_data={
     current_tebs:"global.current_tebs"
   }

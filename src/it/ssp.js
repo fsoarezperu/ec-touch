@@ -1820,7 +1820,7 @@ function ensureIsReadyForPolling() {
 };
 module.exports.ensureIsReadyForPolling=ensureIsReadyForPolling;
 /////////////////////////////////////////////////////////
-function transmite_encriptado_y_procesa(receptorx,polly){
+async function transmite_encriptado_y_procesa(receptorx,polly){
 return new Promise(async function(resolve, reject) {
   try {
     //  pollx[0]=parseInt(receptorx) ;
@@ -1831,38 +1831,68 @@ return new Promise(async function(resolve, reject) {
         //     .then(async function(data){console.log(chalk.yellow("from here"+device+'<-:'), chalk.yellow(data));return await handlepoll(data)})
         //     .then(data=>{return resolve(data);})
         //     .catch(function(error) {console.log(error);sp.retrial(error);});
-if (bypass== false) {
-  var toSendw =await enc.prepare_Encryption(polly);
-  //console.log("aqui toSend:"+toSendw);
-    var data=await sp.transmision_insegura(receptorx,toSendw);
-  //  console.log("aqui toSend_response:"+data);
+      if (bypass== false) {
+        var toSendw =await enc.prepare_Encryption(polly);
+        //console.log("aqui toSend:"+toSendw);
+          var data=await sp.transmision_insegura(receptorx,toSendw);
+        //  console.log("aqui toSend_response:"+data);
+              data=await enc.promise_handleEcommand(data);
+              //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+              data= await handlepoll(data);
 
-        data=await enc.promise_handleEcommand(data);
-        //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
-        data= await handlepoll(data);
+              if (data.length>0) {
+                  return resolve(data);
+              }
 
-        if (data.length>0) {
-            return resolve(data);
-        }
-
-}else {
-  //setTimeout(function () {
-      return reject("bypassed");
-  //}, 1000);
-
-}
+      }else {
+            return reject("bypassed");
+      }
 
   } catch (e) {
     return reject(e);
-  } finally {
-  //  return;
   }
 
 });
 
 }
 module.exports.transmite_encriptado_y_procesa=transmite_encriptado_y_procesa;
+/////////////////////////////////////////////////////////
+async function transmite_encriptado_y_procesa2(receptorx,polly){
+return new Promise(async function(resolve, reject) {
+  try {
+      if (bypass== false) {
+        var toSendw =await enc.prepare_Encryption(polly);
+        //console.log("aqui toSend:"+toSendw);
+          var data=await sp.transmision_insegura(receptorx,toSendw);
+        //  console.log("aqui toSend_response:"+data);
+              data=await enc.promise_handleEcommand(data);
+              //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+              data= await handlepoll(data);
 
+              if (data.length>0) {
+                  return resolve(data);
+              }
+
+      }else {
+            return reject("bypassed");
+      }
+
+  } catch (e) {
+    return reject(e);
+  }
+
+});
+
+}
+module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;
+
+function pruebita(){
+  return new Promise(function(resolve, reject) {
+    return resolve("OK");
+  });
+}
+module.exports.pruebita=pruebita;
+///////////////////////////////////////////////////////
 function handleSetInhivits(data){
 //exports.handleSetInhivits=function(data){
   var number_of_byte = get_count_bytes_received();
