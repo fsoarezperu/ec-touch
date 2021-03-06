@@ -101,7 +101,7 @@
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
-  //   mandar_orden("config");
+     mandar_orden("config");
      mandar_orden("info");
   //   mandar_orden("main");
      mandar_orden("cuadre_diario");
@@ -113,6 +113,10 @@
      mandar_orden("rm_4_1");
      mandar_orden("rm_5");
     // mandar_orden("connected");
+    //orden iniciada en el client the tambox, enviada
+     mandar_orden("synch_remesas");
+
+
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
       window.location.replace("/");

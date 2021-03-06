@@ -7,6 +7,7 @@ const to_tbm=require('./tbm_sync/tbm_synch_socket');
 const ssp =require('./ssp');
 const path = require('path');
 const val = require("./devices/validator");
+const pool = require('./../database');
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
@@ -32,20 +33,22 @@ io.on('connect', function(socket) {
     console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
 
   });
+
+socket.on('synch_remesas', function(msg){
+  var remesas_a_sincronizar={
+    no_remesa:11111,
+    tienda_id:0103
+  }
+  console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
+    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
+})
+
   socket.on('socket_to_tbm',async function(socket){
     console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
     console.log(chalk.yellow("orden para mandar socket to tbm detected"));
-
-
-    //await  os.validator_enabled_now();
-    //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
-  //  console.log("");
-    //ssp.emite_como_cliente();
-    //io.emit('prueba','prueba');
 //    to_tbm.socket_to_tbm.emit('Machine_alive','123456');
   //  to_tbm.socket_to_tbm.emit('registration',"machine_en_cuestion");
-
-//    to_tbm.socektyy.emit("my other event",{ my: 'data' });
+//    to_tbm.socket_to_tbm("my other event",{ my: 'data' });
       to_tbm.socket_to_tbm.emit("Machine_alive","vamos bien");
 
    });
@@ -343,8 +346,8 @@ io.on('connection', async function (socket) {
   socket.on('iniciar_nueva_remesa',async function(){
     new_manual_remesa= Math.floor((Math.random() * 10000) + 1);
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
-
-    os.crear_nueva_remesa(new_manual_remesa,999,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+     const this_machine= await pool.query("SELECT * FROM machine");
+    os.crear_nueva_remesa(new_manual_remesa,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
     await  os.validator_enabled_now();
     nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
    });
@@ -441,7 +444,7 @@ io.on('connection', async function (socket) {
   var config_data={
     current_tebs:"global.current_tebs"
   }
-os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
+// os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
 os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
 os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null");
@@ -458,7 +461,7 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
 };
   module.exports.super_enlace=super_enlace;
 
-//  super_enlace('config','config','../system/configuracion.html',config_data);
+  super_enlace('config','config','../system/configuracion.html',config_data);
   super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
 
 })

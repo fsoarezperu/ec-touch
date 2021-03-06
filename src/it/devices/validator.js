@@ -108,14 +108,14 @@ function start_validator() {
                                                 //   var step7=await enable_payout(validator_address);
 
                                                  }else {
-                                                   glo.is_regis=false;
+                                                   global.is_regis=false;
 
 
-                                                     await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [glo.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
+                                                     await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
                                                      var esty= await pool.query("SELECT machine_name FROM machine");
                                                      esty=esty[0].machine_name
-                                                     glo.my_resgistered_machine_name=esty;
-                                                     console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(glo.my_resgistered_machine_name));
+                                                     global.my_resgistered_machine_name=esty;
+                                                     console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(global.my_resgistered_machine_name));
 
                                                        var step7=await enable_payout(validator_address);
                                                        if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}

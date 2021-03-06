@@ -6,8 +6,12 @@ const pool = require('./../database');
 const globals = require('./globals');
 const enc = require('./encryption');
 const to_tbm = require('./tbm_sync/tbm_synch_socket');
+const to_tbm_synch = require('./tbm_sync/synchronize');
+
 const val = require("./devices/validator");
 const chalk = require('chalk');
+const tambox = require("./devices/tambox");
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 function logea(texto, variable) {
   if (typeof(variable) != 'undefined') {
@@ -43,36 +47,94 @@ module.exports.testing_callback = testing_callback;
 var timer2;
 module.exports.timer2 = timer2;
 /////////////////////////////////////////////////////////////////
-function is_os_running() {
-  timer2 = setTimeout(() => {
-    tbm_status = false;
-    is_os_running();
-  }, 5000);
-}
+// function is_os_running() {
+//   timer2 = setTimeout(() => {
+//     tbm_status = false;
+//     is_os_running();
+//   }, 5000);
+// }
+async function tbm_paso1() {
+
+    //verificar registro de maquina.
+         to_tbm.iniciar_handshake_con_tbm();
+          var regis=await is_this_machine_registered();
+         console.log("resgistered is:"+regis);
+          if (regis[0]=="machine_found_on_tbm") {
+           console.log("encontraron una maquina en TBM con este codigo, asi que actualizare mi base de datos en funcion a esa nueva data");
+         //console.log(regis[1].tienda_id);
+         //  remesa =
+         var x1=regis[1].tienda_id;
+         var x2=regis[1].machine_sn;
+         var x3=regis[1].machine_name;
+
+         console.log("x1 es:"+x1);
+         console.log("x2 es:"+x2);
+         console.log("x3 es:"+x3);
+
+         await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
+           console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
+           //   var my_resgistered_machine=await os.query_this_machine();
+           //   //my_resgistered_machine=my_resgistered_machine[1];
+           //   os.logea(chalk.green("query:"+my_resgistered_machine));
+           //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+           //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+           //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
+
+           //   var step7=await enable_payout(validator_address);
+           //    if (step7=="OK") {
+           //    //  await carga_monedas_al_hopper(validator_address);
+           //    console.log(chalk.green("payout enabled"));
+           //     // on_startup=false;
+           //     var step8=await validator_poll_loop(validator_address);
+           //     os.logea(glo.is_regis);
+           //     return resolve("OK");
+           //    }
+         }
+          if(regis=="OK"){
+
+     console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
+     //   //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
+     //   var my_resgistered_machine=await os.query_this_machine();
+     //   //my_resgistered_machine=my_resgistered_machine[1];
+     //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+     //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+     //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
+     //   var step7=await enable_payout(validator_address);
+
+          }else {
+
+          global.is_regis=false;
+          await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
+          var machine_name_query= await pool.query("SELECT machine_name FROM machine");
+          machine_name_query=machine_name_query[0].machine_name
+          global.my_resgistered_machine_name=machine_name_query;
+          console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(global.my_resgistered_machine_name));
+          }
+ } //fin de funcion.
 //////////////////////////////////////////////////////////////////////
 async function is_this_machine_registered() {
   return new Promise(async function(resolve, reject) {
     //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
     try {
       logea(chalk.green("intentando hacer checkin en tbm usando sockets.io"));
-      var machine_en_cuestion = {
+      var informacion_maquina_local = {
         numero_de_serie: global.numero_de_serie,
         tipo: global.note_validator_type,
         public_machine_ip: global.public_machine_ip
       }
-      console.log("this is machine en cuestion" + JSON.stringify(machine_en_cuestion));
+      console.log(chalk.yellow("la informacion local de la maquina es:" + JSON.stringify(informacion_maquina_local)));
 
-      to_tbm.socket_to_tbm.emit('registration', machine_en_cuestion);
+      to_tbm.socket_to_tbm.emit('registration', informacion_maquina_local);
 
-          to_tbm.socket_to_tbm.on('registration', (msg) => {
-                console.log("se ah recivido un mensaje desde el servidor TBM:" + msg);
-                console.log(msg[1].tienda_id);
-                if (msg[0] == "machine_found_on_tbm") {
-                  return resolve(msg);
-                }
-                return resolve("OK");
-          });
-
+          // to_tbm.socket_to_tbm.on('registration', (msg) => {
+          //       console.log("se ah recivido un mensaje desde el servidor TBM:" + JSON.stringify(msg));
+          //     //  console.log(msg[1].tienda_id);
+          //       if (msg[0] == "machine_found_on_tbm") {
+          //         return resolve(JSON.stringify(msg[1]));
+          //       }
+          //       return resolve("OK");
+          // });
+          return resolve("ok");
         setTimeout(function() {
           return resolve("no_tbm_conection_found")
         }, 3000)
@@ -464,28 +526,25 @@ module.exports.validator_disabled_now = validator_disabled_now;
 async function tambox_manager_ping() {
   return new Promise(function(resolve, reject) {
     try {
-      if (tbm_status) {
-        setTimeout(() => {
+      if (tbm_status) { // comprueba que tbm_status sea TRUE indicando que si hay coneccion con servidor cloud
+        setTimeout(() => {//la maquina indicara cada 20 segundos que esta activa
           console.log(chalk.green('connected to TBM'));
           //  console.log(is_regis);
-          if (globals.is_regis) {
+          //if (global.is_regis) {
             //  console.log(chalk.cyan("emitting in here"));
             server.io.emit('show_connected_to_TBM'); //muestra que la maquina esta conectada a nube
             to_tbm.socket_to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
-          }
+        //  }
           tambox_manager_ping();
-          //  is_os_running();
+          return resolve();
         }, 20000);
       } else {
         console.log(chalk.red("Connection to TBM lost...."));
       }
     } catch (e) {
-      return reject(e);
-    } finally {
-      //  return;
+      return reject("error de ping"+e);
     }
   });
-
 
 }
 module.exports.tambox_manager_ping = tambox_manager_ping;
@@ -616,12 +675,12 @@ async function terminar_nueva_remesa(no_remesa) {
         await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
 
-        //  remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
+          remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
         //  io.to_tbm.emit('una_remesa_mas', "transaccion satisfactoria remesa");
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
-        //  await actualizar_remesa_enTBM(remesax);
+          await actualizar_remesa_enTBM2(remesax);
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
@@ -637,7 +696,7 @@ async function terminar_nueva_remesa(no_remesa) {
         console.log("actualizando el monto de remesa hermes:" + monto_remesa_hermes + " y numero de billetes es:" + no_billetes_en_remesa_hermes);
         await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada' and tebs_barcode=?", [monto_remesa_hermes, no_billetes_en_remesa_hermes, current_tebs_barcode]);
         var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
-        console.log("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes));
+        console.log(chalk.yellow("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes)));
         await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
         //  res.json(remesax);
         //  return resolve();
@@ -784,7 +843,7 @@ async function idle_poll_loop(receptor) {
                         return resolve("OK");
                       }
                 } catch (e) {
-                  return reject("error en idle poll loop");
+                  return reject("error en idle poll loop:"+e);
                 }
                 //var step1= await ssp.envia_encriptado(receptor,global.poll);
               });
@@ -878,23 +937,26 @@ module.exports.habilita_sockets = habilita_sockets;
 async function arranca_tambox_os() {
   return new Promise(async function(resolve, reject) {
     try {
-      //let step1=await tambox.finalizar_pagos_en_proceso();
-      //os.logea(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+      let step1=await tambox.finalizar_pagos_en_proceso();
+      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
       console.log(chalk.green("Iniciando Validador"));
       var validator = await start_validator2();
       console.log(chalk.green("Validador inicio:" + validator));
       console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
-      // var regis=await is_this_machine_registered();
-      // console.log("resgistered is:"+regis);
-      // console.log("***************************************");
+      await tbm_paso1();
+       // var regis=await is_this_machine_registered();
+       // console.log("resgistered is:"+regis);
+       // console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
       var step7=await enable_payout2(validator_address);
       if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
 
+      to_tbm_synch.are_synched();
+
        on_startup=false;
        server.io.emit("iniciando","iniciando");
-      //  os.tambox_manager_ping();
+       tambox_manager_ping();
 
       return resolve (validator);
     } catch (e) {
@@ -1094,3 +1156,40 @@ return new Promise(async function(resolve, reject) {
 
 }
 module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;
+
+function actualizar_remesa_enTBM2(remesax) {
+  return new Promise(function(resolve, reject) {
+    try {
+      var tbm_adress = tbm_adressx;
+      var fix = "/sync_remesa";
+      var tienda_id = remesax[0].tienda_id;
+      var no_caja = remesax[0].no_caja;
+      var codigo_empleado = remesax[0].codigo_empleado;
+      var no_remesax = remesax[0].no_remesa;
+      var fecha = remesax[0].fecha;
+      var hora = remesax[0].hora;
+      var monto = remesax[0].monto;
+      var moneda = remesax[0].moneda;
+      var status = remesax[0].status;
+      var rms_status = remesax[0].rms_status;
+      var tipo = remesax[0].tipo;
+      var status_hermes = remesax[0].status_hermes;
+      var tebs_barcode1 = remesax[0].tebs_barcode;
+      var machine_sn = remesax[0].machine_sn;
+      var no_billetes1 = remesax[0].no_billetes;
+
+      const url = tbm_adress + fix + "/" + tienda_id + "/" + no_caja + "/" + codigo_empleado + "/" + no_remesax + "/" + fecha + "/" + hora + "/" + monto + "/" + moneda + "/" + status + "/" + rms_status + "/" + tipo + "/" + status_hermes + "/" + tebs_barcode1 + "/" + machine_sn + "/" + no_billetes1
+      console.log("url:" + url);
+      /////////////////
+      const Http = new XMLHttpRequest();
+      //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+      Http.open("GET", url);
+      Http.send();
+      return resolve();
+    } catch (e) {
+      return reject(e);
+    } finally {
+      //  return;
+    }
+  });
+};

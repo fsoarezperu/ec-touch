@@ -7,6 +7,9 @@ const va = require("../it/devices/validator");
 
 const chalk = require('chalk');
 const glo = require('./../it/globals');
+const os = require('./../it/os');
+const socketjs = require('./../it/socket');
+
 const ssp = require('./../it/ssp');
 const enc = require('./../it/encryption');
 const rem = require('./../api/remesas');
@@ -15,37 +18,51 @@ var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/', async (req, res) => {
-  const remesa_en_proceso = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso'");
-  if (remesa_en_proceso.length > 0) {
-    console.log("remesa_en_proceso:" + remesa_en_proceso[0]);
-    res.render('iniciar_remesa', {
-      remesa: remesa_en_proceso[0]
-    });
-  } else {
-    //const remesa = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
-    var manipulada=await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
-    manipulada=JSON.stringify(manipulada);
-  //  console.log("REMESAx:" +manipulada.length );
-    if (manipulada.length > 2) {
-      console.log("REMESAy:" +manipulada );
-      res.render('index', {
-        remesa: manipulada[0]
-      });
-    } else {
-      const retiro = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='egreso'");
-      if (retiro.length > 0) {
-        console.log("RETIRO" + retiro[0]);
-        res.render('index', {
-          retiro: retiro[0]
-        });
+  return new Promise(async function(resolve, reject) {
+    try {
+      const remesa_en_proceso = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='ingreso'");
+      if (remesa_en_proceso.length > 0) {
+        console.log("remesa_en_proceso:" + JSON.stringify(remesa_en_proceso[0]));
+        //res.render('iniciar_remesa',{remesa: remesa_en_proceso[0]});
+      //  await  os.validator_enabled_now();
+        //socketjs.nuevo_enlace('iniciar_nueva_remesa','./../system/remesa/remesa_1.html',{remesa: remesa_en_proceso[0]});
+        res.render('index');
+        // setTimeout(function () {
+        //     socketjs.nuevo_enlace('iniciar_nueva_remesa','./../system/remesa/remesa_1.html');
+        // }, 1000);
+        //
+        return resolve();
       } else {
-        console.log(chalk.red("loading website"));
-        console.log(chalk.yellow("This Machine name is:"+global.my_resgistered_machine_name));
-        res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
+        //const remesa = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
+        var manipulada=await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='ingreso'");
+        manipulada=JSON.stringify(manipulada);
+      //  console.log("REMESAx:" +manipulada.length );
+        if (manipulada.length > 2) {
+          console.log("REMESAy:" +manipulada );
+          res.render('index', {
+            remesa: manipulada[0]
+          });
+        } else {
+          const retiro = await pool.query("SELECT * FROM remesas WHERE status='iniciada' AND tipo='egreso'");
+          if (retiro.length > 0) {
+            console.log("RETIRO" + retiro[0]);
+            res.render('index', {
+              retiro: retiro[0]
+            });
+          } else {
+            console.log(chalk.red("loading website"));
+            console.log(chalk.yellow("This Machine name is:"+global.my_resgistered_machine_name));
+            res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
+          }
+
+        }
       }
 
+    } catch (e) {
+      return reject("no se puede cargar mainpage");
     }
-  }
+  });
+
 
 })
 
@@ -107,7 +124,7 @@ router.get('/iniciar_remesa', (req, res) => {
 router.get('/finish/:qty_bill', async (req, res) => {
   //la linea de abajo debe solo de aplicar para las REMESAS (ingresos)
   //console.log(chalk.cyan("SOMETHING IS TRIGGERING FINISH WHAT IS IT?"));
-//  new Promise(async function(resolve, reject) {
+ return  new Promise(async function(resolve, reject) {
     var remesay;
     var id_remesa;
     try {
@@ -196,10 +213,8 @@ router.get('/finish/:qty_bill', async (req, res) => {
      catch (e) {
          return reject(e);
         }
-     finally {
-          //return;
-             }
-//  });
+
+  });
 
 });
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,8 +245,8 @@ router.get('/vaciando', (req, res) => {
 })
 ///////////////////////////////////////////////////////////////////////////////
 router.get('/smart_empty', async (req, res) => {
-  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox' and tebs_barcode=?",current_tebs_barcode);
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox' and tebs_barcode=?",current_tebs_barcode);
   // await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado'");
   const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
       // const remesa_hermes = {
@@ -241,19 +256,20 @@ router.get('/smart_empty', async (req, res) => {
       //   machine_sn: numero_de_serie
       // }
       // await pool.query('INSERT INTO remesa_hermes set ?', [remesa_hermes]);
-      console.log(chalk.yellow("actualizando monto de RH:")+chalk.red(monto_remesa_hermes));
-  await pool.query("UPDATE remesa_hermes SET monto=?, fecha_fin=?, hora_fin=? WHERE status='iniciada'",[monto_remesa_hermes,tambox.fecha_actual(),tambox.hora_actual()]);
-  //await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
+      console.log(chalk.yellow("actualizando monto de RH:")+chalk.red(monto_remesa_hermes)+"en la remesa heremes con tebs:"+current_tebs_barcode);
+      await pool.query("UPDATE remesa_hermes SET monto=?, fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[monto_remesa_hermes,tambox.fecha_actual(),tambox.hora_actual(),current_tebs_barcode]);
+      //await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
       const bolsa = {
         monto: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
         tebs_barcode: current_tebs_barcode,
         machine_sn: numero_de_serie,
         fecha_inicial:  tambox.fecha_actual(),
-        fecha_final: tambox.fecha_actual(),
-        dias_acumulados: '7'
+        fecha_final: tambox.fecha_actual()
       }
     //finaliza la remesa de la bolsa que se fue!
     await pool.query("UPDATE remesa_hermes SET status='finalizada' WHERE status='iniciada'");
+    // aqui es neceario avisar a tambox manager que la transaccion finalizo .
+
   res.render('configuracion/remesa_hermes/smart_empty', {bolsa});
 })
 ///////////////////////////////////////////////////////////////////////////////
@@ -296,9 +312,9 @@ try {
  var status=remesax[0].status;
  var tebs_barcodexx=remesax[0].tebs_barcode;
  var machine_sn=remesax[0].machine_sn;
- var fecha=tambox.fecha_actual();
- var hora=tambox.hora_actual();
- const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcodexx+"/"+machine_sn+"/"+fecha+"/"+hora;
+ var fecha_fin=tambox.fecha_actual();
+ var hora_fin=tambox.hora_actual();
+ const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcodexx+"/"+machine_sn+"/"+no_billetes+"/"+fecha_fin+"/"+hora_fin;
  console.log("url:"+url);
  ///////////////////
  const Http= new XMLHttpRequest();
@@ -306,8 +322,6 @@ try {
  Http.send();
 } catch (e) {
   console.log(e);
-} finally {
-
 }
 //////////////////////////////
 ///////////////////////////////////

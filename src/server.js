@@ -45,16 +45,25 @@ app.use('/api', require('./api/remesas'));
 app.use('/api/retiro', require('./api/retiros'));
 app.use(session({secret: "echomeautomation",resave: false,saveUninitialized: false,store: new mysql_store(database)}));
 // Configurar cabeceras y cors
+//app.use((req, res, next) => {
+  //  res.header('Access-Control-Allow-Origin', '*');
+  //  res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
+  //  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+//     if (req.method === 'OPTIONS') {
+//       res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+//       return res.status('200') .JSON({});
+//     }
+//     next();
+// });
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    if (req.method === 'OPTIONS') {
-      res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-      return res.status('200') .JSON({});
-    }
+    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
     next();
 });
+
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'}));
 app.set('view engine', '.hbs');
@@ -64,6 +73,7 @@ httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
   try {
+    // await sp.existira_conexion_serial();
     await os.obtener_datos_de_conexion();
     await os.habilita_sockets();
     await os.arranca_tambox_os();

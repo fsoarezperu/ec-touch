@@ -275,8 +275,9 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                 const {no_remesa}=req.params;
                 const remesa= await pool.query ("UPDATE remesas SET rms_status='finalizada' WHERE tipo='egreso' and no_remesa=?",[no_remesa]);
                 const remesax= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-                  io.to_tbm.emit('un_pago_mas',"transaccion satisfactoria retiro");
-                  /////////////////////////////////////////////////////////////////////
+
+                //   io.to_tbm.emit('un_pago_mas',"transaccion satisfactoria retiro");
+                //   /////////////////////////////////////////////////////////////////////
                   var tbm_adress=tbm_adressx;
                   var fix= "/sync_remesa";
                   var tienda_id=remesax[0].tienda_id;
@@ -302,12 +303,12 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                 //  const url= 'http://192.168.1.12:4000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
                   Http.open("GET",url);
                   Http.send();
-                  ////////////////////////////
+                //   ////////////////////////////
                   const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
                   const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
 
                   const no_billetes_total_remesas = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_remesas FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-                  const no_billetes_total_egresos = await pool.query("SELECT SUM(monto) AS total_no_billetes_egresos FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+                  const no_billetes_total_egresos = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_egresos FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
                   var no_billetes_en_remesa_hermes=no_billetes_total_remesas[0].total_no_billetes_remesas - no_billetes_total_egresos[0].total_no_billetes_egresos;
                   // await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado'");
                   const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
@@ -318,10 +319,12 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                 return resolve();
           }else {
             res.json('Datos incompletos');
+            return resolve();
           }
         //  res.send('finalizando remesa');
       }else{
         res.send('Estoy en Startup');
+        return resolve ();
       }
     } catch (e) {
       return reject(e);

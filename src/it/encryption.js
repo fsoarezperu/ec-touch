@@ -739,8 +739,6 @@ try {
 
 } catch (e) {
   return reject(chalk.red("error 003 en promise_handleEcommand;"+e));
-} finally {
-//  return;
 }
 
   });
