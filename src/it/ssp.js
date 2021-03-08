@@ -691,6 +691,15 @@ return new Promise(async function(resolve, reject) {
                                   console.log("cuenta_no_billetes_egreso aumentado="+cuenta_no_billetes);
                                   await pool.query ("UPDATE remesas SET status='completado', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
                                   server.io.emit('Dispensed', value_in_hex);
+
+                                  //consulta la cantiad de billetes que tiene remesa hermes actual,
+                                  // restale la cantidad de billetes que se fueron en este PAGO
+
+                                  //actualiza remesa hermes
+                                  //sincroniza remesa heremes
+
+
+
                                   //do not assign credit
                               //    global.last_sent=poll_responde[2];
                               //  }
@@ -1466,7 +1475,7 @@ async function verificar_existencia_de_bolsa(receptor) {
                                                 monto:0,
                                                 moneda:country_code,
                                                 status:"iniciada",
-                                                tebs_barcode:tebs_barcode,
+                                                tebs_barcode:parseInt(tebs_barcode),
                                                 machine_sn:numero_de_serie,
                                                 fecha:tambox.fecha_actual(),
                                                 hora:tambox.hora_actual(),
@@ -1474,7 +1483,8 @@ async function verificar_existencia_de_bolsa(receptor) {
                                               }
 
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
-                      await sincroniza_remesa_hermes2([nueva_res_hermes]);
+                      //await sincroniza_remesa_hermes2([nueva_res_hermes]);
+                      await crea_rh_en_tbm([nueva_res_hermes]);
                       return resolve("OK");
             }else{
               //RH ya existe con este tebs. no se creara una nueva
@@ -1532,6 +1542,7 @@ async function cambio_de_bolsa(receptor) {
 
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
                     //  await sincroniza_remesa_hermes([nueva_res_hermes]);
+                    //  await sincroniza_remesa_hermes2([nueva_res_hermes]);
                       await crea_rh_en_tbm([nueva_res_hermes]);
                       return resolve("OK");
             }else{

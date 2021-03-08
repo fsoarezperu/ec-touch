@@ -5,12 +5,12 @@ const pool= require ('../database');
 const io = require('../server.js');
 const tambox = require("../it/devices/tambox.js");
 const chalk=require('chalk');
-
+const ssp = require('./../it/ssp');
 const sh = require('./../it/devices/smart_hopper');
 const enc = require('./../it/encryption');
 const glo = require('./../it/globals');
 const server= require('./../server');
-const sspo = require('./../it/ssp');
+
 const os = require('./../it/os');
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -266,6 +266,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
+  console.log("termninando retiro");
   new Promise(async function(resolve, reject) {
     try {
       // ssp.ensureIsSet2()
@@ -314,6 +315,11 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                   const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
                   console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes);
                   await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes_en_remesa_hermes]);
+
+                  var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada'");
+                  console.log("voy a actualizar rh con estos datos:" + nueva_res_hermes);
+                  await os.sincroniza_remesa_hermes2(nueva_res_hermes);
+
                   /////////////////////////////////////////////////////////////////////
                 res.json(remesax);
                 return resolve();

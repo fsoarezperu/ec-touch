@@ -20,7 +20,7 @@ async function iniciar_handshake_con_tbm(){
         console.log(chalk.yellow("on database, is_regis="+current_registered_status[0].is_registered));
         is_regis=current_registered_status[0].is_registered;
                 if (is_regis==0) {
-                  console.log(chalk.yellow("esta maquina no esta registrada y ya hay conexion con el servidor, se autoregistrará"));
+                  console.log("esta maquina no esta registrada y ya hay conexion con el servidor, se autoregistrará");
                   var regis=await os.is_this_machine_registered();
                   console.log(chalk.green("Register to tbm status:"+regis));
                     var nombre_maquina =await pool.query("SELECT machine_name FROM machine");
@@ -72,9 +72,11 @@ socket_to_tbm.on("connect",async function() {
         }
         // return resolve("OK");
   });
-//  console.log('hola desde aqui');
 
-//  await os.tambox_manager_ping();
+  socket_to_tbm.on('synch_request', function(msg){
+        console.log(chalk.cyan("se ah recivido un sych_request"));
+  });
+
 });
 /////////////////////////////////////////////////////////
 exports.socket_to_tbm = socket_to_tbm;

@@ -672,7 +672,7 @@ async function terminar_nueva_remesa(no_remesa) {
   if (on_startup === false) {
     if (no_remesa) {
       try {
-        await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        await pool.query("UPDATE remesas SET status='terminado', rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
 
           remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
@@ -1193,3 +1193,42 @@ function actualizar_remesa_enTBM2(remesax) {
     }
   });
 };
+
+function sincroniza_remesa_hermes2(res){
+console.log("iniciando actualizacion de remesa hermes:");
+ return new Promise(async function(resolve, reject) {
+  try {
+    var tbm_adress=tbm_adressx;
+    var fix= "/sync_remesa_hermes2";
+    var tienda_idy=res[0].tienda_id;
+    var monto=res[0].monto;
+    var moneda=res[0].moneda;
+    var status=res[0].status;
+    var tebs_barcode4=res[0].tebs_barcode;
+    var no_billetes=res[0].no_billetes;
+    var machine_snx=res[0].machine_sn;
+    var fechay=res[0].fecha;
+    var horay=res[0].hora;
+    var no_billetesy=res[0].no_billetes;
+    var fechafin=res[0].fecha_fin;
+    var horafin=res[0].hora_fin;
+
+    // var rms_status=remesax[0].rms_status;
+    // var tipo=remesax[0].tipo;
+    // var status_hermes=remesax[0].status_hermes;
+    const urly= tbm_adress+fix+"/"+tienda_idy+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode4+"/"+machine_snx+"/"+fechay+"/"+horay+"/"+no_billetesy+"/"+fechafin+"/"+horafin
+    console.log("url:"+urly);
+    /////////////////
+    const Http= new XMLHttpRequest();
+  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
+    Http.open("GET",urly);
+    Http.send();
+    return resolve();
+  } catch (e) {
+    return reject(e);
+  } finally {
+    //return;
+  }
+});
+}
+module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;

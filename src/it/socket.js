@@ -27,21 +27,32 @@ function  nuevo_enlace(pagina,ruta,vardata1){
 }
 module.exports.nuevo_enlace=nuevo_enlace;
 
-io.on('connect', function(socket) {
+io.on('connect', async function(socket) {
   console.log(chalk.cyan("the client ID"+socket.id+" is connected from ip:"+socket.handshake.address));
   socket.on('disconnect', function(reason) {
     console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
 
   });
 
-socket.on('synch_remesas', function(msg){
-  var remesas_a_sincronizar={
-    no_remesa:11111,
-    tienda_id:0103
-  }
+socket.on('synch_remesas', async function(msg){
+  var remesas_a_sincronizar= await pool.query("SELECT * FROM remesas WHERE tebs_barcode=?",current_tebs_barcode);
+  // var remesas_a_sincronizar={
+  //   no_remesa:11111,
+  //   tienda_id:0103
+//  }
   console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
     to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
 })
+
+// function update_remesas_hermes_via_socket_to_tbm(res) {
+//   var remesas_a_sincronizar={
+//     no_remesa:11111,
+//     tienda_id:0103
+//   }
+//  console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
+//    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
+
+// }
 
   socket.on('socket_to_tbm',async function(socket){
     console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
@@ -466,3 +477,4 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
 
 })
 }
+ // await pool.query("SELECT * FROM remesas WHERE status='terminado' ");
