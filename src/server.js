@@ -25,6 +25,7 @@ const io = require('socket.io')(httpx, { cookie: false });
 const sp= require('./it/serial_port')(io);
 const ssp = require('./it/ssp')(io);
 const va = require('./it/devices/validator');
+//const tambox = require('./it/devices/tambox');
 const os = require('./it/os');
 
 // app.use(morgan('dev'));
@@ -79,6 +80,10 @@ httpx.listen(machine_port, async function(io2) {
     await os.arranca_tambox_os();
     console.log(chalk.green("El sistema arranco sin problemas"));
 //    await os.arrancando_tambox_nuevamente();
+//  var data =await os.transmite_encriptado_y_procesa2(validator_address, get_all_levels);
+   var data=await os.consulta_all_levels();
+
+   console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
   } catch (e) {
     console.log("error General de OS:"+e);
   }finally{

@@ -20,7 +20,7 @@ function  nuevo_enlace(pagina,ruta,vardata1){
       }
 //  var vardata="vardata";
   var totaldata=[vardata1,data];
-//  console.log(data);
+  // console.log(totaldata);
   io.emit(pagina,totaldata);
  });
 
@@ -408,6 +408,21 @@ io.on('connection', async function (socket) {
         //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
         // }
        });
+   socket.on('reciclador',async function(msg){
+     var mi_objeto=await os.consulta_all_levels();
+     console.log(mi_objeto);
+     var solo_values=[
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de10,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de20,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de50,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de100,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de200
+     ];
+     console.log("solo_values="+solo_values);
+     var grupo=[mi_objeto[0].total_notes,solo_values,mi_objeto[1]]
+     nuevo_enlace('reciclador','../system/reciclador/reciclador.html',grupo);
+
+   });
   socket.on('cuadre_diario',async function(msg){
   console.log(chalk.yellow("socket on cuadre_diario"));
   //var soy_la_voz=await os.consulta_remesa_hermes_actual();

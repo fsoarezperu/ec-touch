@@ -1232,3 +1232,123 @@ console.log("iniciando actualizacion de remesa hermes:");
 });
 }
 module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;
+
+async function consulta_all_levels(){
+  var lod = 0;
+  var totbills = 0;
+  var totaccum = 0;
+  var note_level1 = 0;
+  var value_level1 = 0;
+  var acum_level1 = 0;
+  var note_level2 = 0;
+  var value_level2 = 0;
+  var acum_level2 = 0;
+  var note_level3 = 0;
+  var value_level3 = 0;
+  var acum_level3 = 0;
+  var note_level4 = 0;
+  var value_level4 = 0;
+  var acum_level4 = 0;
+  var note_level5 = 0;
+  var value_level5 = 0;
+  var acum_level5 = 0;
+
+  var data=await transmite_encriptado_y_procesa2(global.receptor, get_all_levels)
+        var poll_responde = data.match(/.{1,2}/g);
+        if (poll_responde[1] == "F0") {
+          var i = 0;
+          var ru = 0;
+          var prevalue = 0;
+          for (i; i < poll_responde[2]; i++) {
+            if (i == 0) {
+              ru = 3;
+              prevalue = poll_responde[ru + 2];
+              prevalue = prevalue + poll_responde[ru + 3];
+              prevalue = prevalue + poll_responde[ru + 4];
+              prevalue = prevalue + poll_responde[ru + 5];
+              prevalue = enc.changeEndianness(prevalue);
+              value_level1 = parseInt(prevalue, 16) / 100;
+        //      console.log("value_level1 is:" + value_level1);
+              note_level1 = parseInt(poll_responde[ru], 16);
+        //      console.log("note_level1 is:" + note_level1);
+              acum_level1 = note_level1 * value_level1;
+        //      console.log("acum_level1 is:" + acum_level1);
+            }
+            if (i == 1) {
+              ru = 12;
+              prevalue = poll_responde[ru + 2];
+              prevalue = prevalue + poll_responde[ru + 3];
+              prevalue = prevalue + poll_responde[ru + 4];
+              prevalue = prevalue + poll_responde[ru + 5];
+              prevalue = enc.changeEndianness(prevalue);
+              value_level2 = parseInt(prevalue, 16) / 100;
+        //      console.log("value_level2 is:" + value_level2);
+              note_level2 = parseInt(poll_responde[ru], 16);
+        //      console.log("note_level2 is:" + note_level2);
+              acum_level2 = note_level2 * value_level2;
+        //      console.log("acum_level2 is:" + acum_level2);
+            }
+            if (i == 2) {
+              ru = 21;
+              prevalue = poll_responde[ru + 2];
+              prevalue = prevalue + poll_responde[ru + 3];
+              prevalue = prevalue + poll_responde[ru + 4];
+              prevalue = prevalue + poll_responde[ru + 5];
+              prevalue = enc.changeEndianness(prevalue);
+              value_level3 = parseInt(prevalue, 16) / 100;
+        //      console.log("value_level3 is:" + value_level3);
+              note_level3 = parseInt(poll_responde[ru], 16);
+        //      console.log("note_level3 is:" + note_level3);
+              acum_level3 = note_level3 * value_level3;
+        //      console.log("acum_level3 is:" + acum_level3);
+            }
+            if (i == 3) {
+              ru = 30;
+              prevalue = poll_responde[ru + 2];
+              prevalue = prevalue + poll_responde[ru + 3];
+              prevalue = prevalue + poll_responde[ru + 4];
+              prevalue = prevalue + poll_responde[ru + 5];
+              prevalue = enc.changeEndianness(prevalue);
+              value_level4 = parseInt(prevalue, 16) / 100;
+        //      console.log("value_level4 is:" + value_level4);
+              note_level4 = parseInt(poll_responde[ru], 16);
+        //      console.log("note_level4 is:" + note_level4);
+              acum_level4 = note_level4 * value_level4;
+        //      console.log("acum_level4 is:" + acum_level4);
+            }
+            if (i == 4) {
+              ru = 39;
+              prevalue = poll_responde[ru + 2];
+              prevalue = prevalue + poll_responde[ru + 3];
+              prevalue = prevalue + poll_responde[ru + 4];
+              prevalue = prevalue + poll_responde[ru + 5];
+              prevalue = enc.changeEndianness(prevalue);
+              value_level5 = parseInt(prevalue, 16) / 100;
+          //    console.log("value_level5 is:" + value_level5);
+              note_level5 = parseInt(poll_responde[ru], 16);
+            //  console.log("note_level5 is:" + note_level5);
+              acum_level5 = note_level5 * value_level5;
+          //    console.log("acum_level5 is:" + acum_level5);
+            }
+            lod = parseInt(poll_responde[ru], 16);
+            totbills = totbills + lod;
+          }
+        }
+        console.log(chalk.red("total billetes en reciclador:" + totbills));
+        totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
+        console.log("total monto acumulado en reciclador:" + totaccum);
+
+        await pool.query("UPDATE machine SET monto_en_reciclador=?,no_billetes_reci=?,billetes_de_10=?,billetes_de_20=?,billetes_de_50=?,billetes_de_100=?,billetes_de_200=?", [totaccum,totbills,note_level1,note_level2,note_level3,note_level4,note_level5]);
+
+        console.log("/////////// ALL LEVELS ///////////////");
+        var cantidad_de_billetes_en_reciclador={
+          de10:note_level1,
+          de20:note_level2,
+          de50:note_level3,
+          de100:note_level4,
+          de200:note_level5,
+        }
+        var total_notes=note_level1+note_level2+note_level3+note_level4+note_level5;
+        return [{cantidad_de_billetes_en_reciclador,total_notes},totaccum] ;
+}
+module.exports.consulta_all_levels=consulta_all_levels;

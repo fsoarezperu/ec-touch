@@ -693,11 +693,14 @@ return new Promise(async function(resolve, reject) {
                                   server.io.emit('Dispensed', value_in_hex);
 
                                   //consulta la cantiad de billetes que tiene remesa hermes actual,
+                                  var current_rh_bills_count = await pool.query("SELECT no_billetes FROM remesa_hermes WHERE status='iniciada'");
                                   // restale la cantidad de billetes que se fueron en este PAGO
-
+                                  current_rh_bills_count=current_rh_bills_count[0].no_billetes-cuenta_no_billetes;
                                   //actualiza remesa hermes
+                                  await pool.query ("UPDATE remesa_hermes SET no_billetes=? WHERE status='iniciada'",[current_rh_bills_count]);
                                   //sincroniza remesa heremes
-
+                                   //var data=os.consulta_all_levels();
+                                   //console.log("all levels es:"+data);
 
 
                                   //do not assign credit
@@ -749,7 +752,7 @@ return new Promise(async function(resolve, reject) {
                                    value_in_hex=prefix.concat(value_in_hex);
                                    value_in_hex=parseInt(value_in_hex);
                                    value_in_hex=value_in_hex/100;
-                              //     console.log(chalk.cyan("pago acumulado:"+value_in_hex));
+                                  console.log(chalk.cyan("pago acumulado:"+value_in_hex));
                                   //value dispensed:
                                   const remesa2 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
                                   if(remesa2.length>0){
@@ -766,6 +769,8 @@ return new Promise(async function(resolve, reject) {
                                   console.log(chalk.green.inverse("Note Stored in Payout"));
                                   server.io.emit('Note_Stored_in_Payout', "Note Stored in Payout");
                                   //do not assign credit
+                                  //var data=os.consulta_all_levels();
+                                  //console.log("all levels es:"+data);
                                   break;
 
                                   case("DC"):
@@ -1583,7 +1588,6 @@ console.log("iniciando creacion de rh en nube:"+res2);
     console.log("url:"+url);
     /////////////////
     const Http= new XMLHttpRequest();
-  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
     Http.open("GET",url);
     Http.send();
     return resolve();
@@ -1617,14 +1621,11 @@ console.log(chalk.cyan("iniciando sincronizacion a nube:"+res2));
     console.log("url:"+url);
     /////////////////
     const Http= new XMLHttpRequest();
-  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
     Http.open("GET",url);
     Http.send();
     return resolve();
   } catch (e) {
     return reject(e);
-  } finally {
-    return;
   }
 });
 }
@@ -1656,14 +1657,11 @@ console.log("iniciando actualizacion de remesa hermes:");
     console.log("url:"+urly);
     /////////////////
     const Http= new XMLHttpRequest();
-  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
     Http.open("GET",urly);
     Http.send();
     return resolve();
   } catch (e) {
     return reject(e);
-  } finally {
-    //return;
   }
 });
 }

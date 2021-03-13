@@ -10,7 +10,6 @@ const sh = require('./../it/devices/smart_hopper');
 const enc = require('./../it/encryption');
 const glo = require('./../it/globals');
 const server= require('./../server');
-
 const os = require('./../it/os');
 
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -43,8 +42,8 @@ router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto
              return reject("retiro ya existente");
          }else{
             const {tienda_id,no_caja,codigo_empleado,no_remesa,monto,fecha,hora}=req.params;
-            if(monto>200){
-              console.log("el limite maximo es de 200 soles por transaccion");
+            if(monto>limite_maximo_de_retiro){
+              console.log("el limite maximo es de "+limite_maximo_de_retiro+" "+country_code+" por transaccion");
               res.json('retiro_limite');
               return reject('retiro_limite');
             }
@@ -92,8 +91,8 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
           if( retiro.length !== 0){ //si hay un retiro con ese numero de esa remesa verifica que el monto no sobrepase el limite.
                   console.log("//////////////////////////////////");
                   console.log(chalk.cyan("se puede pagar?: S/."+posible_monto));
-                  if(posible_monto>200){
-                    console.log("el limite maximo es de 200 soles por transaccion");
+                  if(posible_monto>500){
+                    console.log("el limite maximo es de 500 soles por transaccion");
                     res.json('retiro_limite');
                     return reject("retiro limite");
                   }//si el monto es mayor al limite termina la ejecucion

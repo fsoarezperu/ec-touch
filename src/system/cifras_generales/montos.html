@@ -1,0 +1,333 @@
+<!-- <script type="text/javascript">
+var socket = io();
+$(document).ready(function(){
+    setTimeout(function(){
+    window.location.replace("/");
+  },20000);
+
+  $("#config").click(function(){
+    window.location.replace("/configuracion");
+  });
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,1000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+    $("#system_running_indicator").show();
+    //document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+    $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+</script> -->
+<script type="text/javascript">
+var socket = io();
+//var to_TBM = io.connect( 'http://tambox.ddns.net:4000' );
+var to_TBM = io.connect( 'https://tbm-cloud.herokuapp.com' );
+
+$(document).ready(function(){
+//  setTimeout(function(){window.location.replace("/");},10000);
+setTimeout(function () {
+    $("#actualizar_niveles").click();
+}, 10);
+  $("#main").click(function(){
+    window.location.replace("/");
+  });
+  $("#remesa_hermes").click(function(){
+    window.location.replace("/remesa_hermes");
+  });
+  $("#cuadre_diario").click(function(){
+    to_TBM.emit('retrialing',"retrialing");
+    window.location.replace("/cuadre_diario");
+  });
+  $("#info").click(function(){
+    window.location.replace("/info");
+  });
+  $("#montos").click( function(){
+    window.location.replace("/montos");
+  });
+  $("#sincro").click( function(){
+    socket.emit('sincronizando',"sincronizando via sockets");
+    to_TBM.emit('agregar',"orden agregar desde tambox");
+  });
+  $("#test").click( function(){
+    window.location.replace("/test");
+  });
+  $("#reset").click( function(){
+   socket.emit('reset',"reseteando validador");
+  });
+  $("#reset_counters").click( function(){
+   socket.emit('reset_counters',"reseteando contador");
+  });
+  $("#update").click( function(){
+    socket.emit('update_requested',"update requested");
+  });
+  $("#actualizar_niveles").click( function(){
+    socket.emit('actualizar_niveles',"actualizar_niveles");
+  });
+  $("#vaciar").click( function(){
+    socket.emit('add_coins',"vaciar");
+  });
+  $(".btn").click( function(){
+  //  socket.emit('actualizar_niveles',"actualizar_niveles");
+  if (this.id=="add_0.1") {
+    console.log("0.1");
+    socket.emit('add_coins',this.id);
+  }else if (this.id=="add_0.2") {
+    console.log("0.2");
+    socket.emit('add_coins',this.id);
+  }else if (this.id=="add_0.5") {
+    console.log("0.5");
+    socket.emit('add_coins',this.id);
+  }else if (this.id=="add_1") {
+    console.log("1");
+    socket.emit('add_coins',this.id);
+  }else if (this.id=="add_2") {
+    console.log("2");
+    socket.emit('add_coins',this.id);
+  }else if (this.id=="add_5") {
+    console.log("5");
+    socket.emit('add_coins',this.id);
+  }
+  });
+
+  $('#cancelar').on('click', function() {
+    $('#overlay, #overlay-back').fadeOut(500);
+  });
+
+  socket.on('emptying', function(msg){
+    $('#overlay, #overlay-back').fadeIn(500);
+  });
+  socket.on('actualiza_grafico', function(msg){
+    $("#actualizar_niveles").click();
+  });
+  socket.on('actualizar_niveles', function(msg){
+    //display_message(msg);
+    update_chart_levels(msg);
+    update_total(msg);
+  });
+  socket.on('display_message', function(msg){
+    display_message(msg);
+  });
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online=true;
+  });
+  socket.on('emptied', function(msg) {
+  $('#overlay, #overlay-back').fadeOut(500);
+  $("#actualizar_niveles").click();
+  });
+  socket.on('pay_value', function(msg) {
+   socket.emit('pay_value',"pay_value");
+  });
+
+// OVERLAY
+  $('#test-over').on('click', function() {
+    $('#overlay, #overlay-back').fadeIn(500);
+  });
+  $("#testy").click(function() {
+    $('#overlay, #overlay-back').fadeOut(500);
+  });
+});
+function display_message(mes_to_display){
+  document.getElementById("message").innerHTML=mes_to_display;
+  setTimeout(clear_message,4000);
+};
+function clear_message(){
+  document.getElementById("message").innerHTML=""
+};
+function display_system_running_indicator(){
+      $("#system_running_indicator").show();
+  //  document.getElementById("system_running_indicator").innerHTML="." ;
+    setTimeout(clear_system_running_indicator,200);
+  };
+function clear_system_running_indicator(){
+      $("#system_running_indicator").hide();
+  //  document.getElementById("system_running_indicator").innerHTML="";
+  };
+function update_total(data) {
+  console.log("updating total using data:"+data);
+    var total=parseInt(data[0])*0.1;
+    total=total+parseInt(data[1])*0.2;
+    total=total+parseInt(data[2])*0.5;
+    total=total+parseInt(data[3])*1;
+    total=total+parseInt(data[4])*2;
+    total=total+parseInt(data[5])*5;
+    console.log(total);
+    $('#total_amount').html(total);
+}
+function update_chart_levels(msg){
+  //  acumulado=acumulado+1;
+    //actualizar_acumulado();
+    myChart.data.datasets[0].data[0] = msg[0];
+    myChart.data.datasets[0].data[1] = msg[1];
+    myChart.data.datasets[0].data[2] = msg[2];
+    myChart.data.datasets[0].data[3] = msg[3];
+    myChart.data.datasets[0].data[4] = msg[4];
+    myChart.data.datasets[0].data[5] = msg[5];
+
+  //  total_amount=(10*msg[0])+(20*msg[1])+(50*msg[2])+(100*msg[3])+(200*msg[4]);
+  //  total_amount="S/."+total_amount+".00";
+  //  update_total_amount(total_amount);
+    //myChart.data.labels[5] = "Newly Added";
+    myChart.update();
+  }
+  </script>
+
+  <style media="screen">
+    .wrapper{
+    position: relative;
+  }
+    #overlay-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      border-radius: 15px;
+      opacity: 0.6;
+      filter: alpha(opacity=60);
+      z-index: 5;
+      display: none;
+    }
+    #overlay {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 100%;
+      opacity: 1;
+      z-index: 10;
+      display: none;
+      margin: 0 auto;
+    }
+    .grupo3{
+      /* grid-column: 1/5; */
+      min-height:350px;
+      width: 100%;
+      max-width: 700px;
+      /*grid-row: auto; */
+      background-color:  rgba(60, 60, 60, 1);
+      /* background-image: url("../img/bg_image4.jpg"); */
+      color: white;
+      border: 4.5px solid white;
+      border-radius: 15px;
+      padding: 5px;
+      text-align: center;
+      display:grid;
+      grid-template-columns: 0.5fr auto 0.5fr;
+      grid-template-rows:0.5fr 1fr 1fr 0.5fr;
+      }
+  </style>
+<body oncontextmenu="return false">
+  <div class="wrapper">
+    <!-- <div class="titulo">
+      <div class="btn volver" id='main'><i class="fas fa-long-arrow-alt-left fa-1x"></i></div>
+      <div>Reciclador</div>
+      <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+    </div> -->
+    <div class="grupo4">
+
+      <div class="popup">
+                  <div id="overlay-back"></div>
+                  <div id="overlay">
+                    <div class="grupo3">
+                      <div></div><div id="titulo_popup">Vaciando Hopper</div><div></div>
+                      <div></div><div> Espere un Momento, se esta vaciando el hopper</div><div></div>
+                      <div></div><div></div><div></div>
+                      <!-- <div><a class="btn" style="width:120px;" id="opc1">Opcion1</a></div>
+                      <div><a class="btn" style="width:120px;" id="testy">Cerrar</a></div> -->
+                      <div></div>
+                    </div>
+                    </div>
+                </div>
+      <div class="titulo">
+        <div class="btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+        <div>Niveles Hopper</div>
+        <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+      </div>
+      <div class="graph2">
+
+        <div class="chart">
+          <section>  <canvas id="myChart" width="100%" height="80%"></canvas> </section>
+        <script>
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ["0.1 Sol", "0.2 Sol", "0.5 Sol", "1 Sol", "2 Sol", "5 Sol"],
+                  datasets: [{
+                      label: 'Total:',
+                      data: [0, 0, 0, 0, 0, 0],
+                      backgroundColor: [
+                          'rgba(255, 99, 132, 0.2)',
+                          'rgba(54, 162, 235, 0.2)',
+                          'rgba(255, 206, 86, 0.2)',
+                          'rgba(75, 192, 192, 0.2)',
+                          'rgba(153, 102, 255, 0.2)',
+                          'rgba(153, 102, 255, 0.2)',
+
+                      ],
+                      borderColor: [
+                          'rgba(255,99,132,1)',
+                          'rgba(54, 162, 235, 1)',
+                          'rgba(255, 206, 86, 1)',
+                          'rgba(75, 192, 192, 1)',
+                          'rgba(153, 102, 255, 1)',
+                          'rgba(153, 102, 255, 1)',
+
+                      ],
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  scales: {
+                      yAxes: [{
+                          ticks: {
+                              beginAtZero:true
+                          }
+                      }]
+                  }
+              }
+            });
+        </script>
+        </div>
+      </div>
+      <div class="keypad2">
+        <a class="btn btn_level" id='add_0.1'>0.1</a>
+        <a class="btn btn_level" id='add_0.2'>0.2</a>
+        <a class="btn btn_level" id='add_0.5'>0.5</a>
+        <a class="btn btn_level" id='add_1'>1</a>
+        <a class="btn btn_level" id='add_2'>2</a>
+        <a class="btn btn_level" id='add_5'>5</a>
+        <a class="btn btn_level" id='vaciar'>vaciar</a>
+      </div>
+      <div class="totales2">
+          <div class="resumen">
+          <div class="subtitle">Total:</div>
+          <div class="amount">S/.<div id="total_amount">0.00</div> </div>
+          <a class="btn" id='actualizar_niveles'>Actualizar</a>
+        </div>
+        </div>
+
+    </div>
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

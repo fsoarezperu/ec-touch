@@ -1051,7 +1051,7 @@ li{
     grid-row-gap: 20px;
 
     /* grid-column:1; */
-    min-height:87vh;
+    min-height:80vh;
     background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(33,33,33));
     /* background-image: url("../img/bg_image4.jpg"); */
     color: white;
