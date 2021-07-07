@@ -280,11 +280,13 @@ function enable_sending(){
 module.exports.enable_sending=enable_sending;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function handlepoll(data){
+  //  console.log("data out of promise:"+data);
+    var new_data=data;
 return new Promise(async function(resolve, reject) {
   try {
-  //  console.log("data antes de match:"+data);
-    var poll_responde=data.match(/.{1,2}/g);
-  //  console.log("data despues de match:"+data);
+    //console.log("data antes de match:"+new_data);
+    var poll_responde=new_data.match(/.{1,2}/g);
+    //console.log("data despues de match:"+new_data);
     var data_length_on_pool=parseInt(hex_to_dec(poll_responde[0]));
     data_length_on_pool=(data_length_on_pool+1);
     poll_responde=poll_responde.slice(0,data_length_on_pool);
@@ -546,7 +548,7 @@ return new Promise(async function(resolve, reject) {
                                   /////////////////////////////////////////////////////////
                                   case("B4"):
                                 //  if(global.last_sent===""){
-                                    console.log(chalk.green("Smart emptied"));
+                                    console.log(chalk.green("Smart emptied"));k
                                     //read event data
                                     var value_in_hex=data.substr(8,8);
                                     value_in_hex=enc.changeEndianness(value_in_hex);
@@ -681,14 +683,29 @@ return new Promise(async function(resolve, reject) {
                                    value_in_hex=parseInt(value_in_hex);
                                    value_in_hex=value_in_hex/100;
                                    console.log(chalk.yellow("totalmente pagado:"+value_in_hex));
-                                  //value dispensed:
-                                  //update current payment with the full value of amount dispensed;
-                                  const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
-                                  var id_remesa1 = remesa1[0].no_remesa;
-                                  var cuenta_no_billetes=parseInt(remesa1[0].no_billetes);
-                                  console.log("cuenta_no_billetes_egreso leido="+cuenta_no_billetes);
-                                  cuenta_no_billetes=cuenta_no_billetes+1;
-                                  console.log("cuenta_no_billetes_egreso aumentado="+cuenta_no_billetes);
+                                   //este proceso solo se ejecuta 1 vez, al final de cada pago completado.
+                                   //aqui tengo que comparar dos valores:
+                                   // la cantidad de billetes en el reciclador al inicio del PAGO
+                                   // y restar la nueva cantidad de billetes en el reciclador,
+                                   //la diferencia nos dara la cantidad de billetes pagados.
+
+                                   const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
+                                   var id_remesa1 = remesa1[0].no_remesa;
+                                  // var cuenta_no_billetes=parseInt(remesa1[0].no_billetes);
+                                  // console.log("cuenta_no_billetes_egreso leido="+cuenta_no_billetes);
+                                  // cuenta_no_billetes=cuenta_no_billetes+1;
+                                  // console.log("cuenta_no_billetes_egreso aumentado="+cuenta_no_billetes);
+                                  ////////////////////////////////////////////////////////////
+                                  ////////////////////////////////////////////////////////////
+                                  var no_billetes_despues= await os.concilia_numeros();
+                                  global.en_reciclador_despues_de_retiro=no_billetes_despues[0].total_notes;
+                                  console.log("estoy guardando en_reciclador_despues_de_retiro:"+global.en_reciclador_antes_de_retiro);
+                                  ///////////////////////////////
+                                  var no_billetes_away=global.en_reciclador_antes_de_retiro-global.en_reciclador_despues_de_retiro;
+                                  console.log("iniciando calculo final de billetes que se fueron en el ultimo pago");
+                                  console.log("se fueron:"+no_billetes_away+" Billetes");
+
+                                  var cuenta_no_billetes=no_billetes_away;
                                   await pool.query ("UPDATE remesas SET status='completado', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
                                   server.io.emit('Dispensed', value_in_hex);
 
@@ -698,14 +715,10 @@ return new Promise(async function(resolve, reject) {
                                   current_rh_bills_count=current_rh_bills_count[0].no_billetes-cuenta_no_billetes;
                                   //actualiza remesa hermes
                                   await pool.query ("UPDATE remesa_hermes SET no_billetes=? WHERE status='iniciada'",[current_rh_bills_count]);
+                                  console.log("remesa hermes actualizada con:"+current_rh_bills_count+" Billetes");
                                   //sincroniza remesa heremes
-                                   //var data=os.consulta_all_levels();
-                                   //console.log("all levels es:"+data);
-
-
-                                  //do not assign credit
-                              //    global.last_sent=poll_responde[2];
-                              //  }
+                                //   var data=await os.consulta_all_levels();
+                              //     console.log("all levels es:"+data);
                                   break;
 
                                   case("D3"):
@@ -758,6 +771,7 @@ return new Promise(async function(resolve, reject) {
                                   if(remesa2.length>0){
                                      var id_remesa2 = remesa2[0].no_remesa;
                                      await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
+
                                    }
                                   server.io.emit('Dispensing', value_in_hex);
                                   //do not assign credit

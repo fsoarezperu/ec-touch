@@ -41,6 +41,7 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   var {no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1} = req.params;
   console.log(chalk.yellow("iniciando NUEVA REMESA desde restfull api con numero:" + no_remesa));
   new_manual_remesa=no_remesa;
+  if(is_locked==false){
   if (on_startup == false) {
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
         const number_remesa = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and no_remesa=?", [no_remesa]);
@@ -76,9 +77,15 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
         return;
       }
   } else {
+    console.log(chalk.yellow("pero esta maquina necesita adopcion"));
     res.send('Estoy en Startup');
     return;
   }
+}else {
+  console.log(chalk.red("pero esta maquina esta bloqueada"));
+  res.send('Machine locked');
+  return;
+}
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/consultar_remesa/:no_remesa', async (req, res) => {

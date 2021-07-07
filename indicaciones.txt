@@ -68,3 +68,5 @@ GRANT ALL ON tambox.* TO 'user1@192.168.1.17' IDENTIFIED BY 'pass1';
 
 //
 sudo nano autoChromium.desktop
+
+//OS linea 132. comente esta linea poruqe no estaba iniciando por completo el sistema.

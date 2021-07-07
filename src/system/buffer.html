@@ -1,11 +1,33 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+    $("#Check-In").click(function(){
+    alert("checkin in to tbm")
+    });
 ///////////////////////////////////////////////////////
+//if (mydata["this_machine_info"][0].machine_name == "Autogenerada") {
+if (mydata["this_machine_info"][0].is_locked == true) {
+
+  //alert ("machine needs Adoption");
+  $('#overlay, #overlay-back').fadeIn(500);
+}
+
+socket.on('adopt', function(msg) {
+//  $('#out_of_service').fadeOut(500);
+console.log("adopting machine:"+msg);
+//alert("THIS MACHINE IS REQUESTED TO BE ADOPTED");
+// if (msg.orden=="lock") {
+//   $('#overlay, #overlay-back').fadeIn(500);
+// }else {
+//   $('#overlay, #overlay-back').fadeOut(500);
+// }
+  $('#overlay, #overlay-back').fadeOut(500);
+
+});
   $('#message').text(mydata["this_machine_info"][0].machine_name);
   $('#tienda_id').text(mydata["this_machine_info"][0].tienda_id);
   $('#public_machine_ip').text(mydata["this_machine_info"][0].public_machine_ip);
-
+  // $('#overlay, #overlay-back').fadeOut(500);
 console.log(mydata["historial"]);
 //  var no_rhs=0;
   // forEach((mydata["historial"]), i) => {
@@ -60,6 +82,52 @@ console.log(mydata["historial"]);
 });
  </script>
 
+ <style media="screen">
+   .wrapper{
+   position: relative;
+ }
+   #overlay-back {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: #000000;
+     border-radius: 15px;
+     opacity: 0.6;
+     filter: alpha(opacity=60);
+     z-index: 5;
+     display: none;
+   }
+   /* #overlay {
+     position: absolute;
+     top: 10%;
+     left: 10%;
+     width: 80%;
+     height: 100%;
+     opacity: 1;
+     z-index: 10;
+     display: none;
+     margin: 0 auto;
+   } */
+   .grupo3{
+     /* grid-column: 1/5; */
+     min-height:350px;
+     width: 100%;
+     max-width: 700px;
+     /*grid-row: auto; */
+     background-color:  rgba(60, 60, 60, 1);
+     /* background-image: url("../img/bg_image4.jpg"); */
+     color: white;
+     border: 4.5px solid white;
+     border-radius: 15px;
+     padding: 5px;
+     text-align: center;
+     display:grid;
+     grid-template-columns: 0.5fr auto 0.5fr;
+     grid-template-rows:auto auto auto auto 0.5fr;
+     }
+ </style>
 
 
 <!-- <div class="label_tebs">TEBSBarCode:</div>
@@ -74,7 +142,11 @@ console.log(mydata["historial"]);
    <div class=""></div>
    <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div>
    </div>
-   <div class="area_trabajo ec_panel">
+   <div class="area_trabajo_logo ec_panel">
+     <div class="logo">
+            <img  src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
+     </div>
+
 
      <div class="ec_card2 resumen">
              <p>Remesas Hermes</p>
@@ -86,20 +158,22 @@ console.log(mydata["historial"]);
        <!-- <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div> -->
 
     </div>
-     <!-- <div class="ec_card panel2">
-       <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
-       <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div>
-
-     </div> -->
+     <div class="ec_card panel2">
+       <!-- <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
+       <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div> -->
+       <div><a class="ec_btn" id="lock_machine">Lock Machine</a> </div>
+     </div>
 
      <div class="ec_card2 resumen2">
              <p>Remesas</p>
              <div class="lista_remesas"></div>
               <p>fin de la lista</p>
      </div>
-    <!-- <div class="ec_card2">
-      <p>Tienda_id:</p><div id="tienda_id">tienda_id</div>
-     <p>IP Publico:</p> <div id="public_machine_ip">puclic_machine_ip</div>
+    <!-- <div class="ec_card2"> -->
+      <!-- <p>Tienda_id:</p><div id="tienda_id">tienda_id</div>
+     <p>IP Publico:</p> <div id="public_machine_ip">puclic_machine_ip</div> -->
+     <!-- <p>Lock Machine:</p> <div id="lock_machine">puclic_machine_ip</div>
+
     </div> -->
    </div>
    <div class="pie_de_pagina" id="mesage2">Creado por EC-HOME AUTOMATION PERU.</div>
@@ -113,4 +187,29 @@ console.log(mydata["historial"]);
 
      <!-- -->
 </div>
- </div>
+<div class="popup">
+  <div id="overlay-back"></div>
+  <div id="overlay">
+    <div class="grupo3">
+      <div></div>
+      <div id="titulo_popup">BLOQUEADA</div>
+      <div></div>
+      <div></div>
+      <div class="texto_en_overlay"><p>Esta maquina esta bloqueada, no realizara ninguna operacion, hasta que sea desbloqueada desde la central</p></div>
+      <div></div>
+      <div></div>
+      <div class="tbm_status">
+        TBM adress is :
+      </div>
+      <div></div>
+      <div></div>
+      <div><img  src="img/tbm_offline.png" alt="tbm_status" width="100" height="100"></div>
+      <div></div>
+      <div></div>
+      <div id="Check-In"><a class="ec_btn">Check in to TBM</a></div>
+      <!-- <div><a class="btn" style="width:120px;" id="opc1">Opcion1</a></div> -->
+      <!-- <div><a class="btn" style="width:120px;" id="testy">Cerrar</a></div> -->
+    </div>
+    </div>
+</div>
+ <!-- </div> -->

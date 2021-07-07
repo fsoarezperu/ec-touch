@@ -53,7 +53,6 @@ socket.on('synch_remesas', async function(msg){
 //    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
 
 // }
-
   socket.on('socket_to_tbm',async function(socket){
     console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
     console.log(chalk.yellow("orden para mandar socket to tbm detected"));
@@ -354,13 +353,14 @@ io.on('connection', async function (socket) {
     await  os.validator_disabled_now();
    // io.emit('main','../system/buffer.html');
    });
+
   socket.on('iniciar_nueva_remesa',async function(){
     new_manual_remesa= Math.floor((Math.random() * 10000) + 1);
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
-     const this_machine= await pool.query("SELECT * FROM machine");
+    const this_machine= await pool.query("SELECT * FROM machine");
     os.crear_nueva_remesa(new_manual_remesa,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
-    await  os.validator_enabled_now();
-    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
+    //await  os.validator_enabled_now();
+    //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
    });
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
@@ -467,6 +467,16 @@ io.on('connection', async function (socket) {
     var mi_objeto={ nombre:"pago"};
     nuevo_enlace('retiro_en_proceso','../system/retiro/retiro_en_proceso.html',mi_objeto);
   });
+  socket.on('lock_machine', function(msg) {
+
+    io.emit('lock_machine','lock_machine');
+  });
+
+  socket.on('adopt', function(msg) {
+  console.log("machine adopted requested");
+    io.emit('adopt','adopt');
+  });
+
   var config_data={
     current_tebs:"global.current_tebs"
   }

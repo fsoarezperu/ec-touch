@@ -121,9 +121,9 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
                    }
 
                    // try {
-                   console.log("justo antes del problema");
+                   console.log("justo antes del problema: validator_asddress is:"+global.validator_address);
                       //var data= await sspo.transmite_encriptado_y_procesa2(validator_address,arry);
-                      var data= await os.transmite_encriptado_y_procesa2(validator_address,arry);
+                      var data= await os.transmite_encriptado_y_procesa2(global.validator_address,arry);
 
                    // } catch (e) {
                    //   return reject(e)
@@ -214,6 +214,11 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
     if(monto.length>0){
     console.log("/////////////PAY OUT SENT////////////////////");
     console.log(chalk.green("Monto a pagar:"+monto[0].monto));
+    ///////////////////////////////////////////////////////////////
+    console.log("////////////LECTURA INICIAL DE RECICLADOR////////////////////");
+    var no_billetes_antes=await os.concilia_numeros();
+    global.en_reciclador_antes_de_retiro=no_billetes_antes[0].total_notes;
+    console.log("estoy guardando en_reciclador_antes_de_retiro:"+global.en_reciclador_antes_de_retiro);
     //////////////////////////////////
     var prep1= monto[0].monto;
     prep1= prep1*100;

@@ -11,8 +11,205 @@ const to_tbm_synch = require('./tbm_sync/synchronize');
 const val = require("./devices/validator");
 const chalk = require('chalk');
 const tambox = require("./devices/tambox");
+var fetchTimeout = require('fetch-timeout');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const socketjs=require('./../it/socket');
+async function coneccion_con_tbm(){
+  return new Promise(async function(resolve, reject) {
+    try {
+        // var machine_queried=await consulta_this_machine_en_tbm();
+        var machine_queried=await tock_tock_tbm();
+      //  console.log("en coneccion con tbm machine queried es:"+machine_queried);
+      if (machine_queried=='Offline') {
+        //  console.log("OFFLINE");
+              tbm_status=false;
+            //  return resolve(chalk.magenta("Offline"));
+              return resolve(chalk.red("Offline"));
 
+      }else {
+              var machine_queried=await consulta_this_machine_en_tbm();
+              //console.log("en coneccion con tbm machine queried es:"+machine_queried);
+              console.log("Info en TBM sobre esta maquina:");
+              console.log(JSON.parse(JSON.stringify(machine_queried)));
+              //actualiza los datos de esta maquina y sobre escribe los datos locales.
+              tbm_status=true;
+            //   return resolve(chalk.green.inverse("Online"));
+          //     return resolve("Online");
+
+              //
+            return resolve(machine_queried);
+      }
+
+    } catch (e) {
+      return reject("no existe coneccion con servidor remoto");
+    }
+  });
+}
+module.exports.coneccion_con_tbm=coneccion_con_tbm;
+///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+async function tock_tock_tbm() {
+  return new Promise(async function(resolve, reject) {
+    //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
+    try {
+    //  console.log(chalk.green("consultando tock tock"));
+      var tbm_adress=tbm_adressx;
+      var fix= "/status";
+      const url= tbm_adress+fix
+      try {
+        var machine_queried=await fetchWithTimeout2(url,5000);
+      //  console.log("machine_queried es:"+machine_queried);
+        if (machine_queried==undefined) {
+          machine_queried="Offline"
+          return resolve(machine_queried);
+        }else {
+          return resolve(machine_queried);
+        }
+
+      } catch (e) {
+        console.log("RESOLVED NO CHECK IN");
+        return resolve("no check-in")
+      }
+      setTimeout(function() {
+        console.log("RESOLVED OK");
+        return resolve("OK")
+      }, 3000)
+
+    } catch (e) {
+      return reject(chalk.red("error aqui123") + e);
+    }
+  });
+}
+module.exports.tock_tock_tbm = tock_tock_tbm;
+//////////////////////////////////////////////
+async function arranca_tambox_os() {
+  return new Promise(async function(resolve, reject) {
+    try {
+      let step1=await tambox.finalizar_pagos_en_proceso();
+      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+      console.log(chalk.green("Iniciando Validador"));
+      var validator = await inicializar_validador();
+      console.log(chalk.green("Validador inicio:" + validator));
+      console.log(chalk.green("***************************************"));
+      ///////////////////////////////////////////////////////////////////
+      var maquina_inicial=await comprueba_maquina_inicial();
+    //  console.log(chalk.green("maquina_inicial es:"+JSON.stringify( maquina_inicial)));
+    //  console.log(chalk.green("***************************************"));
+      ///////////////////////////////////////////////////////////////////
+      console.log(chalk.green("Comprobando conexion con TBM"));
+      var status=await coneccion_con_tbm();
+    //  console.log("status es:"+JSON.stringify(status));
+      console.log("status es:"+ status);
+      console.log(chalk.green("***************************************"));
+      //lee los valores locales de la maquina ,
+      // var informacion_maquina_local = {
+      //   numero_de_serie: global.numero_de_serie,
+      //   tipo: global.note_validator_type,
+      //   public_machine_ip: global.public_machine_ip
+      // }
+      var informacion_maquina_local=await consulta_this_machine();
+      console.log(chalk.yellow("la informacion local de la maquina es:"));
+      console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
+      //actualiza los valores remotos de la maquina
+      var x1=status.tienda_id;
+      var x2=status.machine_sn;
+      var x3=status.name;
+      var is_locked11=status.is_locked;
+      ///////////////////////////////////
+      globals.is_locked=status.is_locked;
+      ///////////////////////////////////
+      console.log("x1 (tienda_id) es:"+x1);
+      console.log("x2 (machine_sn) es:"+x2);
+      console.log("x3 (name) es:"+x3);
+
+      await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
+        console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
+        console.log("y el valor de is_locked:"+status.is_locked);
+
+
+      //vuelve a ejecutar coneccion con
+
+    //  return resolve (status);
+      // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
+      await tbm_paso1();
+       // var regis=await is_this_machine_registered();
+       // console.log("resgistered is:"+regis);
+       // console.log("***************************************");
+      ///////////////////////////////////////////////////////////////////
+      var step7=await enable_payout2(validator_address);
+      if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
+
+      to_tbm_synch.are_synched();
+
+       on_startup=false;
+       server.io.emit("iniciando","iniciando");
+       tambox_manager_ping();
+
+      return resolve (validator);
+    } catch (e) {
+      return reject(chalk.cyan("01-Starting Validator->") + e);
+    }
+  });
+
+}
+module.exports.arranca_tambox_os = arranca_tambox_os;
+///////////////////////////////////////////////////////////////////////////
+async function inicializar_validador() {
+  return new Promise(async function(resolve, reject) {
+    try {
+      await ssp.sync_and_stablish_presence_of(validator_address);
+      await ssp.negociate_encryption(validator_address);
+      var validatorpoll_var = await validatorpoll2(validator_address);
+
+      if (validatorpoll_var == "no existe bolsa detectada") {
+            // console.log("Aqui compruebo que no hay bolsa");
+            await bolsa_retrial();
+            // console.log("aqui retornando de bolsa retrial:");
+            await new_lock_cashbox();
+
+            //aqui contonuo el arranque cuando no huno bolsa inicialmante.
+            await ssp.set_protocol_version(validator_address,validator_protocol_version);
+            await ssp.setup_request_command2(validator_address);
+            if(note_validator_type == "TEBS+Payout"){
+              console.log("********************************");
+            await ssp.verificar_existencia_de_bolsa(receptor);
+              console.log("********************************");
+             }
+            await set_channel_inhivits2(validator_address);
+            await set_validator_routing2(validator_address);
+
+            return resolve("Validador iniciado");
+      } else {
+        //
+      //  console.log("continuo arranque normal");
+            await ssp.set_protocol_version(validator_address,validator_protocol_version);
+            await ssp.setup_request_command2(validator_address);
+            if(note_validator_type == "TEBS+Payout"){
+              console.log("********************************");
+            await ssp.verificar_existencia_de_bolsa(receptor);
+              console.log("********************************");
+             }
+            await set_channel_inhivits2(validator_address);
+            await set_validator_routing2(validator_address);
+            // console.log("aqui compruebo que si hay bolsa, y continuo el arranque normal");
+            return resolve("OK");
+      }
+
+    } catch (e) {
+      return reject("no se pudo iniciar el validador->:" + e);
+    }
+
+  });
+
+}
+module.exports.inicializar_validador = inicializar_validador;
+////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 function logea(texto, variable) {
   if (typeof(variable) != 'undefined') {
     if (view_log) {
@@ -28,14 +225,14 @@ function logea(texto, variable) {
 }
 module.exports.logea = logea;
 const path = require('path');
-////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 // Create shutdown function
 function shutdown(callback) {
   exec('shutdown -r now', function(error, stdout, stderr) {
     callback(stdout);
   });
 }
-/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 function testing_callback() {
   console.log("inicia timer para volver a main");
   setTimeout(function() {
@@ -43,10 +240,10 @@ function testing_callback() {
   }, 5000);
 };
 module.exports.testing_callback = testing_callback;
-/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 var timer2;
 module.exports.timer2 = timer2;
-/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 // function is_os_running() {
 //   timer2 = setTimeout(() => {
 //     tbm_status = false;
@@ -56,7 +253,8 @@ module.exports.timer2 = timer2;
 async function tbm_paso1() {
 
     //verificar registro de maquina.
-         to_tbm.iniciar_handshake_con_tbm();
+         await comprueba_maquina_inicial();
+         await to_tbm.iniciar_handshake_con_tbm();
           var regis=await is_this_machine_registered();
          console.log("resgistered is:"+regis);
           if (regis[0]=="machine_found_on_tbm") {
@@ -73,7 +271,7 @@ async function tbm_paso1() {
 
          await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
            console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
-           //   var my_resgistered_machine=await os.query_this_machine();
+           //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
            //   //my_resgistered_machine=my_resgistered_machine[1];
            //   os.logea(chalk.green("query:"+my_resgistered_machine));
            //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
@@ -93,8 +291,8 @@ async function tbm_paso1() {
           if(regis=="OK"){
 
      console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
-     //   //var my_resgistered_machine=JSON.parse(await server.query_this_machine());
-     //   var my_resgistered_machine=await os.query_this_machine();
+     //   //var my_resgistered_machine=JSON.parse(await server.consulta_this_machine_en_tbm());
+     //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
      //   //my_resgistered_machine=my_resgistered_machine[1];
      //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
      //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
@@ -102,7 +300,7 @@ async function tbm_paso1() {
      //   var step7=await enable_payout(validator_address);
 
           }else {
-
+          //SI REGIS IS NOT OK (OSEA NO ESTA REGISTRADA)
           global.is_regis=false;
           await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
           var machine_name_query= await pool.query("SELECT machine_name FROM machine");
@@ -122,18 +320,20 @@ async function is_this_machine_registered() {
         tipo: global.note_validator_type,
         public_machine_ip: global.public_machine_ip
       }
+
       console.log(chalk.yellow("la informacion local de la maquina es:" + JSON.stringify(informacion_maquina_local)));
+      await consulta_this_machine_en_tbm();
 
-      to_tbm.socket_to_tbm.emit('registration', informacion_maquina_local);
-
-          // to_tbm.socket_to_tbm.on('registration', (msg) => {
-          //       console.log("se ah recivido un mensaje desde el servidor TBM:" + JSON.stringify(msg));
-          //     //  console.log(msg[1].tienda_id);
-          //       if (msg[0] == "machine_found_on_tbm") {
-          //         return resolve(JSON.stringify(msg[1]));
-          //       }
-          //       return resolve("OK");
-          // });
+      // to_tbm.socket_to_tbm.emit('registration', informacion_maquina_local);
+      //
+      //     to_tbm.socket_to_tbm.on('registration', (msg) => {
+      //           console.log("se ah recivido un mensaje desde el servidor TBM:" + JSON.stringify(msg));
+      //         //  console.log(msg[1].tienda_id);
+      //           if (msg[0] == "machine_found_on_tbm") {
+      //             return resolve(JSON.stringify(msg[1]));
+      //           }
+      //           return resolve("OK");
+      //     });
           return resolve("ok");
         setTimeout(function() {
           return resolve("no_tbm_conection_found")
@@ -146,42 +346,40 @@ async function is_this_machine_registered() {
 }
 module.exports.is_this_machine_registered = is_this_machine_registered;
 //////////////////////////////////////////////////////////////////////
-async function query_this_machine() {
+async function consulta_this_machine_en_tbm() {
   return new Promise(async function(resolve, reject) {
     //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
     try {
       //console.log(chalk.green("consultando maquina"));
-      //var tbm_adress=tbm_adressx;
-      //var fix= "/api/query_machine";
+      var tbm_adress=tbm_adressx;
+      var fix= "/api/query_machine";
       var machine_sn = global.numero_de_serie;
-      //const url= tbm_adress+fix+"/"+machine_sn
+      const url= tbm_adress+fix+"/"+machine_sn+"/"+public_machine_ip+"/"+machine_port
+      try {
+        var machine_queried=await fetchWithTimeout2(url,5000);
+      //  console.log("machine_queried es:"+machine_queried);
+        if (machine_queried==undefined) {
+          machine_queried="Offline"
+          return resolve(machine_queried);
+        }else {
+          return resolve(machine_queried);
+        }
 
-      // try {
-      //   var esti=await fetchWithTimeout2(url,3000);
-      // //  console.log(esti);
-      //   return resolve(esti)
-      // } catch (e) {
-      //   return resolve("no check-in")
-      // } finally {
-      //
-      // }
-      to_tbm.socket_to_tbm.emit('query_machine', machine_sn);
-      to_tbm.socket_to_tbm.on('query_machine', function(msg) {
-        //  console.log(msg);
-        return resolve(msg)
-      })
+      } catch (e) {
+        console.log("RESOLVED NO CHECK IN");
+        return resolve("no check-in")
+      }
       setTimeout(function() {
+        console.log("RESOLVED OK");
         return resolve("OK")
       }, 3000)
 
     } catch (e) {
       return reject(chalk.red("error aqui123") + e);
-    } finally {
-      //return;
     }
   });
 }
-module.exports.query_this_machine = query_this_machine;
+module.exports.consulta_this_machine_en_tbm = consulta_this_machine_en_tbm;
 /////////////////////////////////////////////////////////////////
 function consulta(url) {
 
@@ -243,21 +441,34 @@ function fetchWithTimeout(url, timeout) {
   })
 }
 /////////////////////////////////////////////////////////////////
-function fetchWithTimeout2(url, timeout) {
-  return new Promise((resolve, reject) => {
-    // Set timeout timer
-    let timer = setTimeout(
-      //() => reject( new Error('Request timed out') ),
-      () => resolve('no check-in'),
-
-      timeout
-    );
-
-    fetch(url).then(
-      response => resolve(response.json()),
-      err => reject(err)
-    ).finally(() => clearTimeout(timer));
-  })
+async function fetchWithTimeout2(url, timeout) {
+  var respuesta;
+  console.log(chalk.green("Consultando tambox manager:"+url));
+await fetchTimeout(url, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+  }, timeout, 'No hay conexion a tambox manager')
+.then(async function(res) {
+  if (res.status !== 200) {
+    throw new Error('Status code not OK', res.status);
+  } else {
+    //console.log(await res.json());
+   respuesta= await res.json();
+  //  console.log("respuesta es:"+JSON.stringify(respuesta));
+    return respuesta;
+  }
+})
+.then(function(json) {
+//  console.log("json returned from response");
+  return json;
+})
+.catch(function(err) {
+    console.log("error", err);
+});
+return respuesta;
 }
 /////////////////////////////////////////////////////////////////
 async function calcular_cifras_generales() {
@@ -623,11 +834,13 @@ async function new_lock_cashbox() {
 module.exports.new_lock_cashbox = new_lock_cashbox;
 //no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1
 async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado, fechax1, horax1) {
-  // dando por terminada, cualquier operacion que este como iniciada inadecuadamente.
-  await pool.query("UPDATE remesas SET status='terminado' WHERE status='iniciada'");
-  console.log("aqui estoy creando una nueva remesa en la base de datos");
-  console.log(chalk.yellow("iniciando NUEVA REMESA:" + no_remesa));
+
   if (on_startup == false) {
+    // dando por terminada, cualquier operacion que este como iniciada inadecuadamente.
+    await pool.query("UPDATE remesas SET status='terminado' WHERE status='iniciada'");
+    console.log("aqui estoy creando una nueva remesa en la base de datos");
+    console.log(chalk.yellow("iniciando NUEVA REMESA:" + no_remesa));
+    ///////////////////////////////////////////////
     const number_remesa = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and no_remesa=?", [no_remesa]);
     if (number_remesa[0].noRemesa > 0) {
       console.log('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
@@ -653,6 +866,8 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
         await pool.query('INSERT INTO remesas set ?', [nueva_res]);
         console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa" + JSON.stringify(nueva_res));
         //return;
+        await  validator_enabled_now();
+        socketjs.nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
       } else {
         console.log('Datos incompletos, revise documentacion');
         //  return;
@@ -796,13 +1011,7 @@ async function consulta_remesa_hermes_actual() {
 }
 module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
 /////////////////////////////////////////////////////////////////
-async function consulta_this_machine() {
-  const this_machine2121 = await pool.query("SELECT * FROM machine");
-  //console.log(JSON.stringify(remesa_hermes_entambox));
-  return this_machine2121;
-}
-module.exports.consulta_this_machine = consulta_this_machine;
-/////////////////////////////////////////////////////////////////
+
 async function consulta_historial() {
   const historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
   //console.log(JSON.stringify(remesa_hermes_entambox));
@@ -934,93 +1143,14 @@ function habilita_sockets() {
 }
 module.exports.habilita_sockets = habilita_sockets;
 /////////////////////////////////////////////////////////////////
-async function arranca_tambox_os() {
-  return new Promise(async function(resolve, reject) {
-    try {
-      let step1=await tambox.finalizar_pagos_en_proceso();
-      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
-      console.log(chalk.green("Iniciando Validador"));
-      var validator = await start_validator2();
-      console.log(chalk.green("Validador inicio:" + validator));
-      console.log("***************************************");
-      ///////////////////////////////////////////////////////////////////
-      await tbm_paso1();
-       // var regis=await is_this_machine_registered();
-       // console.log("resgistered is:"+regis);
-       // console.log("***************************************");
-      ///////////////////////////////////////////////////////////////////
-      var step7=await enable_payout2(validator_address);
-      if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
-
-      to_tbm_synch.are_synched();
-
-       on_startup=false;
-       server.io.emit("iniciando","iniciando");
-       tambox_manager_ping();
-
-      return resolve (validator);
-    } catch (e) {
-      return reject(chalk.cyan("01-Starting Validator->") + e);
-    }
-  });
-
-}
-module.exports.arranca_tambox_os = arranca_tambox_os;
-/////////////////////////////////////////////////////////////////
-async function start_validator2() {
-  return new Promise(async function(resolve, reject) {
-    try {
-      await ssp.sync_and_stablish_presence_of(validator_address);
-      await ssp.negociate_encryption(validator_address);
-      var validatorpoll_var = await validatorpoll2(validator_address);
-
-      if (validatorpoll_var == "no existe bolsa detectada") {
-            // console.log("Aqui compruebo que no hay bolsa");
-            await bolsa_retrial();
-            // console.log("aqui retornando de bolsa retrial:");
-            await new_lock_cashbox();
-
-            //aqui contonuo el arranque cuando no huno bolsa inicialmante.
-            await ssp.set_protocol_version(validator_address,validator_protocol_version);
-            await ssp.setup_request_command2(validator_address);
-            if(note_validator_type == "TEBS+Payout"){
-              console.log("********************************");
-            await ssp.verificar_existencia_de_bolsa(receptor);
-              console.log("********************************");
-             }
-            await set_channel_inhivits2(validator_address);
-            await set_validator_routing2(validator_address);
-
-            return resolve("Validador iniciado");
-      } else {
-        // continuo arranque normal
-            await ssp.set_protocol_version(validator_address,validator_protocol_version);
-            await ssp.setup_request_command2(validator_address);
-            if(note_validator_type == "TEBS+Payout"){
-              console.log("********************************");
-            await ssp.verificar_existencia_de_bolsa(receptor);
-              console.log("********************************");
-             }
-            await set_channel_inhivits2(validator_address);
-            await set_validator_routing2(validator_address);
-            // console.log("aqui compruebo que si hay bolsa, y continuo el arranque normal");
-            return resolve("Validador iniciado");
-      }
-
-    } catch (e) {
-      return reject("no se pudo iniciar el validador->:" + e);
-    }
-
-  });
-
-}
-module.exports.start_validator2 = start_validator2;
-////////////////////////////////////////////////////////
 async function validatorpoll2(receptor) {
+  // console.log("entrando a validator pool2");
     return new Promise(async function(resolve, reject) {
         try {
           var step1 = await ssp.envia_encriptado(receptor, global.poll);
+        //    console.log("step1:"+step1);
           var data = await ssp.handlepoll(step1);
+        //      console.log("data:"+data);
               if (global.existe_bolsa == false) {
                 return resolve("no existe bolsa detectada");
               }else {
@@ -1129,12 +1259,20 @@ module.exports.pruebita=pruebita;
 ////////////////////////////////////////////////////////////////////
 async function transmite_encriptado_y_procesa2(receptorx,polly){
   // await ssp.ensureIsSet()
+  var new_polly=polly;
+  var new_receptorx=receptorx;
+//  console.log("aqui polly es:"+polly);
+//  console.log("aqui new receptor es:"+new_receptorx);
 return new Promise(async function(resolve, reject) {
   try {
       if (bypass== false) {
-        var toSendw =await enc.prepare_Encryption(polly);
+  //      console.log("aqui polly es:"+polly);
+  //      console.log("aqui new receptor es:"+new_receptorx);
+        var toSendw =await enc.prepare_Encryption(new_polly);
         //console.log("aqui toSend:"+toSendw);
-          var data=await sp.transmision_insegura(receptorx,toSendw);
+          //var data=await sp.transmision_insegura(new_receptorx,toSendw);
+          var data=await sp.transmision_insegura(global.validator_address,toSendw);
+
         //  console.log("aqui toSend_response:"+data);
               data=await enc.promise_handleEcommand(data);
               //console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
@@ -1156,7 +1294,7 @@ return new Promise(async function(resolve, reject) {
 
 }
 module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;
-
+/////////////////////////////////////////////////////////////////
 function actualizar_remesa_enTBM2(remesax) {
   return new Promise(function(resolve, reject) {
     try {
@@ -1193,7 +1331,7 @@ function actualizar_remesa_enTBM2(remesax) {
     }
   });
 };
-
+/////////////////////////////////////////////////////////////////
 function sincroniza_remesa_hermes2(res){
 console.log("iniciando actualizacion de remesa hermes:");
  return new Promise(async function(resolve, reject) {
@@ -1232,123 +1370,178 @@ console.log("iniciando actualizacion de remesa hermes:");
 });
 }
 module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;
-
+/////////////////////////////////////////////////////////////////
 async function consulta_all_levels(){
-  var lod = 0;
-  var totbills = 0;
-  var totaccum = 0;
-  var note_level1 = 0;
-  var value_level1 = 0;
-  var acum_level1 = 0;
-  var note_level2 = 0;
-  var value_level2 = 0;
-  var acum_level2 = 0;
-  var note_level3 = 0;
-  var value_level3 = 0;
-  var acum_level3 = 0;
-  var note_level4 = 0;
-  var value_level4 = 0;
-  var acum_level4 = 0;
-  var note_level5 = 0;
-  var value_level5 = 0;
-  var acum_level5 = 0;
+return new Promise(async function(resolve, reject) {
+  try {
+    var lod = 0;
+    var totbills = 0;
+    var totaccum = 0;
+    var note_level1 = 0;
+    var value_level1 = 0;
+    var acum_level1 = 0;
+    var note_level2 = 0;
+    var value_level2 = 0;
+    var acum_level2 = 0;
+    var note_level3 = 0;
+    var value_level3 = 0;
+    var acum_level3 = 0;
+    var note_level4 = 0;
+    var value_level4 = 0;
+    var acum_level4 = 0;
+    var note_level5 = 0;
+    var value_level5 = 0;
+    var acum_level5 = 0;
 
-  var data=await transmite_encriptado_y_procesa2(global.receptor, get_all_levels)
-        var poll_responde = data.match(/.{1,2}/g);
-        if (poll_responde[1] == "F0") {
-          var i = 0;
-          var ru = 0;
-          var prevalue = 0;
-          for (i; i < poll_responde[2]; i++) {
-            if (i == 0) {
-              ru = 3;
-              prevalue = poll_responde[ru + 2];
-              prevalue = prevalue + poll_responde[ru + 3];
-              prevalue = prevalue + poll_responde[ru + 4];
-              prevalue = prevalue + poll_responde[ru + 5];
-              prevalue = enc.changeEndianness(prevalue);
-              value_level1 = parseInt(prevalue, 16) / 100;
-        //      console.log("value_level1 is:" + value_level1);
-              note_level1 = parseInt(poll_responde[ru], 16);
-        //      console.log("note_level1 is:" + note_level1);
-              acum_level1 = note_level1 * value_level1;
-        //      console.log("acum_level1 is:" + acum_level1);
+    var data=await transmite_encriptado_y_procesa2(global.receptor, get_all_levels)
+    //console.log("aqui leyendo data en transmite_encriptado_y_procesa2:"+data);
+          var poll_responde = data.match(/.{1,2}/g);
+          if (poll_responde[1] == "F0") {
+            var i = 0;
+            var ru = 0;
+            var prevalue = 0;
+            for (i; i < poll_responde[2]; i++) {
+              if (i == 0) {
+                ru = 3;
+                prevalue = poll_responde[ru + 2];
+                prevalue = prevalue + poll_responde[ru + 3];
+                prevalue = prevalue + poll_responde[ru + 4];
+                prevalue = prevalue + poll_responde[ru + 5];
+                prevalue = enc.changeEndianness(prevalue);
+                value_level1 = parseInt(prevalue, 16) / 100;
+          //      console.log("value_level1 is:" + value_level1);
+                note_level1 = parseInt(poll_responde[ru], 16);
+          //      console.log("note_level1 is:" + note_level1);
+                acum_level1 = note_level1 * value_level1;
+          //      console.log("acum_level1 is:" + acum_level1);
+              }
+              if (i == 1) {
+                ru = 12;
+                prevalue = poll_responde[ru + 2];
+                prevalue = prevalue + poll_responde[ru + 3];
+                prevalue = prevalue + poll_responde[ru + 4];
+                prevalue = prevalue + poll_responde[ru + 5];
+                prevalue = enc.changeEndianness(prevalue);
+                value_level2 = parseInt(prevalue, 16) / 100;
+          //      console.log("value_level2 is:" + value_level2);
+                note_level2 = parseInt(poll_responde[ru], 16);
+          //      console.log("note_level2 is:" + note_level2);
+                acum_level2 = note_level2 * value_level2;
+          //      console.log("acum_level2 is:" + acum_level2);
+              }
+              if (i == 2) {
+                ru = 21;
+                prevalue = poll_responde[ru + 2];
+                prevalue = prevalue + poll_responde[ru + 3];
+                prevalue = prevalue + poll_responde[ru + 4];
+                prevalue = prevalue + poll_responde[ru + 5];
+                prevalue = enc.changeEndianness(prevalue);
+                value_level3 = parseInt(prevalue, 16) / 100;
+          //      console.log("value_level3 is:" + value_level3);
+                note_level3 = parseInt(poll_responde[ru], 16);
+          //      console.log("note_level3 is:" + note_level3);
+                acum_level3 = note_level3 * value_level3;
+          //      console.log("acum_level3 is:" + acum_level3);
+              }
+              if (i == 3) {
+                ru = 30;
+                prevalue = poll_responde[ru + 2];
+                prevalue = prevalue + poll_responde[ru + 3];
+                prevalue = prevalue + poll_responde[ru + 4];
+                prevalue = prevalue + poll_responde[ru + 5];
+                prevalue = enc.changeEndianness(prevalue);
+                value_level4 = parseInt(prevalue, 16) / 100;
+          //      console.log("value_level4 is:" + value_level4);
+                note_level4 = parseInt(poll_responde[ru], 16);
+          //      console.log("note_level4 is:" + note_level4);
+                acum_level4 = note_level4 * value_level4;
+          //      console.log("acum_level4 is:" + acum_level4);
+              }
+              if (i == 4) {
+                ru = 39;
+                prevalue = poll_responde[ru + 2];
+                prevalue = prevalue + poll_responde[ru + 3];
+                prevalue = prevalue + poll_responde[ru + 4];
+                prevalue = prevalue + poll_responde[ru + 5];
+                prevalue = enc.changeEndianness(prevalue);
+                value_level5 = parseInt(prevalue, 16) / 100;
+            //    console.log("value_level5 is:" + value_level5);
+                note_level5 = parseInt(poll_responde[ru], 16);
+              //  console.log("note_level5 is:" + note_level5);
+                acum_level5 = note_level5 * value_level5;
+            //    console.log("acum_level5 is:" + acum_level5);
+              }
+              lod = parseInt(poll_responde[ru], 16);
+              totbills = totbills + lod;
             }
-            if (i == 1) {
-              ru = 12;
-              prevalue = poll_responde[ru + 2];
-              prevalue = prevalue + poll_responde[ru + 3];
-              prevalue = prevalue + poll_responde[ru + 4];
-              prevalue = prevalue + poll_responde[ru + 5];
-              prevalue = enc.changeEndianness(prevalue);
-              value_level2 = parseInt(prevalue, 16) / 100;
-        //      console.log("value_level2 is:" + value_level2);
-              note_level2 = parseInt(poll_responde[ru], 16);
-        //      console.log("note_level2 is:" + note_level2);
-              acum_level2 = note_level2 * value_level2;
-        //      console.log("acum_level2 is:" + acum_level2);
-            }
-            if (i == 2) {
-              ru = 21;
-              prevalue = poll_responde[ru + 2];
-              prevalue = prevalue + poll_responde[ru + 3];
-              prevalue = prevalue + poll_responde[ru + 4];
-              prevalue = prevalue + poll_responde[ru + 5];
-              prevalue = enc.changeEndianness(prevalue);
-              value_level3 = parseInt(prevalue, 16) / 100;
-        //      console.log("value_level3 is:" + value_level3);
-              note_level3 = parseInt(poll_responde[ru], 16);
-        //      console.log("note_level3 is:" + note_level3);
-              acum_level3 = note_level3 * value_level3;
-        //      console.log("acum_level3 is:" + acum_level3);
-            }
-            if (i == 3) {
-              ru = 30;
-              prevalue = poll_responde[ru + 2];
-              prevalue = prevalue + poll_responde[ru + 3];
-              prevalue = prevalue + poll_responde[ru + 4];
-              prevalue = prevalue + poll_responde[ru + 5];
-              prevalue = enc.changeEndianness(prevalue);
-              value_level4 = parseInt(prevalue, 16) / 100;
-        //      console.log("value_level4 is:" + value_level4);
-              note_level4 = parseInt(poll_responde[ru], 16);
-        //      console.log("note_level4 is:" + note_level4);
-              acum_level4 = note_level4 * value_level4;
-        //      console.log("acum_level4 is:" + acum_level4);
-            }
-            if (i == 4) {
-              ru = 39;
-              prevalue = poll_responde[ru + 2];
-              prevalue = prevalue + poll_responde[ru + 3];
-              prevalue = prevalue + poll_responde[ru + 4];
-              prevalue = prevalue + poll_responde[ru + 5];
-              prevalue = enc.changeEndianness(prevalue);
-              value_level5 = parseInt(prevalue, 16) / 100;
-          //    console.log("value_level5 is:" + value_level5);
-              note_level5 = parseInt(poll_responde[ru], 16);
-            //  console.log("note_level5 is:" + note_level5);
-              acum_level5 = note_level5 * value_level5;
-          //    console.log("acum_level5 is:" + acum_level5);
-            }
-            lod = parseInt(poll_responde[ru], 16);
-            totbills = totbills + lod;
           }
-        }
-        console.log(chalk.red("total billetes en reciclador:" + totbills));
-        totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
-        console.log("total monto acumulado en reciclador:" + totaccum);
 
-        await pool.query("UPDATE machine SET monto_en_reciclador=?,no_billetes_reci=?,billetes_de_10=?,billetes_de_20=?,billetes_de_50=?,billetes_de_100=?,billetes_de_200=?", [totaccum,totbills,note_level1,note_level2,note_level3,note_level4,note_level5]);
+          totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
+          console.log(chalk.cyan("en el Reciclador hay:" + totbills +" Billetes x monto acumulado de:"+totaccum +" Soles"));
+          // console.log("total monto acumulado en reciclador:" + totaccum);
 
-        console.log("/////////// ALL LEVELS ///////////////");
-        var cantidad_de_billetes_en_reciclador={
-          de10:note_level1,
-          de20:note_level2,
-          de50:note_level3,
-          de100:note_level4,
-          de200:note_level5,
-        }
-        var total_notes=note_level1+note_level2+note_level3+note_level4+note_level5;
-        return [{cantidad_de_billetes_en_reciclador,total_notes},totaccum] ;
+          await pool.query("UPDATE machine SET monto_en_reciclador=?,no_billetes_reci=?,billetes_de_10=?,billetes_de_20=?,billetes_de_50=?,billetes_de_100=?,billetes_de_200=?", [totaccum,totbills,note_level1,note_level2,note_level3,note_level4,note_level5]);
+
+          console.log("/////////// ALL LEVELS ///////////////");
+          var cantidad_de_billetes_en_reciclador={
+            de10:note_level1,
+            de20:note_level2,
+            de50:note_level3,
+            de100:note_level4,
+            de200:note_level5,
+          }
+          var total_notes=note_level1+note_level2+note_level3+note_level4+note_level5;
+          return resolve([{cantidad_de_billetes_en_reciclador,total_notes},totaccum]) ;
+  } catch (e) {
+    return reject (e)
+  }
+});
+
 }
 module.exports.consulta_all_levels=consulta_all_levels;
+/////////////////////////////////////////////////////////////////
+async function concilia_numeros(){
+var data124=await consulta_all_levels();
+   console.log("all levels es:"+data124);
+   return data124;
+}
+module.exports.concilia_numeros=concilia_numeros;
+/////////////////////////////////////////////////////////////////
+async function comprueba_maquina_inicial(){
+return new Promise(async function(resolve, reject) {
+  try {
+    //cuenta cuantas maquinas existen en la base de datos.
+    var this_machine222=await consulta_this_machine();
+
+    if (this_machine222.length>0) {
+    //  console.log("MACHINE FOUND");
+    //  console.log("this macine 222="+JSON.stringify(this_machine222));
+    //  console.log("this machine222 length:"+this_machine222.length);
+      return resolve(this_machine222);
+    }else {
+      console.log("NEW MACHINE CREATED");
+      const nueva_machine_inicial = {
+        tienda_id:9999,
+        machine_sn: global.numero_de_serie,
+        tipo: global.note_validator_type,
+        public_machine_ip: global.public_machine_ip,
+        machine_ip:global.machine_ip
+      }
+      await pool.query('INSERT INTO machine set ?', [nueva_machine_inicial]);
+      return resolve("OK");
+    }
+  } catch (e) {
+    return reject("no se pudo comprobar maquina inicial:"+e)
+  }
+
+});
+};
+module.exports.comprueba_maquina_inicial=comprueba_maquina_inicial;
+/////////////////////////////////////////////////////////////////
+async function consulta_this_machine() {
+  const this_machine2121 = await pool.query("SELECT * FROM machine");
+  //console.log(JSON.stringify(remesa_hermes_entambox));
+  return this_machine2121;
+}
+module.exports.consulta_this_machine = consulta_this_machine;
+/////////////////////////////////////////////////////////////////

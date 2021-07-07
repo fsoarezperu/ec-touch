@@ -12,9 +12,7 @@
   <link rel="shortcut icon" href="">
   <script src="/socket.io/socket.io.js"></script>
   <link href="css/fontawesome/css/all.css" rel="stylesheet" type="text/css">
-
   <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script> -->
-
   <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/utils/Draggable.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.js"></script>
 
@@ -69,10 +67,35 @@
       $('#out_of_service').fadeOut(500);
       $('#overlay, .overlay-back').fadeOut(500);
     });
+
+
+    socket.on('lock_machinex', function(msg) {
+        console.log("lock_machinex:"+msg.orden);
+          if (msg.orden=="lock") {
+            $('#overlay, #overlay-back').fadeIn(500);
+          }else {
+            $('#overlay, #overlay-back').fadeOut(500);
+          }
+    });
+
+    // socket.on('adopt', function(msg) {
+    // //  $('#out_of_service').fadeOut(500);
+    // console.log("adopting machine:"+msg);
+    // alert("THIS MACHINE IS REQUESTED TO BE ADOPTED");
+    // // if (msg.orden=="lock") {
+    // //   $('#overlay, #overlay-back').fadeIn(500);
+    // // }else {
+    // //   $('#overlay, #overlay-back').fadeOut(500);
+    // // }
+    //
+    // });
+
+
+
     });
   </script>
   <style media="screen">
-    .overlay-back {
+    /* .overlay-back {
     position: absolute;
     top: 0;
     left: 0;
@@ -84,8 +107,8 @@
     filter: alpha(opacity=60);
     z-index: 5;
     display: none;
-    }
-    #overlay {
+    } */
+    /* #overlay {
     position: absolute;
     top: 10%;
     left: 10%;
@@ -95,7 +118,7 @@
     z-index: 10;
     display: none;
     margin: 0 auto;
-    }
+    } */
   </style>
 </head>
 

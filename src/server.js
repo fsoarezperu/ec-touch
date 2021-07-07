@@ -6,6 +6,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 const tambox = require('./it/devices/tambox');
 //const moment=require("moment");
+const os = require('./it/os');
 const pool = require('./database');
 const chalk = require('chalk');
 const mysql_store = require('express-mysql-session');
@@ -26,7 +27,7 @@ const sp= require('./it/serial_port')(io);
 const ssp = require('./it/ssp')(io);
 const va = require('./it/devices/validator');
 //const tambox = require('./it/devices/tambox');
-const os = require('./it/os');
+
 
 // app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -75,17 +76,20 @@ httpx.listen(machine_port, async function(io2) {
   os.logea("indica que esta en startup");
   try {
     // await sp.existira_conexion_serial();
+
     await os.obtener_datos_de_conexion();
     await os.habilita_sockets();
     await os.arranca_tambox_os();
+
+
+
     console.log(chalk.green("El sistema arranco sin problemas"));
 //    await os.arrancando_tambox_nuevamente();
 //  var data =await os.transmite_encriptado_y_procesa2(validator_address, get_all_levels);
    var data=await os.consulta_all_levels();
-
    console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
   } catch (e) {
-    console.log("error General de OS:"+e);
+    console.log(chalk.magenta.inverse("error General de OS:"+e));
   }finally{
     await os.idle_poll_loop();
       console.log(chalk.green("idle"));

@@ -116,7 +116,11 @@
     // mandar_orden("connected");
     //orden iniciada en el client the tambox, enviada
      mandar_orden("synch_remesas");
-
+     mandar_orden_sin_link("lock_machine");
+     socket.on('lock_machine', function(msg) {
+       console.log("locking machine");
+         $('#overlay, #overlay-back').fadeIn(500);
+     });
 
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
@@ -159,7 +163,7 @@
     };
     function clear_system_running_indicator() {
       $("#system_running_indicator").hide();
-      $('#overlay-back').fadeIn(500);
+      // $('#overlay-back').fadeIn(500);
     };
     ////////////////////////////////////////////////////
     socket.on('show_connected_to_TBM', function(msg) {
