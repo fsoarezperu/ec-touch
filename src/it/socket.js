@@ -477,8 +477,13 @@ io.on('connection', async function (socket) {
     io.emit('adopt','adopt');
   });
 
+  var this_machine = await pool.query("SELECT * FROM machine");
+  var this_passcode=this_machine[0].passcode
   var config_data={
     current_tebs:"global.current_tebs"
+  }
+  var pass_code_data={
+    pass_code:this_passcode
   }
 // os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
@@ -499,6 +504,7 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
 
   super_enlace('config','config','../system/configuracion.html',config_data);
   super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
+  super_enlace('security_page','security_page','../system/security_page.html',pass_code_data);
 
 })
 }

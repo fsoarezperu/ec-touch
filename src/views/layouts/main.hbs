@@ -67,8 +67,6 @@
       $('#out_of_service').fadeOut(500);
       $('#overlay, .overlay-back').fadeOut(500);
     });
-
-
     socket.on('lock_machinex', function(msg) {
         console.log("lock_machinex:"+msg.orden);
           if (msg.orden=="lock") {
@@ -89,9 +87,6 @@
     // // }
     //
     // });
-
-
-
     });
   </script>
   <style media="screen">

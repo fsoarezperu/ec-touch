@@ -75,6 +75,8 @@
     enlace_a("main");
 /////////////////////////////////////////////////////////////////////
     enlace_a("config");
+    enlace_a("security_page");
+
     enlace_a("retiro_en_proceso");
 
   //  enlace_a("info");
@@ -101,7 +103,7 @@
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
-     mandar_orden("config");
+  //   mandar_orden("config");
      mandar_orden("info");
   //   mandar_orden("main");
      enlace_a("reciclador");
@@ -141,14 +143,12 @@
       display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
 
     });
-/////////////////////////////////////////////////////////////////////
-// socket.on('Cashbox_out_of_Service', function(msg) {
-//   //display_system_running_indicator();
-//   //online = true;
-//   console.log(msg);
-// });
-
-
+    /////////////////////////////////////////////////////////////////////
+    // socket.on('Cashbox_out_of_Service', function(msg) {
+    //   //display_system_running_indicator();
+    //   //online = true;
+    //   console.log(msg);
+    // });
     // remote_TBM.on('machine', function(data) {
     //   console.log("ticking...");
     // });
@@ -217,8 +217,6 @@
       document.getElementById("message2").innerHTML = "";
     //  document.getElementById("msg1").innerHTML = "Bloqueado";
     };
-
-
     //////////////////////////////////////////
   });
 </script>
