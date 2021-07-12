@@ -12,7 +12,7 @@ module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
-
+const moment=require("moment");
 function  nuevo_enlace(pagina,ruta,vardata1){
   fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
       if (err) {
@@ -399,15 +399,16 @@ io.on('connection', async function (socket) {
        console.log(chalk.yellow("recibi smart emptied"));
        nuevo_enlace('Smart_emptied','../system/remesa_hermes/rm_3.html');
       });
-  socket.on('Cashbox_Back_in_Service',async function(){
-        // console.log(chalk.yellow("Cashbox_Back_in_Service123"));
-        // existe_bolsa=true;
-        // if(on_remesa_hermes==true){
-        //     nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
-        // }else{
-        //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
-        // }
-       });
+  // socket.on('Cashbox_Back_in_Service',async function(){
+  //   io.emit('lock_cashbox', "lock_cashbox");
+  //       // console.log(chalk.yellow("Cashbox_Back_in_Service123"));
+  //       // existe_bolsa=true;
+  //       // if(on_remesa_hermes==true){
+  //       //     nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+  //       // }else{
+  //       //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
+  //       // }
+  //      });
    socket.on('reciclador',async function(msg){
      var mi_objeto=await os.consulta_all_levels();
      console.log(mi_objeto);
@@ -449,8 +450,20 @@ io.on('connection', async function (socket) {
   socket.on('remesa_hermes',async function(msg){
   console.log(chalk.yellow("socket on remesa_hermes"));
   var soy_la_voz=await os.consulta_remesa_hermes_actual();
+    //var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    var rh2=[];
+    moment.locale("es");
+      for (let rh of soy_la_voz){
+         var formatear_ts_inicio=rh["ts_inicio"];
+        rh["ts_inicio"]=moment(formatear_ts_inicio).format('LLL');
+       //  var formatear_ts_fin=rh["ts_fin"];
+       // rh["ts_fin"]=moment(formatear_ts_fin).format('LLL');
+        //console.log(rh);
+        rh2.push(rh);
+      }
+
   //console.log("soy la voz es:"+JSON.stringify(soy_la_voz));
-  nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',soy_la_voz);
+  nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',rh2);
   });
   socket.on('cifras_generales',async function(msg){
    console.log(chalk.yellow("socket on cifras_generales"));

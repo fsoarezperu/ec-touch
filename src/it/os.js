@@ -14,6 +14,7 @@ const tambox = require("./devices/tambox");
 var fetchTimeout = require('fetch-timeout');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const socketjs=require('./../it/socket');
+const moment=require("moment");
 async function coneccion_con_tbm(){
   return new Promise(async function(resolve, reject) {
     try {
@@ -85,6 +86,10 @@ module.exports.tock_tock_tbm = tock_tock_tbm;
 async function arranca_tambox_os() {
   return new Promise(async function(resolve, reject) {
     try {
+
+
+      var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+      console.log(this_ts);
       let step1=await tambox.finalizar_pagos_en_proceso();
       console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
       console.log(chalk.green("Iniciando Validador"));
@@ -847,7 +852,8 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
     } else {
       console.log(fechax1);
       console.log(horax1);
-
+      var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+      console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
         const nueva_res = {
           tienda_id,
@@ -860,8 +866,8 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
           tebs_barcode: tebs_barcode,
           machine_sn: numero_de_serie,
           tipo: 'ingreso',
-          no_billetes: 0 //,
-          // ts:tsx
+          no_billetes: 0, //,
+          ts_inicio:this_ts
         }
         await pool.query('INSERT INTO remesas set ?', [nueva_res]);
         console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa" + JSON.stringify(nueva_res));
@@ -1012,10 +1018,27 @@ async function consulta_remesa_hermes_actual() {
 module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
 /////////////////////////////////////////////////////////////////
 
+
+
 async function consulta_historial() {
-  const historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
+  var historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
+  console.log("consultando_historial de remeas hermes:"+historial);
+  console.log("antes"+JSON.stringify(historial));
+  var historial2=[];
+
+ moment.locale("es");
+   for (let rh of historial){
+      var formatear_ts_inicio=rh["ts_inicio"];
+     rh["ts_inicio"]=moment(formatear_ts_inicio).format('LLL');
+     var formatear_ts_fin=rh["ts_fin"];
+    rh["ts_fin"]=moment(formatear_ts_fin).format('LLL');
+     //console.log(rh);
+     historial2.push(rh);
+   }
+  // console.log("despues"+JSON.stringify(historial2));
+
   //console.log(JSON.stringify(remesa_hermes_entambox));
-  return historial;
+  return historial2;
 }
 module.exports.consulta_historial = consulta_historial;
 /////////////////////////////////////////////////////////////////
@@ -1023,7 +1046,17 @@ async function consulta_remesas_de_ese_tebsbarcode() {
   //console.log("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
   const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=? and monto>'0' ORDER BY id DESC", [current_tebs_barcode]);
   //console.log(JSON.stringify(remesa_hermes_entambox));
-  return remesas_de_tebs;
+  var remesas_de_tebs2=[];
+
+ moment.locale("es");
+   for (let rh of remesas_de_tebs){
+      var formatear_ts_inicio=rh["ts_inicio"];
+     rh["ts_inicio"]=moment(formatear_ts_inicio).format('LLL');
+     //console.log(rh);
+     remesas_de_tebs2.push(rh);
+   }
+
+  return remesas_de_tebs2;
 }
 module.exports.consulta_remesas_de_ese_tebsbarcode = consulta_remesas_de_ese_tebsbarcode;
 /////////////////////////////////////////////////////////////////
@@ -1172,6 +1205,9 @@ try {
 for (var i = 0; i < 100; i++) {
    if (global.existe_bolsa != true) {
      console.log("esperando bolsa:"+i);
+     if(i==99){
+       i=0;
+     }
      await validatorpoll2(validator_address);
      await new Promise(resolve => setTimeout(resolve, 1000));
       }else {

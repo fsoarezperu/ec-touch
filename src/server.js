@@ -27,7 +27,7 @@ const sp= require('./it/serial_port')(io);
 const ssp = require('./it/ssp')(io);
 const va = require('./it/devices/validator');
 //const tambox = require('./it/devices/tambox');
-
+const moment=require("moment");
 
 // app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -74,6 +74,26 @@ app.set('view engine', '.hbs');
 httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
+///////////////////////////////////////////////////
+// var rh_actual=await os.consulta_remesa_hermes_actual();
+// //si la remsa hermes actual devulve undefined, crea una en cero con valores validos.
+// if (rh_actual.length==0) {
+//   console.log("lo detecto vacio");
+//   var nueva_info={
+//     monto:0,
+//     tebsbarcode:12345
+//   }
+//   rh_actual.push(nueva_info);
+// }
+// console.log("#7:"+JSON.stringify(rh_actual));
+// var resultado_de_smart_empty={
+//   monto_en_bolsa:rh_actual[0].monto,
+//   tebs_de_la_bolsa:rh_actual[0].tebs_barcode,
+//   numero_de_serie:numero_de_serie
+// }
+// console.log(resultado_de_smart_empty);
+// return;
+////////////////////////////////////////////////////
   try {
     // await sp.existira_conexion_serial();
 

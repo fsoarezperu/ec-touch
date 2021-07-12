@@ -11,7 +11,7 @@ const enc = require('./../it/encryption');
 const glo = require('./../it/globals');
 const server= require('./../server');
 const os = require('./../it/os');
-
+const moment=require("moment");
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////////////////////////////////
 var ConvertBase = function(num) {
@@ -48,7 +48,8 @@ router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto
               return reject('retiro_limite');
             }
                 if(tienda_id&&no_caja&&codigo_empleado&&no_remesa&&monto){
-                  const nuevo_egreso={tienda_id,no_caja,codigo_empleado,no_remesa,monto,moneda:country_code,tebs_barcode:tebs_barcode,machine_sn:numero_de_serie,tipo:'egreso',fecha,hora,status:'recibido',no_billetes:0}
+                    var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+                  const nuevo_egreso={tienda_id,no_caja,codigo_empleado,no_remesa,monto,moneda:country_code,tebs_barcode:tebs_barcode,machine_sn:numero_de_serie,tipo:'egreso',fecha,hora,status:'recibido',no_billetes:0,ts_inicio:this_ts}
                   await pool.query('INSERT INTO remesas set ?', [nuevo_egreso]);
                 //  io.io.emit('aviso_de_pago',nuevo_egreso.no_remesa);
                 //  socket.io.emit('refresh_window',nuevo_egreso.no_remesa);

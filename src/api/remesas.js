@@ -6,7 +6,7 @@ const server = require("../server.js");
 const tambox = require("../it/devices/tambox.js");
 const ssp = require("../it/ssp");
 const os = require("../it/os");
-
+const moment=require("moment");
 const chalk = require('chalk');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
@@ -234,6 +234,7 @@ router.get('/nueva_remesa_old/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:f
       const {tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1} = req.params;
       console.log(fechax1);
       console.log(horax1);
+        var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       //var tsx=await getAsDate(fechax1,horax1);
       //console.log(tsx);
       //console.log("ARREGLANDO TIMESTAMP CREATION:"+tsx);
@@ -249,7 +250,8 @@ router.get('/nueva_remesa_old/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:f
           tebs_barcode: tebs_barcode,
           machine_sn: numero_de_serie,
           tipo: 'ingreso',
-          no_billetes: 0 //,
+          no_billetes: 0, //,
+          ts_inicio:this_ts
           // ts:tsx
         }
         await pool.query('INSERT INTO remesas set ?', [nueva_res]);

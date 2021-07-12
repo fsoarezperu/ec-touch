@@ -13,6 +13,7 @@ const socketjs = require('./../it/socket');
 const ssp = require('./../it/ssp');
 const enc = require('./../it/encryption');
 const rem = require('./../api/remesas');
+const moment=require("moment");
 
 var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -229,7 +230,7 @@ router.get('/smart_empty', async (req, res) => {
       // }
       // await pool.query('INSERT INTO remesa_hermes set ?', [remesa_hermes]);
       console.log(chalk.yellow("actualizando monto de RH:")+chalk.red(monto_remesa_hermes)+"en la remesa heremes con tebs:"+current_tebs_barcode);
-      await pool.query("UPDATE remesa_hermes SET monto=?, fecha_fin=?, hora_fin=? WHERE status='iniciada' and tebs_barcode=?",[monto_remesa_hermes,tambox.fecha_actual(),tambox.hora_actual(),current_tebs_barcode]);
+      await pool.query("UPDATE remesa_hermes SET monto=?, fecha_fin=?, hora_fin=?, ts_fin=? WHERE status='iniciada' and tebs_barcode=?",[monto_remesa_hermes,tambox.fecha_actual(),tambox.hora_actual(),moment(),current_tebs_barcode]);
       //await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
       const bolsa = {
         monto: monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso,
@@ -263,6 +264,7 @@ try {
   }else {
     console.log("Error en la lectura del tebsbarcode.");
   }
+    var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
   const new_remesa_hermes = {
     monto:0,
     moneda:country_code,
@@ -270,7 +272,8 @@ try {
     hora:tambox.hora_actual(),
     tebs_barcode: tebs_barcodex,
     machine_sn: numero_de_serie,
-    no_billetes:0
+    no_billetes:0,
+    ts_inicio:this_ts
   }
   await pool.query('INSERT INTO remesa_hermes set ?', [new_remesa_hermes]);
   ///////////////////////////////

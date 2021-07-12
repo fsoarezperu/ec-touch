@@ -70,3 +70,10 @@ GRANT ALL ON tambox.* TO 'user1@192.168.1.17' IDENTIFIED BY 'pass1';
 sudo nano autoChromium.desktop
 
 //OS linea 132. comente esta linea poruqe no estaba iniciando por completo el sistema.
+
+//aqui actualizando formato de fechas para usar moment en todas las tablas y tranacciones.
+cambie:
+ssp linea 1489 agregue ts_fin
+ssp 1504 agregue libnea de ts_incio
+ssp 1563 agregue libnea de ts_incio
+index.js 273 agregue ts_incio

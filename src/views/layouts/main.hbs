@@ -31,18 +31,22 @@
       var caja_devuelta=false;
     $(document).ready(function() {
     function send_once(orden){
+      console.log(indicador_unico);
         if (indicador_unico==false) {
+          indicador_unico=true;
           socket.emit(orden);
           indicador_unico=true;
+          console.log(indicador_unico);
         }
       }
     socket.on('connect', () => {console.log("mi_id:"+socket.id)});
     socket.on('Cashbox_out_of_Service', function(msg) {
         console.log(msg);
-         $('#out_of_service, .overlay-back').fadeIn(500);
+         $('#out_of_service, .overlay-back').show();
         document.getElementById('msg11').innerHTML=msg;
         if (msg=="Unable_to_read_Barcode") {
           document.getElementById('msg11').innerHTML="No se detecta bolsa, Será necesario que ingrese una bolsa nueva, verifique que el codigo de barras se encuentre en buen estado.<br> Utilizando la llave desbloquee el pestillo iluminado en color verde";
+            send_once('unlock_cashbox', "unlock_cashbox");
             caja_devuelta=false;
         }
         if (msg=="Cashbox_Unlocked") {
