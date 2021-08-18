@@ -27,7 +27,9 @@ const sp= require('./it/serial_port')(io);
 const ssp = require('./it/ssp')(io);
 const va = require('./it/devices/validator');
 //const tambox = require('./it/devices/tambox');
+const mis_classes= require('./it/mis_classes')
 const moment=require("moment");
+const synch_tbm = require('./it/tbm_sync/synchronize');
 
 // app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -75,6 +77,14 @@ httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
 ///////////////////////////////////////////////////
+console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
+// var array_local=[1,2,3,4,5,6,7,8];
+// var array_tbm=[8,10,11];
+// var para_actualizar=synch_tbm.arr_diff(array_local,array_tbm)
+// console.log("para actualizar:"+para_actualizar);
+//
+// return;
+///////////////////////////////////////////////////
 // var rh_actual=await os.consulta_remesa_hermes_actual();
 // //si la remsa hermes actual devulve undefined, crea una en cero con valores validos.
 // if (rh_actual.length==0) {
@@ -101,6 +111,7 @@ httpx.listen(machine_port, async function(io2) {
     await os.habilita_sockets();
     await os.arranca_tambox_os();
 
+    await synch_tbm.are_synched();
 
 
     console.log(chalk.green("El sistema arranco sin problemas"));

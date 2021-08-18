@@ -99,7 +99,19 @@
     mandar_orden("cancelar_remesa");
     // mandar_orden("trigger_socket");
     //
-     mandar_orden("socket_to_tbm");
+    //mopdificnado socket_to_tbm para incliuir in objeto a enviar.
+     //mandar_orden("socket_to_tbm");
+
+     $(document).on("click","#socket_to_tbm",function(){
+       var data=[{
+         id:1,
+         tienda_id:9999,
+         monto:100
+       }]
+       console.log("sicronizando via socket con dato:"+data);
+       socket.emit("socket_to_tbm",data);
+     });
+
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
@@ -224,7 +236,7 @@
 
 <body oncontextmenu="return false">
   <div id="loading" style="display:none"> <br>Error:<br/>El servidor esta paralizado.</div>
-  <div id="display">
+  <div class="display_rasp" id="display">
     <div class="wrapperx" id="pizarra">
       <!-- ESTO SE LLENA EN LINEA CON LA INFORMACION GUARDADA EN BUFFER.HTML -->
     </div>

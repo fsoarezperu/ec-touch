@@ -7,6 +7,9 @@ const chalk = require('chalk');
 const pool = require('./../../database');
 //TAMBOX MANAGER
 var adrees=global.tbm_adressx;
+const synchronize = require('./synchronize');
+
+
 
 async function iniciar_handshake_con_tbm(){
   return new Promise(async function(resolve, reject) {
@@ -52,12 +55,17 @@ module.exports.iniciar_handshake_con_tbm=iniciar_handshake_con_tbm;
 //console.log(chalk.cyan("AQUI ME ESTOY CONECTANDO A SERVIDOR REMOTO TBM;"));
 console.log(chalk.yellow("TBM ADRESS HARDCODED IS:"+global.tbm_adressx));
 var socket_to_tbm = require("socket.io-client")(adrees);
-socket_to_tbm.on("connect",async function() {
+socket_to_tbm.on("connect",async function(socket) {
+  console.log(chalk.yellow("a user connected :"+socket_to_tbm.id));
+  synchronize.synch_required();
+  tbm_status=true;
+
+});
   socket_to_tbm.on('disconnect', function() {
-    console.log("Tambox_manager is offline...");
-    server.io.emit('show_not_connected');
-    tbm_status = false;
-  });
+  console.log("Tambox_manager is offline..."+socket_to_tbm.id);
+  server.io.emit('show_not_connected');
+  tbm_status = false;
+});
   socket_to_tbm.on('machine', function(data) {
     //io.to('lobby').emit('message', data);
     console.log("ticking...");
@@ -66,6 +74,19 @@ socket_to_tbm.on("connect",async function() {
     //io.to('lobby').emit('message', data);
     console.log("ticking...aqui",data);
   });
+
+  // socket_to_tbm.on('synch_confirmation', function(data) {
+  //   //io.to('lobby').emit('message', data);
+  //   console.log(chalk.cyan("synch confirmation received:",data));
+  //   if (JSON.stringify(data)===JSON.stringify(socket_sent)) {
+  //     console.log(chalk.green("data integrity perfect"));
+  //     console.log(chalk.green(JSON.stringify(socket_sent)));
+  //
+  //   }else {
+  //     console.log(chalk.red("data received different"));
+  //   }
+  // });
+
   socket_to_tbm.on('refresh_navigators', function(data) {
     //io.to('lobby').emit('message', data);
     console.log("refreshing navigators from TBM...");
@@ -80,9 +101,9 @@ socket_to_tbm.on("connect",async function() {
         // return resolve("OK");
   });
 
-  socket_to_tbm.on('synch_request', function(msg){
-        console.log(chalk.cyan("se ah recivido un sych_request"));
-  });
+  // socket_to_tbm.on('synch_request', function(msg){
+  //       console.log(chalk.cyan("se ah recivido un sych_request"));
+  // });
   ////////////////////////////////////////////////////////////////
   socket_to_tbm.on('lock_machine', async function(msg){
         console.log("///////////////////////////////////////");
@@ -124,7 +145,17 @@ socket_to_tbm.on("connect",async function() {
     server.io.emit('adopt',msg.machine_sn);
   });
   //esta variable es muy importante porque indica si la maquina se encuentra conectada a TBM.
-  tbm_status=true;
+
+/////////////////////////////////////////
+socket_to_tbm.on('synch_confirmation', function(data) {
+  //io.to('lobby').emit('message', data);
+//  console.log(chalk.cyan("synch confirmation received:",data));
+  if (JSON.stringify(data)===JSON.stringify(socket_sent)) {
+  //  console.log(chalk.green("data integrity perfect"));
+    console.log(chalk.green("received:"+JSON.stringify(socket_sent)+ "from id:"+socket_to_tbm.id));
+  }else {
+    console.log(chalk.red("data received different"));
+  }
 });
 /////////////////////////////////////////////////////////
 exports.socket_to_tbm = socket_to_tbm;

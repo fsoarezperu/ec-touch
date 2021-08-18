@@ -109,83 +109,50 @@ console.log("ESto es historial"+JSON.stringify(mydata["historial"]));
      display: none;
      margin: 0 auto;
    } */
-   .grupo3{
-     /* grid-column: 1/5; */
-     min-height:350px;
-     width: 100%;
-     max-width: 700px;
-     /*grid-row: auto; */
-     background-color:  rgba(60, 60, 60, 1);
-     /* background-image: url("../img/bg_image4.jpg"); */
-     color: white;
-     border: 4.5px solid white;
-     border-radius: 15px;
-     padding: 5px;
-     text-align: center;
-     display:grid;
-     grid-template-columns: 0.5fr auto 0.5fr;
-     grid-template-rows:auto auto auto auto 0.5fr;
-     }
  </style>
 
 
-<!-- <div class="label_tebs">TEBSBarCode:</div>
-<div class="label_tebs">TEBSBarCode:</div>
-<div class="label_tebs">TEBSBarCode:</div> -->
-
  <div class="ec_wrapper">
-   <div class="cabecera titulo2">
-   <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
-   <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
-   <div id="message">Tambox 1.0</div>
-   <div class=""></div>
-   <div class="ec_btn volver" id='security_page'><i class="far fa-list-alt fa-2x"></i></div>
-   </div>
+       <div class="cabecera titulo2">
+         <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
+         <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
+         <div id="message">Tambox 1.0</div>
+         <div></div>
+         <div class="ec_btn volver" id='security_page'><i class="far fa-list-alt fa-2x"></i></div>
+       </div>
+
    <div class="area_trabajo_logo ec_panel">
      <div class="logo">
             <img  src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
      </div>
-
-
-     <div class="ec_card2 resumen">
-             <p>Remesas Hermes</p>
-             <div class="lista_remesas_hermes"></div>
-              <p>fin de la lista</p>
-     </div>
-     <div class="ec_card panel1">
-       <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
-       <!-- <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div> -->
-
-    </div>
-     <div class="ec_card panel2">
-       <!-- <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
-       <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div> -->
-       <div><a class="ec_btn" id="lock_machine">Lock Machine</a> </div>
      </div>
 
-     <div class="ec_card2 resumen2">
-             <p>Remesas</p>
-             <div class="lista_remesas"></div>
-              <p>fin de la lista</p>
+     <div class="area_trabajo ec_panel">
+         <div class="ec_card2 resumen">
+                 <p>Remesas Hermes</p>
+                 <div class="lista_remesas_hermes"></div>
+                  <p>fin de la lista</p>
+         </div>
+         <div class="ec_card panel1" >
+           <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
+           <!-- <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div> -->
+
+        </div>
+         <div class="ec_card panel2" >
+           <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
+           <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div>
+           <div><a class="ec_btn" id="lock_machine">Lock Machine</a> </div>
+         </div>
+         <div class="ec_card2 resumen2">
+                 <p>Remesas</p>
+                 <div class="lista_remesas"></div>
+                  <p>fin de la lista</p>
+         </div>
      </div>
-    <!-- <div class="ec_card2"> -->
-      <!-- <p>Tienda_id:</p><div id="tienda_id">tienda_id</div>
-     <p>IP Publico:</p> <div id="public_machine_ip">puclic_machine_ip</div> -->
-     <!-- <p>Lock Machine:</p> <div id="lock_machine">puclic_machine_ip</div>
-
-    </div> -->
-   </div>
-   <div class="pie_de_pagina" id="mesage2">Creado por EC-HOME AUTOMATION PERU.</div>
-
-
-     <!-- <div class="ec_btn volver" id='config'><i class="far fa-list-alt fa-2x"></i></div></div>
-   <div class="grupo4"> -->
-     <!-- <div class="ec_panel "> -->
-       <!--  -->
-
-     <!-- -->
+     <div class="pie_de_pagina">Creado por EC-HOME AUTOMATION PERU.</div>
 </div>
-<div class="popup">
+
+<div class="popup" style="display:none">
   <div id="overlay-back"></div>
   <div id="overlay">
     <div class="grupo3">

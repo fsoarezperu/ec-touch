@@ -1493,13 +1493,19 @@ async function verificar_existencia_de_bolsa(receptor) {
                const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
                if(existe_remesa_hermes[0].RH ===0){
               //       //  console.log(existe_remesa_hermes[0].RH);
+                      console.log("dando como processed todos creditso en base de datos.");
                       await pool.query("UPDATE creditos SET status='processed'");
+                      console.log("marcando como entregadas las REMESAS que figuraban en tambox.");
                       await pool.query("UPDATE remesas SET status_hermes='entregada' WHERE status_hermes='en_tambox'");
+                        console.log("dando como terminadas las remesas hermes existentes");
                       //await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual()]);
-                      await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? ,ts_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual(),moment()]);
+//                      var this_machine2 = await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? ,ts_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual(),moment()]);
+                      var this_machine2 = await pool.query("UPDATE remesa_hermes SET status='terminada' WHERE status='iniciada'");
 
+                      console.log("this_machine2 is:"+JSON.stringify(this_machine2));
 
                        const this_machine= await pool.query("SELECT * FROM machine");
+                       console.log("this_machine is:"+JSON.stringify(this_machine));
                        console.log(chalk.yellow("#123 No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
                          var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
                        const nueva_res_hermes={
@@ -1517,8 +1523,15 @@ async function verificar_existencia_de_bolsa(receptor) {
 
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
                       //await sincroniza_remesa_hermes2([nueva_res_hermes]);
-                      await crea_rh_en_tbm([nueva_res_hermes]);
-                      return resolve("OK");
+                      try {
+                          await crea_rh_en_tbm([nueva_res_hermes]);
+                      } catch (e) {
+                        console.log("no conexiont to tbm");
+                      } finally {
+                          return resolve("OK");
+                      }
+
+
             }else{
               //RH ya existe con este tebs. no se creara una nueva
               console.log("RH ya existente");

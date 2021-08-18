@@ -40,16 +40,17 @@
 
 <style>
 .teclado{
+  margin:10px;
   display:grid;
   grid-template-columns: repeat(3, auto);
   grid-template-rows: repeat(3, auto);
   justify-items: stretch;
-  grid-gap:15px;
+  grid-gap:10px;
 }
 .boton_teclado{
   color:white;
   font-size:60px;
-  background:gray;
+  background:rgb(48, 48, 48);
   border: 2px solid white;
   text-align:center;
 }
@@ -58,22 +59,27 @@
   grid-column-end: 4;
   color:white;
   font-size:60px;
-  background:gray;
+  background:rgb(48, 48, 48);
   border: 2px solid white;
   text-align:center;
+}
+#validating{
+  font-size:40px;
+}
+#canceling{
+  font-size:20px;
+
+}
+#cancel{
+justify-text: center;
 }
 
 </style>
   <div class="wrapper2">
     <div class="titulo2">
       <div class="ec_btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
-      <div class="ec_btn" id='config' style="visibility:hidden">
-
-      </div>
+      <div class="ec_btn" id='config' style="visibility:hidden"></div>
       <div>Security page</div>
-      <!-- <div id="msg1">
-        Bloqueado
-      </div> -->
       <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
     </div>
 
@@ -88,15 +94,8 @@
       <div class="boton_teclado key" id="7">7</div>
       <div class="boton_teclado key" id="8">8</div>
       <div class="boton_teclado key" id="9">9</div>
-      <div class="boton_teclado " id="cancel"><div class="ec_btn btn_grupo4" id='canceling'> Cancelar</div></div>
+      <div class="boton_teclado " id="cancel"><div id='canceling'> Cancelar</div></div>
       <div class="boton_teclado key" id="0">0</div>
-      <div class="boton_teclado " id="ok"><div class="ec_btn btn_grupo4" id='validating'>OK</div></div>
-
-
-      <!-- <div class="ec_btn btn_grupo4" id='reciclador'><i class="far fa-clipboard fa-4x"></i> Reciclador</div>
-      <div class="ec_btn btn_grupo4" id='cuadre_diario'><i class="far fa-clipboard fa-4x"></i> Cuadre diario</div>
-      <div class="ec_btn btn_grupo4" id='cifras_generales'><i class="fas fa-chart-bar fa-4x"></i> Cifras Generales</div>
-      <div class="ec_btn btn_grupo4" id='remesa_hermes'><i class="fas fa-money-bill-alt fa-4x"></i>Remesa Hermes</div>
-      <div class="ec_btn btn_grupo4" id='info'><i class="fas fa-info fa-4x"></i>Información General</div>-->
+      <div class="boton_teclado " id="ok"><div  id='validating'>OK</div></div>
     </div>
   </div>

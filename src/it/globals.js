@@ -1,6 +1,7 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
+global.socket_sent="";
 global.en_reciclador_antes_de_retiro=0;
 global.en_reciclador_despues_de_retiro=0;
 global.no_billetes_en_ultimo_retiro=0;

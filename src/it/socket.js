@@ -53,13 +53,15 @@ socket.on('synch_remesas', async function(msg){
 //    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
 
 // }
-  socket.on('socket_to_tbm',async function(socket){
-    console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
-    console.log(chalk.yellow("orden para mandar socket to tbm detected"));
+  socket.on('socket_to_tbm',async function(socket_data){
+//    console.log(chalk.yellow("socket to tbm detected from client:"+socket_data.id));
+    console.log(chalk.yellow("synch request sent:"+socket_data));
+    //guardando valor en socket_sent para comparar recepcion
+    socket_sent=socket_data;
 //    to_tbm.socket_to_tbm.emit('Machine_alive','123456');
   //  to_tbm.socket_to_tbm.emit('registration',"machine_en_cuestion");
 //    to_tbm.socket_to_tbm("my other event",{ my: 'data' });
-      to_tbm.socket_to_tbm.emit("Machine_alive","vamos bien");
+      to_tbm.socket_to_tbm.emit("synch_request",socket_data);
 
    });
 });
@@ -461,6 +463,7 @@ io.on('connection', async function (socket) {
         //console.log(rh);
         rh2.push(rh);
       }
+
 
   //console.log("soy la voz es:"+JSON.stringify(soy_la_voz));
   nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',rh2);
