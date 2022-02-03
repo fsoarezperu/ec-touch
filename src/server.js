@@ -78,6 +78,15 @@ httpx.listen(machine_port, async function(io2) {
   os.logea("indica que esta en startup");
 ///////////////////////////////////////////////////
 console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
+
+let serialport = require('serialport');
+
+// list serial ports:
+serialport.list().then (
+  ports => ports.forEach(port =>console.log(port.path)),
+  err => console.log(err)
+)
+
 // var array_local=[1,2,3,4,5,6,7,8];
 // var array_tbm=[8,10,11];
 // var para_actualizar=synch_tbm.arr_diff(array_local,array_tbm)
