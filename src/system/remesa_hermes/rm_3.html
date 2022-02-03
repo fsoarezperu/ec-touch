@@ -6,9 +6,9 @@
       //socket.emit("rm_4","rm_4");
     //  mandar_orden("rm_4");
   })
-    $('.mensaje_monto').text(mydata.monto_en_bolsa);
-    $('.smart_div2').text(mydata.tebs_de_la_bolsa);
-    $('.smart_div3').text(mydata.numero_de_serie);
+    $('.resultado_monto').text(mydata.monto_en_bolsa);
+    $('.resultado_tebs').text(mydata.tebs_de_la_bolsa);
+    $('.resultado_machine_sn').text(mydata.numero_de_serie);
 
 
 });
@@ -26,10 +26,10 @@
     <div class="smart">
 
       <div class="smart_div1">
-        <div class="mensaje_monto">monto:000.00</div>
+        <div class="mensaje_monto">monto:<div class="resultado_monto">0.00</div> </div>
       </div>
-      <div class="smart_div2">tebs_barcode:12345678</div>
-      <div class="smart_div3">machine_sn:2233445</div>
+      <div class="smart_div2">tebs_barcode:<div class="resultado_tebs">n/a</div></div>
+      <div class="smart_div3">machine_sn:<div class="resultado_machine_sn">n/a</div></div>
       <div id="msg1">
         <!-- Bloqueado -->
       </div>

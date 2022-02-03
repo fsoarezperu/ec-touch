@@ -1,5 +1,6 @@
 //const ssp = require('./../ssp');
-//const encryption = require('./../encryption');
+
+//const enc = require('./../encryption');
 const sp = require('./../serial_port');
 //const sh = require('./smart_hopper');
 //const it = require('./../../server');
@@ -124,7 +125,7 @@ exports.finalizar_pagos_en_proceso=async function(){
   });
 }
 ////////////////////////////////////////////////////
-exports.get_all_levels_value=function (){
+exports.get_all_levels_value=async function (){
   var lod=0;
   var totbills=0;
   var totaccum=0;
@@ -144,16 +145,17 @@ exports.get_all_levels_value=function (){
   var value_level5 = 0;
   var acum_level5 = 0;
 
-  server.logea("consultando all levels");
-  exports.envio_redundante(get_all_levels)
-  .then(data => {
+  console.log("consultando all levels");
+   var data =await os.transmite_encriptado_y_procesa2(validator_address, get_all_levels);
+//  exports.envio_redundante(get_all_levels)
+//  .then(data => {
     console.log(chalk.yellow("<-:"+data));
-    exports.enable_sending();
+//    exports.enable_sending();
     var poll_responde=data.match(/.{1,2}/g);
-  server.logea("response length:"+poll_responde[0]);
+  console.log("response length:"+poll_responde[0]);
     if(poll_responde[1] == "F0"){
-    server.logea(chalk.green("response is ok"));
-      server.logea("number of denominations:"+poll_responde[2]);
+    console.log(chalk.green("response is ok"));
+      console.log("number of denominations:"+poll_responde[2]);
       var i=0;
       var ru=0;
       var prevalue=0;
@@ -165,13 +167,13 @@ exports.get_all_levels_value=function (){
           prevalue=prevalue + poll_responde[ru+3];
           prevalue=prevalue + poll_responde[ru+4];
           prevalue=prevalue + poll_responde[ru+5];
-          prevalue=exports.changeEndianness(prevalue);
+          prevalue=enc.changeEndianness(prevalue);
           value_level1=parseInt(prevalue,16)/100;
-          server.logea("value_level1 is:"+value_level1);
+          console.log("value_level1 is:"+value_level1);
           note_level1=parseInt( poll_responde[ru],16);
-          server.logea("note_level1 is:"+note_level1);
+          console.log("note_level1 is:"+note_level1);
           acum_level1=note_level1*value_level1;
-          server.logea("acum_level1 is:"+acum_level1);
+          console.log("acum_level1 is:"+acum_level1);
         }
         if(i==1){
           ru=12;
@@ -179,13 +181,13 @@ exports.get_all_levels_value=function (){
           prevalue=prevalue + poll_responde[ru+3];
           prevalue=prevalue + poll_responde[ru+4];
           prevalue=prevalue + poll_responde[ru+5];
-          prevalue=exports.changeEndianness(prevalue);
+          prevalue=enc.changeEndianness(prevalue);
           value_level2=parseInt(prevalue,16)/100;
-          server.logea("value_level2 is:"+value_level2);
+          console.log("value_level2 is:"+value_level2);
           note_level2=parseInt( poll_responde[ru],16);
-          server.logea("note_level2 is:"+note_level2);
+          console.log("note_level2 is:"+note_level2);
           acum_level2=note_level2*value_level2;
-          server.logea("acum_level2 is:"+acum_level2);
+          console.log("acum_level2 is:"+acum_level2);
         }
         if(i==2){
           ru=21;
@@ -193,13 +195,13 @@ exports.get_all_levels_value=function (){
           prevalue=prevalue + poll_responde[ru+3];
           prevalue=prevalue + poll_responde[ru+4];
           prevalue=prevalue + poll_responde[ru+5];
-          prevalue=exports.changeEndianness(prevalue);
+          prevalue=enc.changeEndianness(prevalue);
           value_level3=parseInt(prevalue,16)/100;
-          server.logea("value_level3 is:"+value_level3);
+          console.log("value_level3 is:"+value_level3);
           note_level3=parseInt( poll_responde[ru],16);
-          server.logea("note_level3 is:"+note_level3);
+          console.log("note_level3 is:"+note_level3);
           acum_level3=note_level3*value_level3;
-          server.logea("acum_level3 is:"+acum_level3);
+          console.log("acum_level3 is:"+acum_level3);
         }
         if(i==3){
           ru=30;
@@ -207,13 +209,13 @@ exports.get_all_levels_value=function (){
           prevalue=prevalue + poll_responde[ru+3];
           prevalue=prevalue + poll_responde[ru+4];
           prevalue=prevalue + poll_responde[ru+5];
-          prevalue=exports.changeEndianness(prevalue);
+          prevalue=enc.changeEndianness(prevalue);
           value_level4=parseInt(prevalue,16)/100;
-          server.logea("value_level4 is:"+value_level4);
+          console.log("value_level4 is:"+value_level4);
           note_level4=parseInt( poll_responde[ru],16);
-          server.logea("note_level4 is:"+note_level4);
+          console.log("note_level4 is:"+note_level4);
           acum_level4=note_level4*value_level4;
-          server.logea("acum_level4 is:"+acum_level4);
+          console.log("acum_level4 is:"+acum_level4);
         }
         if(i==4){
           ru=39;
@@ -221,13 +223,13 @@ exports.get_all_levels_value=function (){
           prevalue=prevalue + poll_responde[ru+3];
           prevalue=prevalue + poll_responde[ru+4];
           prevalue=prevalue + poll_responde[ru+5];
-          prevalue=exports.changeEndianness(prevalue);
+          prevalue=enc.changeEndianness(prevalue);
           value_level5=parseInt(prevalue,16)/100;
-          server.logea("value_level5 is:"+value_level5);
+          console.log("value_level5 is:"+value_level5);
           note_level5=parseInt( poll_responde[ru],16);
-          server.logea("note_level5 is:"+note_level5);
+          console.log("note_level5 is:"+note_level5);
           acum_level5=note_level5*value_level5;
-          server.logea("acum_level5 is:"+acum_level5);
+          console.log("acum_level5 is:"+acum_level5);
         }
         //console.log("i:"+i);
         //console.log("ru:"+ru);
@@ -243,7 +245,7 @@ totaccum=acum_level1+acum_level2+acum_level3+acum_level4+acum_level5;
 console.log("total monto acumulado en reciclador:"+totaccum);
     console.log("/////////// ALL LEVELS ///////////////");
 return {totbills,totaccum};
-})
+//})
   //return "ok";
   //return {totbills,totaccum};
 }

@@ -1,7 +1,14 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
-global.existe_bolsa=false;
+global.socket_sent="";
+global.en_reciclador_antes_de_retiro=0;
+global.en_reciclador_despues_de_retiro=0;
+global.no_billetes_en_ultimo_retiro=0;
+
+
+global.limite_maximo_de_retiro=500;
+global.si_existe_bolsa=false;
 global.new_manual_remesa;
 global.on_remesa_hermes=false;
 global.is_regis=false;
@@ -186,10 +193,12 @@ global.pay_amount= [0x09, 0x33, 0xD0, 0x07, 0x00, 0x00, 0x50, 0x45, 0x4E, 0x58];
 //global.pay_amount= [0x09, 0x33, 0x20, 0x4E, 0x00, 0x00, 0x50, 0x45, 0x4E, 0x58];
 ///////////////////////////////////////////////////////////////////////
 global.on_startup=false;
+global.is_locked=true;
+
 global.ready_for_pooling = true;
 global.ready_for_sending = true;
 global.numero_de_packs=0;
-global.tbm_status=true;
+global.tbm_status=false;
 /////////////////////////////////////////////////////////////////////////////////////
 global.received_cleaned;
 global.single_command;

@@ -1,0 +1,102 @@
+@media only screen
+/* para pantalla deihpone */
+and (min-device-width : 375px)
+and (max-device-width : 667px)
+and (orientation : landscape){
+  .grupo4{
+    min-height:40vh;
+    grid-template-columns: repeat(2,1fr);
+    grid-template-rows:repeat(2,1fr);
+  }
+}
+
+@media only screen
+/* para pantalla deihpone */
+and (min-device-width : 375px)
+and (max-device-width : 667px)
+and (orientation : portrait){
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    touch-action:none;
+  }
+  body{
+    background-color:black;
+    color:rgb(106, 106, 106);
+    font-family: Arial, Helvetica, sans-serif;
+    /* max-height: 100vh; */
+  }
+  .ec_wrapper{
+    display: grid;
+    grid-row-gap: 5px;
+    grid-template-rows: minmax(60px,60px) 1fr minmax(60px,60px);
+    min-height: 98vh;
+    /* max-height: 98vh; */
+    color:gray;
+    grid-template-areas:
+      "cabecera"
+      "area_trabajo"
+      "pie_de_pagina";
+  }
+  .cabecera{
+    background-color: rgb(201, 43, 9) ;
+    grid-area: cabecera;
+    align-content: center;
+  }
+  .area_trabajo{
+    background-color: rgb(20, 243, 9) ;
+    grid-area: area_trabajo;
+    display: grid;
+    /* grid-template-columns: 1fr 1fr; */
+    /* grid-template-rows: 1fr 1fr; */
+    grid-template-areas:
+    "resumen resumen2"
+    "panel1 panel2";
+  }
+  .pie_de_pagina{
+    /* background-color: rgb(20, 43, 199) ; */
+    grid-area: pie_de_pagina;
+    display: grid;
+    /* justify-content: center; */
+    /* margin: auto; */
+    font-size:10px;
+    color:gray;
+  }
+  .titulo2{
+    background-color: rgba(8, 8, 8, 1);
+    display: grid;
+    grid-template-columns: 1fr 1fr 7fr 1fr 1fr;
+    /* min-height: 13vh; */
+    border: 1.5px solid gray;
+    padding: 5px;
+    border-radius: 10px;
+    color: white;
+    font-size:20px;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align:center;
+    align-items: center;
+  }
+  .grupo4{
+    min-height:80vh;
+    grid-template-columns: repeat(2,1fr);
+    grid-template-rows:repeat(2,1fr);
+    background-color: white;
+  }
+  .mensaje_titulo{
+    font-size:14px;
+    font-weight: bold;
+    /* grid-column: 2/4; */
+    padding: 10px;
+  }
+  .info_template{
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
+    background-color: white;
+    overflow-y:auto;
+  }
+  .resumen{
+    grid-column-start:span 2;
+    min-width: 90vw;
+  }
+}

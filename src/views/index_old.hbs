@@ -4,7 +4,7 @@
   var once = true;
 //  var socket = io();
   var tog_validator = true;
-  var remote_TBM = io.connect('http://192.168.1.2:3000');
+  // var remote_TBM = io.connect('http://192.168.1.2:3000');
   var is_connected = false;
   var is_cashbox_in_service = true;
 
@@ -122,9 +122,9 @@
       alert('GENIO');
     });
     ////////////////////////////////////////////////////
-    remote_TBM.on('machine', function(data) {
-      console.log("ticking...");
-    });
+    // remote_TBM.on('machine', function(data) {
+    //   console.log("ticking...");
+    // });
     ////////////////////////////////////////////////////
     socket.on('cerrar_remesa_hermes', function(msg) {
       window.location.replace("/cerrar_remesa_hermes");

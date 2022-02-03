@@ -8,6 +8,14 @@
     $('#valor_fecha_creacion').text(mydata[0].fecha);
   //  $('#dias_acumulados').text(mydata.no_billetes);
     $('#monto_en_bolsa_valor').text(mydata[0].monto);
+    $('#status').text(mydata[0].status);
+    $('#monto').text(mydata[0].monto);
+    $('#no_billetes').text(mydata[0].no_billetes);
+    $('#ts_inicio').text(mydata[0].ts_inicio);
+
+
+
+
   //  $('#monto_reciclador_valor').text(mydata.monto_en_reciclador);
 
     // console.log("logeando desde la pagina de remesa:"+mydata.nombre);
@@ -32,7 +40,9 @@
 <body  oncontextmenu="return false">
   <div class="wrapper2">
     <div class="titulo2">
-    <div class="btn volver" id='config'>Configuracion</div>
+    <!-- <div class="ec_btn volver" id='config'>'<-'</div> -->
+    <div class="ec_btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+
     <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
     <div class="mensaje">Remesa Hermes</div>
     <div id="msg1">
@@ -41,24 +51,38 @@
     <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
     </div>
 
-<div class="parent">
+<div class="plantilla_remesa_hermes">
 
-  <div class="current_remesa div1">
+<div class="lista_remesas_hermes">
+  <div class="ec_panel_tarjeta_historial_remesa_hermes_verde">
+    <div class="label_tebs">TebsBarcode:</div><div class="tebsbarcode_valor" id="tebsbarcode_valor"></div>
+    <div class="label_status">Status</div><div class="status" id="status"></div>
+    <div class="label_fecha_creacion">fecha creacion</div>
+    <div class="fecha_creacion" id="ts_inicio"></div>
+    <div class="label_fecha_cierre">fecha cierre</div>
+    <div class="fecha_cierre">null / null</div>
+    <div class="label_moneda">PEN</div>
+    <div class="label_monto" id="monto"></div>
+    <div class="label_no_billetes"># billetes</div>
+    <div class="no_billetes" id="no_billetes">10</div>
+
+  </div>
+</div>
+
+  <!-- <div class="current_remesa div1">
     <div class="TEBSBarCode_label_class">TEBSBarCode:<div id="tebsbarcode_valor"> </div></div>
-
     <div class="fecha_creacion">fecha de creacion:<div id="valor_fecha_creacion"> </div></div>
     <div class="dias_durando">dias:<div id="dias_acumulados"> </div></div>
     <div class="monto_en_bolsa">monto en bolsa:S/.<div id="monto_en_bolsa_valor"> </div></div>
-    <!-- <div class="monto_reciclador">monto en reciclador:<div id="monto_reciclador_valor"> </div></div> -->
-  </div>
+  </div> -->
 
-  <div class="div2">
+  <div class="consulta_sobre_proceder">
     <div class="mensaje">Desea proceder con el cierre de la remesa Hermes? </div>
     <div class="mensaje_pequeno">En este proceso la maquina vaciará todo el dinero disponible para pagos en la bolsa de dinero</div>
   </div>
 
-  <div class="btn div3" id='smart_empty' style="width:200px; align:center;">smart_empty (iniciar)</div>
-  <div class="btn div4" id='main' style="width:200px; align:center;">Cancelar</div>
+  <div class="ec_btn" id='smart_empty'>Iniciar</div>
+  <!-- <div class="btn div4" id='main' style="width:200px; align:center;">Cancelar</div> -->
 
   <!-- <div class="btn" id='Smart_emptying' style="width:200px; align:center;">smart emptying(forced)</div>
   <div class="btn" id='rm_2' style="width:200px; align:center;">rm_2</div> -->

@@ -2,14 +2,16 @@ const socket=require('./../it/socket')
 const express= require('express');
 const router = express.Router();
 const pool= require ('../database');
-const io = require("../server.js");
+const io = require('../server.js');
 const tambox = require("../it/devices/tambox.js");
 const chalk=require('chalk');
-const ssp = require("../it/ssp");
+const ssp = require('./../it/ssp');
 const sh = require('./../it/devices/smart_hopper');
 const enc = require('./../it/encryption');
 const glo = require('./../it/globals');
 const server= require('./../server');
+const os = require('./../it/os');
+const moment=require("moment");
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////////////////////////////////
 var ConvertBase = function(num) {
@@ -30,44 +32,43 @@ ConvertBase.dec2hex = function(num) {
 router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto/:fecha/:hora', async (req,res)=>{
   new Promise(async function(resolve, reject) {
     try {
-       ssp.ensureIsSet2()
+      // ssp.ensureIsSet2()
       if(on_startup===false){
         var machine_serial_number=numero_de_serie;
         var {no_remesa}=req.params;
          const number_remesa= await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE no_remesa=?",[no_remesa]);
          if(number_remesa[0].noRemesa>0){
-             res.json('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
-             return reject();
+             res.json('Retiro ya existente, no se puede usar este codigo de remesa nuevamente.');
+             return reject("retiro ya existente");
          }else{
-        const {tienda_id,no_caja,codigo_empleado,no_remesa,monto,fecha,hora}=req.params;
-        if(monto>200){
-          console.log("el limite maximo es de 200 soles por transaccion");
-          res.json('retiro_limite');
-          return reject();
-        }
-      if(tienda_id&&no_caja&&codigo_empleado&&no_remesa&&monto){
-        const nuevo_egreso={tienda_id,no_caja,codigo_empleado,no_remesa,monto,moneda:country_code,tebs_barcode:tebs_barcode,machine_sn:numero_de_serie,tipo:'egreso',fecha,hora,status:'recibido',no_billetes:0}
-        await pool.query('INSERT INTO remesas set ?', [nuevo_egreso]);
-      //  io.io.emit('aviso_de_pago',nuevo_egreso.no_remesa);
-        socket.io.emit('refresh_window',nuevo_egreso.no_remesa);
-        res.json(nuevo_egreso);
-        return resolve();
-       }else {
-         res.json('Datos incompletos para retiro');
-         return reject();
-        }
+            const {tienda_id,no_caja,codigo_empleado,no_remesa,monto,fecha,hora}=req.params;
+            if(monto>limite_maximo_de_retiro){
+              console.log("el limite maximo es de "+limite_maximo_de_retiro+" "+country_code+" por transaccion");
+              res.json('retiro_limite');
+              return reject('retiro_limite');
+            }
+                if(tienda_id&&no_caja&&codigo_empleado&&no_remesa&&monto){
+                    var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+                  const nuevo_egreso={tienda_id,no_caja,codigo_empleado,no_remesa,monto,moneda:country_code,tebs_barcode:tebs_barcode,machine_sn:numero_de_serie,tipo:'egreso',fecha,hora,status:'recibido',no_billetes:0,ts_inicio:this_ts}
+                  await pool.query('INSERT INTO remesas set ?', [nuevo_egreso]);
+                //  io.io.emit('aviso_de_pago',nuevo_egreso.no_remesa);
+                //  socket.io.emit('refresh_window',nuevo_egreso.no_remesa);
+                  res.json(nuevo_egreso);
+                  return resolve(nuevo_egreso);
+                 }else {
+                   res.json('Datos incompletos para retiro');
+                   return reject('Datos incompletos para retiro');
+                  }
         }
       }else{
         res.send('Estoy en Startup');
-        return  reject();
+        return  reject("estoy en startup");
       }
     } catch (e) {
       return reject(e);
-    } finally {
-
     }
   });
-      //  ready_for_pooling=false;
+
 });
 ////////////////////////////////////////////////////////////////////////////////////
 router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
@@ -76,16 +77,23 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
       const {no_remesa}=req.params;
       console.log("consultando retiro:"+no_remesa);
       try {
-        ssp.ensureIsSet2()
+        // ssp.ensureIsSet2()
         if(on_startup==false){
           retiro= await pool.query ("SELECT * FROM remesas WHERE no_remesa=? AND tipo='egreso'",[no_remesa]);
-          console.log("retiro:"+retiro[0].monto);
+
+          if (retiro.length==0) {
+            console.log("pero ese pago no existe");
+            res.json("ese pago no existe");
+            return resolve("ese pago no existe");
+          }else {
+            console.log("retiro:"+retiro[0].monto);
+          }
             posible_monto=retiro[0].monto;
           if( retiro.length !== 0){ //si hay un retiro con ese numero de esa remesa verifica que el monto no sobrepase el limite.
                   console.log("//////////////////////////////////");
                   console.log(chalk.cyan("se puede pagar?: S/."+posible_monto));
-                  if(posible_monto>200){
-                    console.log("el limite maximo es de 200 soles por transaccion");
+                  if(posible_monto>500){
+                    console.log("el limite maximo es de 500 soles por transaccion");
                     res.json('retiro_limite');
                     return reject("retiro limite");
                   }//si el monto es mayor al limite termina la ejecucion
@@ -113,12 +121,15 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
                     arry.push(thisy);
                    }
 
-                   try {
-                      var data= await ssp.transmite_encriptado_y_procesa(global.receptor,arry)
-                   } catch (e) {
-                     return reject(e)
-                   }
-                    //console.log("AQUI VOLI:"+data);
+                   // try {
+                   console.log("justo antes del problema: validator_asddress is:"+global.validator_address);
+                      //var data= await sspo.transmite_encriptado_y_procesa2(validator_address,arry);
+                      var data= await os.transmite_encriptado_y_procesa2(global.validator_address,arry);
+
+                   // } catch (e) {
+                   //   return reject(e)
+                   // }
+                    console.log("AQUI VOLI:"+data);
 
                       console.log(chalk.yellow("<-:"+data));
                       var solucion=handlepayoutvalue(data);
@@ -169,9 +180,7 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
           return reject('Pago Inexistente');
         }
       } catch (e) {
-        console.log(e);
-      } finally {
-        //return
+        console.log("error en consultar retiro:->"+e);
       }
     });
 
@@ -180,8 +189,9 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
 router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
   new Promise(async function(resolve, reject) {
     try {
-      ssp.ensureIsSet2()
+      // ssp.ensureIsSet2()
       if(on_startup==false){
+        //Aqui verifico que el pago no existe en la base de datos y con status completado., si lo detecta, lo imprime en pagina
         const {no_remesa}=req.params;
         const valid_payment= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and tipo='egreso' and status='completado'" ,[no_remesa]);
         if(valid_payment.length>0){
@@ -192,7 +202,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
         //////////////////////////////////
         //consulta monto del retiro con codigo tal y estatus aprobado
         // const monto= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and (tipo='egreso' and status<>'completado' and rms_status='pendiente')" ,[no_remesa]);
-        const retiro= await pool.query ("SELECT * FROM remesas WHERE status='en_proceso' AND no_remesa=?",[no_remesa]);
+        const retiro= await pool.query ("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' and no_remesa=?",[no_remesa]);
 
         if(retiro.length>0){
       const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
@@ -205,6 +215,11 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
     if(monto.length>0){
     console.log("/////////////PAY OUT SENT////////////////////");
     console.log(chalk.green("Monto a pagar:"+monto[0].monto));
+    ///////////////////////////////////////////////////////////////
+    console.log("////////////LECTURA INICIAL DE RECICLADOR////////////////////");
+    var no_billetes_antes=await os.concilia_numeros();
+    global.en_reciclador_antes_de_retiro=no_billetes_antes[0].total_notes;
+    console.log("estoy guardando en_reciclador_antes_de_retiro:"+global.en_reciclador_antes_de_retiro);
     //////////////////////////////////
     var prep1= monto[0].monto;
     prep1= prep1*100;
@@ -222,11 +237,14 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
     for (var i=0;i<thelength;i++){var thisy=string.substr(i*2,2);arry.push(thisy);}
     //console.log(arry);
     //var value=tambox.prepare_Encryption(arry);
-    ssp.ensureIsSet2()
-    var data =await ssp.transmite_encriptado_y_procesa(global.receptor,arry);
+  //  ssp.ensureIsSet2()
+    var data =await os.transmite_encriptado_y_procesa2(global.receptor,arry);
     const retiro= await pool.query ("UPDATE remesas SET status='en_proceso' WHERE no_remesa=?",[no_remesa]);
     const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-    socket.io.emit('retiro_en_proceso'," pago en proceso");
+
+    var mi_objeto={ nombre:"pago"};
+    socket.nuevo_enlace('retiro_en_proceso','../system/retiros/retiro_en_proceso.html',mi_objeto);
+  //  server.io.emit('retiro_en_proceso'," pago en proceso");
     res.json(retirox);
     return resolve();
     //////////////////////////////////
@@ -245,8 +263,6 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
       }
     } catch (e) {
       return reject(e);
-    } finally {
-
     }
   });
 
@@ -255,17 +271,19 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
+  console.log("termninando retiro");
   new Promise(async function(resolve, reject) {
     try {
-      ssp.ensureIsSet2()
+      // ssp.ensureIsSet2()
       if(on_startup==false){
         const {no_remesa}=req.params;
           if(no_remesa){
                 const {no_remesa}=req.params;
                 const remesa= await pool.query ("UPDATE remesas SET rms_status='finalizada' WHERE tipo='egreso' and no_remesa=?",[no_remesa]);
                 const remesax= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-                  io.to_tbm.emit('un_pago_mas',"transaccion satisfactoria retiro");
-                  /////////////////////////////////////////////////////////////////////
+
+                //   io.to_tbm.emit('un_pago_mas',"transaccion satisfactoria retiro");
+                //   /////////////////////////////////////////////////////////////////////
                   var tbm_adress=tbm_adressx;
                   var fix= "/sync_remesa";
                   var tienda_id=remesax[0].tienda_id;
@@ -291,31 +309,36 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
                 //  const url= 'http://192.168.1.12:4000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
                   Http.open("GET",url);
                   Http.send();
-                  ////////////////////////////
+                //   ////////////////////////////
                   const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
                   const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
 
                   const no_billetes_total_remesas = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_remesas FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-                  const no_billetes_total_egresos = await pool.query("SELECT SUM(monto) AS total_no_billetes_egresos FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+                  const no_billetes_total_egresos = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_egresos FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
                   var no_billetes_en_remesa_hermes=no_billetes_total_remesas[0].total_no_billetes_remesas - no_billetes_total_egresos[0].total_no_billetes_egresos;
                   // await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado'");
                   const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
                   console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes);
                   await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes_en_remesa_hermes]);
+
+                  var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada'");
+                  console.log("voy a actualizar rh con estos datos:" + nueva_res_hermes);
+                  await os.sincroniza_remesa_hermes2(nueva_res_hermes);
+
                   /////////////////////////////////////////////////////////////////////
                 res.json(remesax);
                 return resolve();
           }else {
             res.json('Datos incompletos');
+            return resolve();
           }
         //  res.send('finalizando remesa');
       }else{
         res.send('Estoy en Startup');
+        return resolve ();
       }
     } catch (e) {
       return reject(e);
-    } finally {
-
     }
   });
 });
@@ -357,13 +380,6 @@ poll_responde=poll_responde.slice(0,data_length_on_pool);
           return  "desabilitado";
         }
     }
-    // } catch (e) {
-    //   reject(e);
-    // } finally {
-    //   return;
-    // }
-  //});
-
 }
 
 module.exports= router;

@@ -11,29 +11,41 @@ const va = require('./devices/validator');
 
 const SerialPort = require('serialport')
 const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
-const port = new SerialPort('/dev/ttyUSB0')
-module.exports.port=port;
 
-const parser = port.pipe(new InterByteTimeout({interval: 80})); //este valor era 30 pero fallaba intermitentemente.
-module.exports.parser=parser;
+// async function existira_conexion_serial(){
+//   return new Promise(function(resolve, reject) {
+//     try {
+      const port = new SerialPort('/dev/ttyUSB0')
+      module.exports.port=port;
+      const parser = port.pipe(new InterByteTimeout({interval: 80})); //este valor era 30 pero fallaba intermitentemente.
+      module.exports.parser=parser;
+    //   return resolve()
+    // } catch (e) {
+    //   resolve("no hay conexion serial con el validador");
+    // }finally{
+      port.on('open', function () {
+          //console.log(chalk.red('port open'));
+          global.is_head_online=true;
+      });
+      port.on('close', function (err) {
+          console.log(chalk.red('port closed', err));
+      });
+      port.on('error', function(err) {
+        console.log(chalk.red('Error de puerto SERIAL.IO: ', err.message));
+        global.is_head_online=false;
+        verifica_coneccion_validador();
+      })
+//     }
+//   });
+// }
+// module.exports.existira_conexion_serial=existira_conexion_serial;
 
-port.on('open', function () {
-    //console.log(chalk.red('port open'));
-    global.is_head_online=true;
-});
-port.on('close', function (err) {
-    console.log(chalk.red('port closed', err));
-});
-port.on('error', function(err) {
-  console.log(chalk.red('Error de puerto SERIAL.IO: ', err.message));
-  global.is_head_online=false;
-  verifica_coneccion_validador();
-})
+
+
+
+
 var error_retrial_times=5;
 var i;
-
-
-
 
 function transmision_insegura(receiver,command){
 
@@ -456,7 +468,10 @@ async function hacer_consulta_serial2(receiver,command){
                     }else{
                         console.log("salgo por aqui1234");
                         const error= "no respuesta, necesario reintentar...";
-                        setTimeout(()=>{return reject(error); retrial(error); },3000);
+                        setTimeout(()=>{
+                          retrial(error); 
+                          return reject(error);
+                        },3000);
                       }
                   });
 

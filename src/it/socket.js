@@ -7,11 +7,12 @@ const to_tbm=require('./tbm_sync/tbm_synch_socket');
 const ssp =require('./ssp');
 const path = require('path');
 const val = require("./devices/validator");
+const pool = require('./../database');
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
-
+const moment=require("moment");
 function  nuevo_enlace(pagina,ruta,vardata1){
   fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
       if (err) {
@@ -19,34 +20,48 @@ function  nuevo_enlace(pagina,ruta,vardata1){
       }
 //  var vardata="vardata";
   var totaldata=[vardata1,data];
-//  console.log(data);
+  // console.log(totaldata);
   io.emit(pagina,totaldata);
  });
 
 }
 module.exports.nuevo_enlace=nuevo_enlace;
 
-io.on('connect', function(socket) {
+io.on('connect', async function(socket) {
   console.log(chalk.cyan("the client ID"+socket.id+" is connected from ip:"+socket.handshake.address));
   socket.on('disconnect', function(reason) {
     console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
 
   });
-  socket.on('socket_to_tbm',async function(socket){
-    console.log(chalk.yellow("socket to tbm detected from client:"+socket.id));
-    console.log(chalk.yellow("orden para mandar socket to tbm detected"));
 
+socket.on('synch_remesas', async function(msg){
+  var remesas_a_sincronizar= await pool.query("SELECT * FROM remesas WHERE tebs_barcode=?",current_tebs_barcode);
+  // var remesas_a_sincronizar={
+  //   no_remesa:11111,
+  //   tienda_id:0103
+//  }
+  console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
+    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
+})
 
-    //await  os.validator_enabled_now();
-    //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
-  //  console.log("");
-    //ssp.emite_como_cliente();
-    //io.emit('prueba','prueba');
+// function update_remesas_hermes_via_socket_to_tbm(res) {
+//   var remesas_a_sincronizar={
+//     no_remesa:11111,
+//     tienda_id:0103
+//   }
+//  console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
+//    to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
+
+// }
+  socket.on('socket_to_tbm',async function(socket_data){
+//    console.log(chalk.yellow("socket to tbm detected from client:"+socket_data.id));
+    console.log(chalk.yellow("synch request sent:"+socket_data));
+    //guardando valor en socket_sent para comparar recepcion
+    socket_sent=socket_data;
 //    to_tbm.socket_to_tbm.emit('Machine_alive','123456');
   //  to_tbm.socket_to_tbm.emit('registration',"machine_en_cuestion");
-
-//    to_tbm.socektyy.emit("my other event",{ my: 'data' });
-      to_tbm.socket_to_tbm.emit("Machine_alive","vamos bien");
+//    to_tbm.socket_to_tbm("my other event",{ my: 'data' });
+      to_tbm.socket_to_tbm.emit("synch_request",socket_data);
 
    });
 });
@@ -95,24 +110,22 @@ io.on('connection', async function (socket) {
   socket.on('habilita_validador',async function(msg) {
     await ssp.ensureIsSet();
     return new Promise(async function(resolve, reject) {
-    try {
-      var data=await ssp.envia_encriptado(validator_address,enable);
-      if (data=="01F0") {
-      //  console.log(chalk.green(data));
-        console.log(chalk.cyan("ENABLE VALIDATOR"));
-      //  io.emit('validator_enabled', "validator_enabled");
-        io.emit('paso2', "paso2");
-        return resolve();
-      }else {
-        reject("el validador no se habilito");
+      try {
+        var data=await ssp.envia_encriptado(validator_address,enable);
+        if (data=="01F0") {
+        //  console.log(chalk.green(data));
+          console.log(chalk.cyan("ENABLE VALIDATOR"));
+        //  io.emit('validator_enabled', "validator_enabled");
+          io.emit('paso2', "paso2");
+          return resolve();
+        }else {
+          reject("el validador no se habilito");
+        }
+
+      } catch (e) {
+        return reject(chalk.red("error en socket:")+e);
       }
-
-    } catch (e) {
-      return reject(chalk.red("error en socket:")+e);
-    } finally {
-
-    }
-        });
+    });
   });
   socket.on('disable_validator',async function(msg) {
      await ssp.ensureIsSet();
@@ -342,13 +355,14 @@ io.on('connection', async function (socket) {
     await  os.validator_disabled_now();
    // io.emit('main','../system/buffer.html');
    });
-  socket.on('iniciar_nueva_remesa',async function(){
-    new_manual_remesa= Math.floor((Math.random() * 100) + 1);
-    console.log(chalk.yellow("Nueva remesa manual iniciada"));
 
-    os.crear_nueva_remesa(new_manual_remesa,999,001,8888,tambox.fecha_actual(),tambox.hora_actual());
-    await  os.validator_enabled_now();
-    nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html')
+  socket.on('iniciar_nueva_remesa',async function(){
+    new_manual_remesa= Math.floor((Math.random() * 10000) + 1);
+    console.log(chalk.yellow("Nueva remesa manual iniciada"));
+    const this_machine= await pool.query("SELECT * FROM machine");
+    os.crear_nueva_remesa(new_manual_remesa,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+    //await  os.validator_enabled_now();
+    //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
    });
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
@@ -387,15 +401,31 @@ io.on('connection', async function (socket) {
        console.log(chalk.yellow("recibi smart emptied"));
        nuevo_enlace('Smart_emptied','../system/remesa_hermes/rm_3.html');
       });
-  socket.on('Cashbox_Back_in_Service',async function(){
-        // console.log(chalk.yellow("Cashbox_Back_in_Service123"));
-        // existe_bolsa=true;
-        // if(on_remesa_hermes==true){
-        //     nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
-        // }else{
-        //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
-        // }
-       });
+  // socket.on('Cashbox_Back_in_Service',async function(){
+  //   io.emit('lock_cashbox', "lock_cashbox");
+  //       // console.log(chalk.yellow("Cashbox_Back_in_Service123"));
+  //       // existe_bolsa=true;
+  //       // if(on_remesa_hermes==true){
+  //       //     nuevo_enlace('Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html');
+  //       // }else{
+  //       //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
+  //       // }
+  //      });
+   socket.on('reciclador',async function(msg){
+     var mi_objeto=await os.consulta_all_levels();
+     console.log(mi_objeto);
+     var solo_values=[
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de10,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de20,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de50,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de100,
+       mi_objeto[0].cantidad_de_billetes_en_reciclador.de200
+     ];
+     console.log("solo_values="+solo_values);
+     var grupo=[mi_objeto[0].total_notes,solo_values,mi_objeto[1]]
+     nuevo_enlace('reciclador','../system/reciclador/reciclador.html',grupo);
+
+   });
   socket.on('cuadre_diario',async function(msg){
   console.log(chalk.yellow("socket on cuadre_diario"));
   //var soy_la_voz=await os.consulta_remesa_hermes_actual();
@@ -422,8 +452,21 @@ io.on('connection', async function (socket) {
   socket.on('remesa_hermes',async function(msg){
   console.log(chalk.yellow("socket on remesa_hermes"));
   var soy_la_voz=await os.consulta_remesa_hermes_actual();
+    //var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    var rh2=[];
+    moment.locale("es");
+      for (let rh of soy_la_voz){
+         var formatear_ts_inicio=rh["ts_inicio"];
+        rh["ts_inicio"]=moment(formatear_ts_inicio).format('LLL');
+       //  var formatear_ts_fin=rh["ts_fin"];
+       // rh["ts_fin"]=moment(formatear_ts_fin).format('LLL');
+        //console.log(rh);
+        rh2.push(rh);
+      }
+
+
   //console.log("soy la voz es:"+JSON.stringify(soy_la_voz));
-  nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',soy_la_voz);
+  nuevo_enlace('remesa_hermes','../system/remesa_hermes/rm_1.html',rh2);
   });
   socket.on('cifras_generales',async function(msg){
    console.log(chalk.yellow("socket on cifras_generales"));
@@ -435,11 +478,30 @@ io.on('connection', async function (socket) {
     var mi_objeto=await os.carga_informacion_para_main();
     nuevo_enlace('main','../system/buffer.html',mi_objeto);
   });
+  socket.on('retiro_en_proceso', function(msg) {
+  //  window.location.replace("/retiro_en_proceso");
+    var mi_objeto={ nombre:"pago"};
+    nuevo_enlace('retiro_en_proceso','../system/retiro/retiro_en_proceso.html',mi_objeto);
+  });
+  socket.on('lock_machine', function(msg) {
 
+    io.emit('lock_machine','lock_machine');
+  });
+
+  socket.on('adopt', function(msg) {
+  console.log("machine adopted requested");
+    io.emit('adopt','adopt');
+  });
+
+  var this_machine = await pool.query("SELECT * FROM machine");
+  var this_passcode=this_machine[0].passcode
   var config_data={
     current_tebs:"global.current_tebs"
   }
-os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
+  var pass_code_data={
+    pass_code:this_passcode
+  }
+// os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
 os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
 os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null");
@@ -456,8 +518,10 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
 };
   module.exports.super_enlace=super_enlace;
 
-//  super_enlace('config','config','../system/configuracion.html',config_data);
+  super_enlace('config','config','../system/configuracion.html',config_data);
   super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
+  super_enlace('security_page','security_page','../system/security_page.html',pass_code_data);
 
 })
 }
+ // await pool.query("SELECT * FROM remesas WHERE status='terminado' ");
