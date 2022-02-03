@@ -19,7 +19,6 @@ IMPORTANTE PARA BOOT: sudo update-rc.d tambox_server start 10 2 3 4 5 . stop 90 
 // para ocultar mouse ,sudo apt-get install unclutter
 //PM2 lo es todo para arrancar processes at startup
 
-//para ocultar el cursor se agrega xserver-command= X -nocursor en el file sudo nano /etc/lightdm/lightdm.conf
 
 
 //para coneccion remota se tiene con configurar portforwarding en el router, asiganndo direcion ip fija y puerto 3000
@@ -66,3 +65,15 @@ GRANT ALL ON tambox.* TO 'user1@192.168.1.17' IDENTIFIED BY 'pass1';
 
     "host": "192.168.1.12",
     "port": 22,
+
+//
+sudo nano autoChromium.desktop
+
+//OS linea 132. comente esta linea poruqe no estaba iniciando por completo el sistema.
+
+//aqui actualizando formato de fechas para usar moment en todas las tablas y tranacciones.
+cambie:
+ssp linea 1489 agregue ts_fin
+ssp 1504 agregue libnea de ts_incio
+ssp 1563 agregue libnea de ts_incio
+index.js 273 agregue ts_incio

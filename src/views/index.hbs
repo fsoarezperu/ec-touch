@@ -75,6 +75,10 @@
     enlace_a("main");
 /////////////////////////////////////////////////////////////////////
     enlace_a("config");
+    enlace_a("security_page");
+
+    enlace_a("retiro_en_proceso");
+
   //  enlace_a("info");
 //    enlace_a("cuadre_diario");
 //    enlace_a("cifras_generales");
@@ -95,13 +99,26 @@
     mandar_orden("cancelar_remesa");
     // mandar_orden("trigger_socket");
     //
-     mandar_orden("socket_to_tbm");
+    //mopdificnado socket_to_tbm para incliuir in objeto a enviar.
+     //mandar_orden("socket_to_tbm");
+
+     $(document).on("click","#socket_to_tbm",function(){
+       var data=[{
+         id:1,
+         tienda_id:9999,
+         monto:100
+       }]
+       console.log("sicronizando via socket con dato:"+data);
+       socket.emit("socket_to_tbm",data);
+     });
+
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
   //   mandar_orden("config");
      mandar_orden("info");
   //   mandar_orden("main");
+     enlace_a("reciclador");
      mandar_orden("cuadre_diario");
      mandar_orden("cifras_generales");
      mandar_orden("remesa_hermes");
@@ -111,6 +128,14 @@
      mandar_orden("rm_4_1");
      mandar_orden("rm_5");
     // mandar_orden("connected");
+    //orden iniciada en el client the tambox, enviada
+     mandar_orden("synch_remesas");
+     mandar_orden_sin_link("lock_machine");
+     socket.on('lock_machine', function(msg) {
+       console.log("locking machine");
+         $('#overlay, #overlay-back').fadeIn(500);
+     });
+
     socket.on('iniciando', function(msg) {
       console.log("refrescando pantallas");
       window.location.replace("/");
@@ -130,14 +155,12 @@
       display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
 
     });
-/////////////////////////////////////////////////////////////////////
-// socket.on('Cashbox_out_of_Service', function(msg) {
-//   //display_system_running_indicator();
-//   //online = true;
-//   console.log(msg);
-// });
-
-
+    /////////////////////////////////////////////////////////////////////
+    // socket.on('Cashbox_out_of_Service', function(msg) {
+    //   //display_system_running_indicator();
+    //   //online = true;
+    //   console.log(msg);
+    // });
     // remote_TBM.on('machine', function(data) {
     //   console.log("ticking...");
     // });
@@ -152,7 +175,7 @@
     };
     function clear_system_running_indicator() {
       $("#system_running_indicator").hide();
-      $('#overlay-back').fadeIn(500);
+      // $('#overlay-back').fadeIn(500);
     };
     ////////////////////////////////////////////////////
     socket.on('show_connected_to_TBM', function(msg) {
@@ -206,8 +229,6 @@
       document.getElementById("message2").innerHTML = "";
     //  document.getElementById("msg1").innerHTML = "Bloqueado";
     };
-
-
     //////////////////////////////////////////
   });
 </script>
@@ -215,7 +236,7 @@
 
 <body oncontextmenu="return false">
   <div id="loading" style="display:none"> <br>Error:<br/>El servidor esta paralizado.</div>
-  <div id="display">
+  <div class="display_rasp" id="display">
     <div class="wrapperx" id="pizarra">
       <!-- ESTO SE LLENA EN LINEA CON LA INFORMACION GUARDADA EN BUFFER.HTML -->
     </div>

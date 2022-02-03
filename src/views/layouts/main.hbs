@@ -12,9 +12,7 @@
   <link rel="shortcut icon" href="">
   <script src="/socket.io/socket.io.js"></script>
   <link href="css/fontawesome/css/all.css" rel="stylesheet" type="text/css">
-
   <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script> -->
-
   <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/utils/Draggable.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.js"></script>
 
@@ -24,6 +22,10 @@
   <script type="text/javascript" src="/jquery/jquery.min.js"></script>
   <!-- <script type="text/javascript" src="js/TweenMax.min.js"></script> -->
   <link rel="stylesheet" type="text/css" href="css/tambox.css">
+  <link rel="stylesheet" type="text/css" href="css/tambox_iphone.css">
+  <link rel="stylesheet" type="text/css" href="css/tambox_rasp.css">
+
+
   <script src="js/Chart.js"></script>
   <script type="text/javascript">
     var socket = io();
@@ -33,26 +35,32 @@
       var caja_devuelta=false;
     $(document).ready(function() {
     function send_once(orden){
+      console.log(indicador_unico);
         if (indicador_unico==false) {
+          indicador_unico=true;
           socket.emit(orden);
           indicador_unico=true;
+          console.log(indicador_unico);
         }
       }
     socket.on('connect', () => {console.log("mi_id:"+socket.id)});
     socket.on('Cashbox_out_of_Service', function(msg) {
-        console.log(msg);
-         $('#out_of_service, .overlay-back').fadeIn(500);
-        document.getElementById('msg11').innerHTML=msg;
+        console.log("desde Cashbox_out_of_Service se recibio el mensaje"+msg);
+          $('#out_of_service, .overlay-back,.oss').show();
+        // $('.oos, .overlay-back').show();
+
+        document.getElementById('texto_popoup').innerHTML=msg;
         if (msg=="Unable_to_read_Barcode") {
           document.getElementById('msg11').innerHTML="No se detecta bolsa, Será necesario que ingrese una bolsa nueva, verifique que el codigo de barras se encuentre en buen estado.<br> Utilizando la llave desbloquee el pestillo iluminado en color verde";
+            send_once('unlock_cashbox', "unlock_cashbox");
             caja_devuelta=false;
         }
         if (msg=="Cashbox_Unlocked") {
           if (caja_devuelta==false) {
-            document.getElementById('msg11').innerHTML="Retire el cajón del dinero e introduzca una bolsa nueva";
+            document.getElementById('texto_popoup').innerHTML="Retire el cajón del dinero e introduzca una bolsa nueva";
 
           }else {
-            document.getElementById('msg11').innerHTML="vuelva a bloquear el pestillo utilizando la llave.";
+            document.getElementById('texto_popoup').innerHTML="vuelva a bloquear el pestillo utilizando la llave.";
           }
 
         }
@@ -65,10 +73,31 @@
             document.getElementById('msg11').innerHTML="Tire de la manija suavemente pero con firmeza, hasta retirar el cajon del dinero.";
           }
     });
+
     socket.on('Cashbox_Back_in_Service', function(msg) {
       $('#out_of_service').fadeOut(500);
       $('#overlay, .overlay-back').fadeOut(500);
     });
+    socket.on('lock_machinex', function(msg) {
+        console.log("lock_machinex:"+msg.orden);
+          if (msg.orden=="lock") {
+            $('#overlay, #overlay-back').fadeIn(500);
+          }else {
+            $('#overlay, #overlay-back').fadeOut(500);
+          }
+    });
+
+    // socket.on('adopt', function(msg) {
+    // //  $('#out_of_service').fadeOut(500);
+    // console.log("adopting machine:"+msg);
+    // alert("THIS MACHINE IS REQUESTED TO BE ADOPTED");
+    // // if (msg.orden=="lock") {
+    // //   $('#overlay, #overlay-back').fadeIn(500);
+    // // }else {
+    // //   $('#overlay, #overlay-back').fadeOut(500);
+    // // }
+    //
+    // });
     });
   </script>
   <style media="screen">
@@ -85,7 +114,21 @@
     z-index: 5;
     display: none;
     }
-    #overlay {
+    #out_of_service {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    /* height: 100%; */
+    opacity: 1;
+    z-index: 10;
+    display: none;
+    margin: 0 auto;
+    }
+    .oss{
+    display: none;
+    }
+    /* #overlay {
     position: absolute;
     top: 10%;
     left: 10%;
@@ -95,28 +138,20 @@
     z-index: 10;
     display: none;
     margin: 0 auto;
-    }
+    } */
   </style>
 </head>
 
 {{{ body }}}
 
-<div class="popup">
-  <div class="overlay-back"></div>
-  <div id="out_of_service">
-    <div class="grupo3">
-      <div></div>
-      <div id="titulo_popup" style="color:red;">La maquina esta fuera de servicio</div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div id="msg11" style="color:green;"></div>
-      <div></div>
-      <div></div>
+<!-- <div class="popup oos" style="display:none"> -->
+  <div class="popup oos">
+    <div class="overlay-back"></div>
+    <div id="out_of_service">
+      <div class="grupo3 panel_oos">
+        <div id="titulo_popup">La maquina esta fuera de servicio</div>
+        <div id="texto_popoup"></div>
+      </div>
     </div>
-  </div>
-
 </div>
 </html>
