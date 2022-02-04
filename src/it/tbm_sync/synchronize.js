@@ -131,6 +131,7 @@ async function remote_update_rh(id){
 async function synch_required(){
   const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[global.numero_de_serie]);
   var local_array=JSON.parse(JSON.stringify(local_id_records));
+  console.log("a continuacion se muestran los records a ser sincronizados");
   console.log(local_array);
   console.log(local_array.length);
   var local=[];

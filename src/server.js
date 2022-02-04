@@ -79,13 +79,8 @@ httpx.listen(machine_port, async function(io2) {
 ///////////////////////////////////////////////////
 console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
 
-let serialport = require('serialport');
 
-// list serial ports:
-serialport.list().then (
-  ports => ports.forEach(port =>console.log(port.path)),
-  err => console.log(err)
-)
+
 
 // var array_local=[1,2,3,4,5,6,7,8];
 // var array_tbm=[8,10,11];
@@ -115,13 +110,12 @@ serialport.list().then (
 ////////////////////////////////////////////////////
   try {
     // await sp.existira_conexion_serial();
-
     await os.obtener_datos_de_conexion();
     await os.habilita_sockets();
+    await os.comprobar_serialcom();
     await os.arranca_tambox_os();
 
     await synch_tbm.are_synched();
-
 
     console.log(chalk.green("El sistema arranco sin problemas"));
 //    await os.arrancando_tambox_nuevamente();

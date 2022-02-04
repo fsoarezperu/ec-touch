@@ -131,10 +131,6 @@ async function arranca_tambox_os() {
       var informacion_maquina_local=await consulta_this_machine();
       console.log(chalk.yellow("la informacion local de la maquina es:"));
       console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
-      if (informacion_maquina_local[0].is_locked==1) {
-        console.log(chalk.red("esta maquina se encuentra bloqueada."));
-        // server.io.emit('lock_machinex','lock');
-      }
       //actualiza los valores remotos de la maquina
       var x1=status.tienda_id;
       var x2=status.machine_sn;
@@ -346,11 +342,7 @@ async function is_this_machine_registered() {
         public_machine_ip: global.public_machine_ip
       }
 
-      console.log(chalk.yellow("#333 la informacion local de la maquina es:" + JSON.stringify(informacion_maquina_local)));
-      console.log(informacion_maquina_local[0].is_locked);
-      if (informacion_maquina_local[0].is_locked==1) {
-        console.log(chalk.red("esta maquina se encuentra bloqueada."));
-      }
+      console.log(chalk.yellow("la informacion local de la maquina es:" + JSON.stringify(informacion_maquina_local)));
       await consulta_this_machine_en_tbm();
 
       // to_tbm.socket_to_tbm.emit('registration', informacion_maquina_local);
@@ -495,7 +487,9 @@ await fetchTimeout(url, {
   return json;
 })
 .catch(function(err) {
-    console.log("error", err);
+    //console.log("error de fetch", err);
+    console.log(chalk.red("Tambox manager no se encuentra disponible"));
+
 });
 return respuesta;
 }
@@ -878,10 +872,6 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
       console.log(horax1);
       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
-      if(globals.tebs_barcode==undefined){
-        globals.tebs_barcode=1234567890;
-      }
-      console.log("tebs_barcode:"+globals.tebs_barcode);
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
         const nueva_res = {
           tienda_id,
@@ -891,7 +881,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
           fecha: fechax1,
           hora: horax1,
           moneda: country_code,
-          tebs_barcode: globals.tebs_barcode,
+          tebs_barcode: tebs_barcode,
           machine_sn: numero_de_serie,
           tipo: 'ingreso',
           no_billetes: 0, //,
@@ -917,8 +907,7 @@ module.exports.crear_nueva_remesa = crear_nueva_remesa;
 async function terminar_nueva_remesa(no_remesa) {
   console.log("aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
   //return new Promise(async function(resolve, reject) {
-  current_tebs_barcode=globals.tebs_barcode;
-  console.log("al momento de terminar nueva remesa se detecta un current_tebs_barcode:" +current_tebs_barcode);
+  console.log("al momento de terminar nueva remesa se detecta un current_tebs_barcode:" + current_tebs_barcode);
   if (on_startup === false) {
     if (no_remesa) {
       try {
@@ -952,12 +941,7 @@ async function terminar_nueva_remesa(no_remesa) {
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
       //  await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
-      // try {
-      //     await  to_tbm_synch.synch_required();
-      // } catch (e) {
-      //   console.log("not possible to sync");
-      // }
-
+              await  to_tbm_synch.synch_required();
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
@@ -987,7 +971,7 @@ async function terminar_nueva_remesa(no_remesa) {
       } catch (e) {
         console.log(chalk.cyan("ERROR 002- No se pudo sincronizar transaccion") + e);
       } finally {
-          return;
+        //  return;
       }
     } else {
       //  res.json('Datos incompletos');
@@ -1064,8 +1048,10 @@ module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
 
 async function consulta_historial() {
   var historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
-  console.log("consultando_historial de remeas hermes:"+historial);
-  console.log("antes"+JSON.stringify(historial));
+  console.log(chalk.cyan("consultando historial de remesas hermes locales:"));//+JSON.parse(JSON.stringify(historial)));
+//  console.log(JSON.stringify(historial));
+console.log(JSON.parse(JSON.stringify(historial)));
+//  console.log("antes"+JSON.stringify(historial));
   var historial2=[];
 
  moment.locale("es");
@@ -1163,8 +1149,8 @@ async function get_my_phisical_current_ip() {
       }
     }
     //return results;
-  //  resolve(results["en0"][0]);
-     resolve(results["wlan0"][0]);
+    //return results["en0"][0];
+    resolve(results["wlan0"][0]);
   });
 };
 async function get_my_current_public_ip() {
@@ -1203,6 +1189,42 @@ async function obtener_datos_de_conexion() {
 }
 module.exports.obtener_datos_de_conexion = obtener_datos_de_conexion;
 /////////////////////////////////////////////////////////////////
+async function comprobar_serialcom() {
+  return new Promise(async function(resolve, reject) {
+    try {
+      const SerialPort = require('serialport')
+      var myPorts=[];
+      SerialPort.list().then(ports=>{
+    //  console.log(ports);
+      myPorts=ports;
+      //console.log("mis puertos son:"+myPorts[1].comName);
+      var my_tambox_connection="6001"; //product id del puerto serial de la maquina. estes numero es especifico.
+
+      myPorts.forEach((myports, i) => {
+        if(myPorts[i].productId == my_tambox_connection){
+          console.log(chalk.green("Validator hardware detected"));
+          resolve();
+          //reject("no se pudo detectar ningun puerto com");
+        }else {
+        //  console.log("THERE IS A PROBLEM WITH THE TAMBOX MACHINE");
+        }
+      //  reject("no serial port found");
+      });
+      reject("no puerto serial encontrado")
+
+
+      }, err=>console.log(err))
+
+    } catch (e) {
+      reject("no se pudo odetectar ningun puerto com")
+    }
+
+  });
+  //console.dir("detecting ip assigned is:"+mi_ip);
+}
+module.exports.comprobar_serialcom = comprobar_serialcom;
+/////////////////////////////////////////////////////////////////
+
 function habilita_sockets() {
   //console.log("habilitando_conexion_de_sockets_locales");
   return new Promise(function(resolve, reject) {
@@ -1603,8 +1625,7 @@ return new Promise(async function(resolve, reject) {
         machine_sn: global.numero_de_serie,
         tipo: global.note_validator_type,
         public_machine_ip: global.public_machine_ip,
-        machine_ip:global.machine_ip,
-        is_locked:1
+        machine_ip:global.machine_ip
       }
       await pool.query('INSERT INTO machine set ?', [nueva_machine_inicial]);
       return resolve("OK");
