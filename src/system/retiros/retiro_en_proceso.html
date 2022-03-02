@@ -23,6 +23,7 @@ $(document).ready(function() {
     $("#parci").hide();
     $("#full").show();
     document.getElementById("cabecera").innerHTML="PAGO COMPLETO";
+    socket.emit("pago_completado","pago_completado");
     setTimeout(function() {
       window.location.replace("/");
     }, 10000);

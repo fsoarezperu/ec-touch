@@ -24,7 +24,7 @@ const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
     //   resolve("no hay conexion serial con el validador");
     // }finally{
       port.on('open', function () {
-          //console.log(chalk.red('port open'));
+          console.log(chalk.red('port open'));
           global.is_head_online=true;
       });
       port.on('close', function (err) {
@@ -40,9 +40,21 @@ const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
 // }
 // module.exports.existira_conexion_serial=existira_conexion_serial;
 
+function cerrar_puerto_serial(){
+  port.close(function (err) {
+    console.log('port closed', err);
+});
 
+}
+module.exports.cerrar_puerto_serial=cerrar_puerto_serial;
 
+function abrir_puerto_serial(){
+  port.open(function (err) {
+    console.log('port open', err);
+});
 
+}
+module.exports.abrir_puerto_serial=abrir_puerto_serial;
 
 var error_retrial_times=5;
 var i;
@@ -168,7 +180,9 @@ function ensureIsSet3() {
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-               return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+                //AQUI podria ser el punto de partida para una reinicio de comunicacion serial automatico.
+
+               return reject(chalk.red("El canal serial esta ocupado mucho tiempo y. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
               // return resolve("OK");
             }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
@@ -469,7 +483,7 @@ async function hacer_consulta_serial2(receiver,command){
                         console.log("salgo por aqui1234");
                         const error= "no respuesta, necesario reintentar...";
                         setTimeout(()=>{
-                          retrial(error); 
+                          retrial(error);
                           return reject(error);
                         },3000);
                       }

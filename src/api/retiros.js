@@ -364,7 +364,7 @@ poll_responde=poll_responde.slice(0,data_length_on_pool);
         //return ("Command can not be processed");
 
         if(poll_responde[2] == "01"){
-          console.log(chalk.green("Not enough value in device"));
+          console.log(chalk.green("Not enough value in device1"));
           return "saldo_insuficiente";
         }
         if(poll_responde[2] == "02"){

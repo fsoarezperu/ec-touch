@@ -2,19 +2,17 @@
     var mytimer;
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
-var ec_btn_bottom_text = $('#ec_btn_bottom').text();
-var variable_boton;
-pinta_color_en_boton();
 
+  var variable_boton;
+  pinta_color_en_boton();
 
 function pinta_color_en_boton(){
-  var variable_boton= $('#msg10').text();
+   variable_boton= $('#tebs_lock_status_label').text();
   if (variable_boton=="Bloqueado" ) {
       console.log("el cashbox esta bloqueado");
       $( "#lock_cashbox" ).hide();
       $( "#unlock_cashbox" ).show();
        $(".boton_bloqueo").css('filter', 'drop-shadow(0px 1px 15px #de2727)');
-  //    $(".boton_bloqueo").css('filter', 'drop-shadow(0px 1px 15px #269c02)');
   }else {
     console.log("el cashbox esta desbloqueado");
       $( "#unlock_cashbox" ).hide();
@@ -25,9 +23,8 @@ function pinta_color_en_boton(){
 
 }
 $(".ec_btn").click(function(){
-    // alert("button");
     console.log("boton presionado");
-      pinta_color_en_boton();
+    pinta_color_en_boton();
 });
 
 
@@ -40,37 +37,46 @@ $(".ec_btn").click(function(){
   $('#support').html(mydata.soporte_tecnico);
   $('#ip_publico').html(mydata.ip_publico);
 
+  function display_message(mes_to_display){
+    document.getElementById("message").innerHTML=mes_to_display;
+    setTimeout(clear_message,1000);
+  };
+
+  function clear_message(){
+    document.getElementById("message").innerHTML=""
+  };
 
   function display_pestillo(mes_to_displayx) {
     clearTimeout(mytimer);
-    document.getElementById("msg10").innerHTML = mes_to_displayx;
+    document.getElementById("tebs_lock_status_label").innerHTML = mes_to_displayx;
     mytimer=setTimeout(clear_pestillo, 1000);
   };
 
   function clear_pestillo() {
-    document.getElementById("msg10").innerHTML = "Bloqueado";
+    document.getElementById("tebs_lock_status_label").innerHTML = "Bloqueado";
       pinta_color_en_boton();
-    //  $("#candado").css("color", "red");
-    // $( "#lock_cashbox" ).hide();
-    // $( "#unlock_cashbox" ).show();
-
   };
 
   socket.on('Cashbox_Unlock_Enable', function(msg) {
-    console.log("desbloqueado desde aqui.");
+  //  console.log("desbloqueado desde aqui.");
     display_pestillo("Desbloqueado");
     console.log("el cashbox esta desbloqueado");
-      // $( "#unlock_cashbox" ).hide();
-      // $( "#lock_cashbox" ).show();
-        pinta_color_en_boton();
+    document.getElementById("message").innerHTML = "el cashbox esta desbloqueado";
+    pinta_color_en_boton();
   });
   // socket.on('Cashbox_Back_in_Service', function(msg) {
   // clearTimeout(mytimer);
   // });
+  socket.on('reconectar_validador', function(msg){
+  display_message(msg);
+  });
+
+  socket.on('request_support_online', function(msg){
+  display_message(msg);
+  });
+
 
 });
-
-
  </script>
 
 <body  oncontextmenu="return false">
@@ -103,18 +109,34 @@ $(".ec_btn").click(function(){
             <div class="ec_card">Direccion IP:<div id="given_ip"></div></div>
             <div class="ec_card">Direccion IP publica:<div id="ip_publico"></div></div>
             <div class="ec_card">Creado Por:<div id="developer"></div></div>
-            <div class="ec_card">Soporte Técnico<div id="support"></div></div>
+            <div class="ec_card">Soporte Técnico
+
+              <div class="ec_btn" id="request_support_online">
+                <div class="ec_btn_top"><i class="fas fa-plug fa-3x"></i></div>
+                  <div class="ec_btn_bottom">Request Support Online</div>
+            </div>
+
+              <div id="support"></div>
+
+            </div>
           </div>
 
           <div class="ec_panel locking_template">
-            <div class="texto_indicador" id="msg10">Bloqueado</div>
-            <div class="ec_btn volver boton_bloqueo" id='unlock_cashbox'>
-                <div class="ec_btn_top"><i class="fas fa-lock fa-3x candado" ></i></div>
-                <div class="ec_btn_bottom">LOCKED</div>
+            <div class="ec_card">
+              <div class="texto_indicador" id="tebs_lock_status_label">Bloqueado</div>
+              <div class="ec_btn volver boton_bloqueo" id='unlock_cashbox'>
+                  <div class="ec_btn_top"><i class="fas fa-lock fa-3x candado" ></i></div>
+                  <div class="ec_btn_bottom">LOCKED</div>
+              </div>
+              <div class="ec_btn volver boton_bloqueo" id='lock_cashbox'>
+                  <div class="ec_btn_top"><i class="fas fa-lock-open fa-3x candado" ></i></div>
+                  <div class="ec_btn_bottom">UNLOCKED</div>
+              </div>
             </div>
-            <div class="ec_btn volver boton_bloqueo" id='lock_cashbox'>
-                <div class="ec_btn_top"><i class="fas fa-lock-open fa-3x candado" ></i></div>
-                <div class="ec_btn_bottom">UNLOCKED</div>
+            <div class="ec_card">
+              <div class="ec_btn" id="reconectar_validador">
+                <div class="ec_btn_top"><i class="fas fa-plug fa-3x"></i></div>
+                  <div class="ec_btn_bottom">Reconectar validador</div>
             </div>
 
             <!-- <div class="ec_btn volver boton_bloqueo" id=''><i class="fas fa-lock fa-3x candado"></i><br>Lock Cashbox</div> -->

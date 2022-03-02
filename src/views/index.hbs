@@ -89,6 +89,12 @@
     enlace_a("Cashbox_Back_in_Service");
 
   //  enlace_a("iniciar_nueva_remesa");
+    mandar_orden_sin_link("close_serial_port");
+    mandar_orden_sin_link("open_serial_port");
+    mandar_orden_sin_link("initialize_validator");
+
+    mandar_orden_sin_link("request_support_online");
+    mandar_orden_sin_link("reconectar_validador");
     mandar_orden_sin_link("lock_cashbox");
     mandar_orden_sin_link("unlock_cashbox");
     mandar_orden("smart_empty");
@@ -112,6 +118,9 @@
        socket.emit("socket_to_tbm",data);
      });
 
+     mandar_orden("pay_a_20");
+     mandar_orden("pay_a_50");
+     mandar_orden("pay_a_100");
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
@@ -226,7 +235,7 @@
       setTimeout(clear_message, 5000);
     };
     function clear_message() {
-      document.getElementById("message2").innerHTML = "";
+    //  document.getElementById("message2").innerHTML = "";
     //  document.getElementById("msg1").innerHTML = "Bloqueado";
     };
     //////////////////////////////////////////

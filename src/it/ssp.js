@@ -12,6 +12,7 @@ const pool = require('./../database');
 const val = require("./devices/validator");
 const tambox = require("./devices/tambox");
 const moment=require("moment");
+const to_tbm_synch = require('./tbm_sync/synchronize');
 
 async function thisy3(){
   console.log(chalk.yellow("thisy3 was trigeret"));
@@ -700,6 +701,7 @@ return new Promise(async function(resolve, reject) {
                                    //la diferencia nos dara la cantidad de billetes pagados.
 
                                    const remesa1 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
+                                    if(remesa1.length>0) {
                                    var id_remesa1 = remesa1[0].no_remesa;
                                   // var cuenta_no_billetes=parseInt(remesa1[0].no_billetes);
                                   // console.log("cuenta_no_billetes_egreso leido="+cuenta_no_billetes);
@@ -716,17 +718,45 @@ return new Promise(async function(resolve, reject) {
                                   console.log("se fueron:"+no_billetes_away+" Billetes");
 
                                   var cuenta_no_billetes=no_billetes_away;
-                                  await pool.query ("UPDATE remesas SET status='completado', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
+                                  console.log("aqui estoy probando manual pay...");
+                                  console.log(global.manual_pay);
+                                  if (global.manual_pay== true) {
+                                    console.log("entre a pago manual");
+                                      await pool.query ("UPDATE remesas SET status='completado', rms_status='finalizada', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
+                                      global.manual_pay=false;
+                                  }else {
+                                    console.log("este fue un pago restfull");
+                                      await pool.query ("UPDATE remesas SET status='completado', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
+                                  }
+                                  //await pool.query ("UPDATE remesas SET status='completado', rms_status='finalizada', monto=? , no_billetes=? WHERE no_remesa=?",[value_in_hex,cuenta_no_billetes,id_remesa1]);
                                   server.io.emit('Dispensed', value_in_hex);
 
                                   //consulta la cantiad de billetes que tiene remesa hermes actual,
                                   var current_rh_bills_count = await pool.query("SELECT no_billetes FROM remesa_hermes WHERE status='iniciada'");
                                   // restale la cantidad de billetes que se fueron en este PAGO
                                   current_rh_bills_count=current_rh_bills_count[0].no_billetes-cuenta_no_billetes;
+                                  /////////////////////////////////////////////////////////
+                                  //aqui hago query del monto en la base de datos y le resto el monto del pago.
+                                  var current_monto = await pool.query("SELECT monto FROM remesa_hermes WHERE status='iniciada'");
+                                  current_monto=current_monto[0].monto-value_in_hex;
+                                  console.log("current_monto:"+current_monto);
                                   //actualiza remesa hermes
-                                  await pool.query ("UPDATE remesa_hermes SET no_billetes=? WHERE status='iniciada'",[current_rh_bills_count]);
-                                  console.log("remesa hermes actualizada con:"+current_rh_bills_count+" Billetes");
+                                  await pool.query ("UPDATE remesa_hermes SET no_billetes=?, monto=? WHERE status='iniciada'",[current_rh_bills_count, current_monto]);
+                                  console.log("remesa hermes actualizada con:"+current_rh_bills_count+" Billetes, un monto nuevo de:"+ current_monto);
                                   //sincroniza remesa heremes
+
+                                  //AQUI SINCRONIZAR CON REMEZA HERMES
+                                  // await  to_tbm_synch.synch_required();
+
+                                  console.log(chalk.cyan("here tbm_status_is:",tbm_status));
+                                  if (tbm_status==true) {
+                                      await  to_tbm_synch.synch_required();
+                                  }
+
+                                }else{
+                                  console.log(chalk.red("NO SE ENCONTRO UNA REMESA TIPO EGRESO CON STATUS EN PROGRESO."));
+                                  server.io.emit('Dispensed', value_in_hex);
+                                }; //fin del if de la consulta de transaccion a terminar.
                                 //   var data=await os.consulta_all_levels();
                               //     console.log("all levels es:"+data);
                                   break;
@@ -1311,7 +1341,7 @@ function ensureIsSet() {
             timerout= setTimeout(function () {
                 clearTimeout(secondtimer);
               //  console.log("Timeout reached");
-               return reject(chalk.red("El canal serial esta ocupado mucho tiempo. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
+               return reject(chalk.red("El canal serial esta ocupado mucho tiempox. ready_for_sending se mantiene en false. al intentar transmitir un dato."));
               // return resolve("OK");
             }, 1000);//este define el tiempo que esperara hasta darse por vencido de esperar que el canal se desocupe.
             // console.log("hasta aqui llegue seteando timers.");
@@ -1534,7 +1564,7 @@ async function verificar_existencia_de_bolsa(receptor) {
 
             }else{
               //RH ya existe con este tebs. no se creara una nueva
-              console.log("RH ya existente");
+              console.log("al momento del arranque la bolsa dentro de la maqquina ya existe en la base de datos, no sera necesario crear una nueva.");
               return resolve("OK");
             }
          }
@@ -1605,7 +1635,7 @@ async function cambio_de_bolsa(receptor) {
                       return resolve("OK");
             }else{
               //RH ya existe con este tebs. no se creara una nueva
-              console.log("RH ya existente");
+              console.log("RH ya existente2");
               return resolve("OK");
             }
             console.log("esto de aqui se ejecuto saltando el if");

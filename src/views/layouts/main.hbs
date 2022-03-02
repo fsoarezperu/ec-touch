@@ -21,10 +21,12 @@
 
   <script type="text/javascript" src="/jquery/jquery.min.js"></script>
   <!-- <script type="text/javascript" src="js/TweenMax.min.js"></script> -->
+
   <link rel="stylesheet" type="text/css" href="css/tambox.css">
   <link rel="stylesheet" type="text/css" href="css/tambox_iphone.css">
   <link rel="stylesheet" type="text/css" href="css/tambox_rasp.css">
 
+  <script src="js/ion.sound.js"></script>
 
   <script src="js/Chart.js"></script>
   <script type="text/javascript">
@@ -34,6 +36,83 @@
       var indicador_unico=false;
       var caja_devuelta=false;
     $(document).ready(function() {
+
+      ion.sound({
+  sounds: [{
+      name: "intro"
+    },
+    {
+      name: "glass"
+    },
+    {
+      name: "chimes"
+    },
+    {
+      name: "chimes-glassy"
+    },
+    {
+      name: "water_droplet"
+    },
+    {
+      name: "alarm-buzzer"
+    },
+    {
+      name: "bell_ring"
+    },
+    {
+      name: "snap"
+    },
+    {
+      name: "a_user_has_connected"
+    },
+    {
+      name: "tambox_has_started"
+    },
+    {
+      name: "tambox_manager_is_online"
+    },
+    {
+      name: "nueva_remesa"
+    },
+    {
+      name: "sync_ok"
+    },
+    {
+      name: "nuevo_pago"
+    },
+    {
+      name: "iniciando_remesa"
+    },
+    {
+      name: "remesa_finalizada"
+    },
+    {
+      name: "realizando_pago"
+    },
+    {
+      name: "pago_completado"
+    },
+    {
+      name: "monto_exacto"
+    },
+    {
+      name: "un_momento_porfavor"
+    },
+    {
+      name: "anuncio_nueva_remesa_hermes"
+    },
+    {
+      name: "iniciando_remesa_hermes"
+    },
+    {
+      name: "saldo_insuficiente"
+    }
+  ],
+  path: "/sounds/",
+  preload: true,
+  volume: 1.0
+});
+
     function send_once(orden){
       console.log(indicador_unico);
         if (indicador_unico==false) {
@@ -87,6 +166,40 @@
           }
     });
 
+
+    socket.on('iniciando_remesa', function(msg) {
+      ion.sound.play("iniciando_remesa");
+    });
+
+    socket.on('remesa_finalizada', function(msg) {
+      ion.sound.play("remesa_finalizada");
+    });
+
+    socket.on('realizando_pago', function(msg) {
+      ion.sound.play("realizando_pago");
+    });
+
+    socket.on('pago_completado', function(msg) {
+      ion.sound.play("pago_completado");
+    });
+    socket.on('monto_exacto', function(msg) {
+      ion.sound.play("monto_exacto");
+    });
+
+    socket.on('un_momento_porfavor', function(msg) {
+      ion.sound.play("un_momento_porfavor");
+    });
+
+    socket.on('anuncio_nueva_remesa_hermes', function(msg) {
+      ion.sound.play("anuncio_nueva_remesa_hermes");
+    });
+    socket.on('iniciando_remesa_hermes', function(msg) {
+      ion.sound.play("iniciando_remesa_hermes");
+    });
+    socket.on('anuncio_saldo_insuficiente', function(msg) {
+      ion.sound.play("saldo_insuficiente");
+    });
+
     // socket.on('adopt', function(msg) {
     // //  $('#out_of_service').fadeOut(500);
     // console.log("adopting machine:"+msg);
@@ -98,6 +211,21 @@
     // // }
     //
     // });
+    // ion.sound.play("glass");
+  //  ion.sound.play("nuevo_pago"); //nuevo pedido de pago recibido
+//    ion.sound.play("sync_ok"); //sincronizacion satisfactoria con tambox manager
+//    ion.sound.play("nueva_remesa"); //iniciando nueva remesa
+
+//    ion.sound.play("tambox_manager_is_online"); //tambox_manager_is_online
+  //  ion.sound.play("un_momento_porfavor"); //tambox_manager_is_online
+//    ion.sound.play("anuncio_nueva_remesa_hermes"); //tambox_manager_is_online
+//    ion.sound.play("iniciando_remesa_hermes"); //tambox_manager_is_online
+//    ion.sound.play("saldo_insuficiente"); //tambox_manager_is_online
+
+    ion.sound.play("tambox_has_started"); //tambox_manager_is_online
+//  await ion.sound.play("a_user_has_connected"); //a_user_has_connected
+   //a_user_has_connected
+  // ion.sound.play("monto_exacto");
     });
   </script>
   <style media="screen">

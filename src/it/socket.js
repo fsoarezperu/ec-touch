@@ -8,6 +8,7 @@ const ssp =require('./ssp');
 const path = require('path');
 const val = require("./devices/validator");
 const pool = require('./../database');
+const sp2= require('./serial_port');
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
 const sp= require('./serial_port')(io);
@@ -55,7 +56,7 @@ socket.on('synch_remesas', async function(msg){
 // }
   socket.on('socket_to_tbm',async function(socket_data){
 //    console.log(chalk.yellow("socket to tbm detected from client:"+socket_data.id));
-    console.log(chalk.yellow("synch request sent:"+socket_data));
+    console.log(chalk.yellow("synch request sent:"+ JSON.stringify(socket_data)));
     //guardando valor en socket_sent para comparar recepcion
     socket_sent=socket_data;
 //    to_tbm.socket_to_tbm.emit('Machine_alive','123456');
@@ -360,15 +361,46 @@ io.on('connection', async function (socket) {
     new_manual_remesa= Math.floor((Math.random() * 10000) + 1);
     console.log(chalk.yellow("Nueva remesa manual iniciada"));
     const this_machine= await pool.query("SELECT * FROM machine");
+    global.manual_remesa==true;
     os.crear_nueva_remesa(new_manual_remesa,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
     //await  os.validator_enabled_now();
     //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
+    io.emit('iniciando_remesa', "iniciando_remesa");
    });
+
+   socket.on('pay_a_20',async function(){
+     new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+     console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+     const this_machine= await pool.query("SELECT * FROM machine");
+     global.manual_pay=true;
+     os.crear_nuevo_pay_20(20,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+     //os.crear_nueva_remesa(new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+     //await  os.validator_enabled_now();
+     //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
+    //io.emit('realizando_pago', "realizando_pago");
+    });
+
+    socket.on('pay_a_50',async function(){
+      new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+      console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+      const this_machine= await pool.query("SELECT * FROM machine");
+      global.manual_pay=true;
+      os.crear_nuevo_pay_20(50,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+     });
+     socket.on('pay_a_100',async function(){
+       new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+       console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+       const this_machine= await pool.query("SELECT * FROM machine");
+       global.manual_pay=true;
+       os.crear_nuevo_pay_20(100,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+      });
+
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
      try {
        await os.terminar_nueva_remesa(new_manual_remesa);
        await  os.validator_disabled_now();
+       io.emit('remesa_finalizada', "remesa_finalizada");
       // nuevo_enlace('main','../system/buffer.html')
        // fs.readFile(path.join(__dirname, '../system/buffer.html'), 'utf8', function (err,data) {
        //
@@ -491,6 +523,49 @@ io.on('connection', async function (socket) {
   socket.on('adopt', function(msg) {
   console.log("machine adopted requested");
     io.emit('adopt','adopt');
+  });
+
+  socket.on('monto_exacto', function(msg) {
+    console.log("monto_exacto");
+    io.emit('monto_exacto','monto_exacto');
+  });
+
+  socket.on('pago_completado', function(msg) {
+    console.log("pago_completado");
+    io.emit('pago_completado','pago_completado');
+  });
+
+  socket.on('anuncio_saldo_insuficiente', function(msg) {
+    console.log("anuncio_saldo_insuficiente");
+    io.emit('anuncio_saldo_insuficiente','anuncio_saldo_insuficiente');
+  });
+
+  socket.on('reconectar_validador', function(msg) {
+    console.log("reconectar_validador");
+    io.emit('reconectar_validador','reconectar_validador');
+  });
+
+  socket.on('request_support_online', function(msg) {
+    console.log("request_support_online");
+    io.emit('request_support_online','request_support_online');
+    to_tbm.socket_to_tbm.emit("request_support_online",global.machine_sn);
+  });
+
+  socket.on('close_serial_port', function(msg) {
+    sp2.cerrar_puerto_serial();
+    console.log("close_serial_port");
+    io.emit('close_serial_port','close_serial_port');
+  });
+
+  socket.on('open_serial_port', function(msg) {
+    sp2.abrir_puerto_serial();
+    console.log("open_serial_port");
+    io.emit('open_serial_port','open_serial_port');
+  });
+
+  socket.on('initialize_validator', function(msg) {
+    console.log("initialize_validator");
+    io.emit('initialize_validator','initialize_validator');
   });
 
   var this_machine = await pool.query("SELECT * FROM machine");

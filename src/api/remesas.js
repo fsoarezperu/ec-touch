@@ -41,6 +41,9 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   var {no_remesa,tienda_id,no_caja,codigo_empleado,no_remesa,fechax1,horax1} = req.params;
   console.log(chalk.yellow("iniciando NUEVA REMESA desde restfull api con numero:" + no_remesa));
   new_manual_remesa=no_remesa;
+   var current_lock_value=await pool.query("SELECT is_locked FROM machine WHERE tienda_id=?", [tienda_id]);
+   console.log(current_lock_value[0].is_locked);
+   is_locked=current_lock_value[0].is_locked;
   if(is_locked==false){
   if (on_startup == false) {
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
@@ -51,6 +54,7 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
         res.json('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
         return;
       }else{
+        global.manual_remesa=false;
         //  aqui creo la nueva remesa en la base de datos.
           os.crear_nueva_remesa(no_remesa,tienda_id,no_caja,codigo_empleado,tambox.fecha_actual(),tambox.hora_actual());
           await  os.validator_enabled_now();
@@ -307,7 +311,10 @@ router.get('/terminar_remesa_old/:no_remesa', async (req, res) => {
 
           console.log("actualizando el monto de remesa hermes:" + monto_remesa_hermes + " y numero de billetes es:" + no_billetes_en_remesa_hermes);
           await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'", [monto_remesa_hermes, no_billetes_en_remesa_hermes]);
+
           var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada'");
+
+
           console.log("voy a actualizar rh con estos datos:" + nueva_res_hermes);
           await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
           res.json(remesax);

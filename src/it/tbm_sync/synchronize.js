@@ -29,7 +29,7 @@ if(!current_local_records==0){
   console.log(chalk.yellow(chalk.green("localmente existen:"+current_local_records+" records.")));
     // -envia socket consultando # de records existentes en remoto where machine-sn
     //io.to_tbm.emit('consultando_excistencia_de_records',machine_sn);
-
+if (tbm_status) {
   var current_remote_records=consultar_cantidad_de_remesas_a_servidor_remoto();
   console.log(chalk.yellow("remotamente existen:"+current_remote_records+" records."));
   if(current_local_records==current_remote_records){
@@ -46,6 +46,10 @@ if(!current_local_records==0){
       console.log("remote tiene mas que local, al parecer se borraron archivos localmente");
     }
   }
+}else{
+  console.log(chalk.cyan("TBM is offline, can not synch right now..."));
+}
+
 
 }else{
     // si la consulta local da como resultado cero nada sucede.
@@ -59,7 +63,8 @@ async function get_tbm_remesas(){
 return  new Promise(function(resolve, reject) {
     //emit al tbm
     // if (true) {
-      to_tbm.socket_to_tbm.emit('consultando_excistencia_de_records',global.numero_de_serie);
+    console.log("tryng to get records here.");
+    to_tbm.socket_to_tbm.emit('consultando_excistencia_de_records',global.numero_de_serie);
 
     // }else {
     //   return reject("error");
@@ -129,48 +134,63 @@ async function remote_update_rh(id){
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function synch_required(){
-  const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[global.numero_de_serie]);
-  var local_array=JSON.parse(JSON.stringify(local_id_records));
-  console.log("a continuacion se muestran los records a ser sincronizados");
-  console.log(local_array);
-  console.log(local_array.length);
-  var local=[];
-  for (var i=0; i <local_array.length;i++){
-    local.push(local_array[i].no_remesa);
+  if (tbm_status) {
+    const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[global.numero_de_serie]);
+    var local_array=JSON.parse(JSON.stringify(local_id_records));
+    console.log("a continuacion se muestran los "+local_array.length+" records a ser sincronizados");
+    console.log(local_array);
+    // console.log(local_array.length);
+    var local=[];
+    for (var i=0; i <local_array.length;i++){
+      local.push(local_array[i].no_remesa);
+    }
+    var consulta=await get_tbm_remesas();
+    console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
+    console.log(chalk.green("lo que yo tengo:"+local));
+    const toUpdate= arr_diff(consulta,local);
+    console.log("toUpdate:"+toUpdate);
+    for (var i=0; i <toUpdate.length;i++){
+      await remote_update(toUpdate[i])
+    }
+    console.log(toUpdate.length+" Records updated succesfully");
+  /////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
+  var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
+  console.log("regarding local_rh_records:",global.numero_de_serie);
+  console.log(local_rh_array);
+  console.log(local_rh_array.length);
+  var local_rh=[];
+  for (var i=0; i <local_rh_array.length;i++){
+    local_rh.push(local_rh_array[i].no_remesa);
   }
-  var consulta=await get_tbm_remesas();
-  console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
-  console.log(chalk.green("lo que yo tengo:"+local));
-  const toUpdate= arr_diff(consulta,local);
-  console.log("toUpdate:"+toUpdate);
-  for (var i=0; i <toUpdate.length;i++){
-    await remote_update(toUpdate[i])
+  try {
+    var consulta_rh=await get_tbm_rh();
+    console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
+    console.log(chalk.green("rh que yo tengo:"+local_rh[0].tebs_barcode));
+    const toUpdate_rh= arr_diff(consulta_rh,local_rh);
+    console.log("toUpdate rh:"+toUpdate_rh);
+    for (var i=0; i <toUpdate_rh.length;i++){
+      await remote_update_rh(toUpdate_rh[i])
+    }
+    console.log(toUpdate_rh.length+" Records updated succesfully");
+  } catch (e) {
+    console.log(chalk.red("no se pudo ejecutar esta accion IMPORTANTE"));
+  } finally {
+
   }
-  console.log(toUpdate.length+" Records updated succesfully");
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
-var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
-console.log(local_rh_array);
-console.log(local_rh_array.length);
-var local_rh=[];
-for (var i=0; i <local_rh_array.length;i++){
-  local_rh.push(local_rh_array[i].no_remesa);
-}
-var consulta_rh=await get_tbm_rh();
-console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
-console.log(chalk.green("rh que yo tengo:"+local_rh));
-const toUpdate_rh= arr_diff(consulta_rh,local_rh);
-console.log("toUpdate rh:"+toUpdate_rh);
-for (var i=0; i <toUpdate_rh.length;i++){
-  await remote_update_rh(toUpdate_rh[i])
-}
-console.log(toUpdate_rh.length+" Records updated succesfully");
+
+  }else {
+    console.log(chalk.cyan("TBM is offline right now, sorry"));
+  }
+
 
 };
 module.exports.synch_required=synch_required;
-
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
 function arr_diff (local, a2) {
 
     var a = [], diff = [];
@@ -194,7 +214,9 @@ function arr_diff (local, a2) {
     return diff;
 }
 module.exports.arr_diff=arr_diff;
-
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
 
 function consultar_cantidad_de_remesas_a_servidor_remoto(){
   //enviar orden via socket
@@ -207,3 +229,6 @@ function consultar_cantidad_de_remesas_a_servidor_remoto(){
   //continuar con la tarea
   return 1;
 }
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////

@@ -82,7 +82,7 @@ if(myData.length>32){
   if(poll_responde[0] == "F5"){
     console.log(chalk.green("Command can not be processed"));
     if(poll_responde[1] == "01"){
-      console.log(chalk.green("Not enough value in device"));
+      console.log(chalk.green("Not enough value in device2"));
       enable_sending();
       return "saldo_insuficiente";
     }

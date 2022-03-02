@@ -27,6 +27,10 @@ $(document).ready(function(){
   socket.on('lock_cashbox', function(msg){
   display_message(msg);
   });
+
+  socket.on('reconectar_validador', function(msg){
+  display_message(msg);
+  });
   //////////////////////////////////////////
   socket.on('system_running_indicator', function(msg) {
     display_system_running_indicator();

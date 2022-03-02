@@ -6,14 +6,15 @@ const pool = require('./../database');
 const globals = require('./globals');
 const enc = require('./encryption');
 const to_tbm = require('./tbm_sync/tbm_synch_socket');
-const to_tbm_synch = require('./tbm_sync/synchronize');
+const to_tbm_synch = require('./tbm_sync/synchronize'); //nuevo
 
 const val = require("./devices/validator");
 const chalk = require('chalk');
-const tambox = require("./devices/tambox");
+const tambox = require("./devices/tambox"); // nuevo
 var fetchTimeout = require('fetch-timeout');
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const socketjs=require('./../it/socket');
+
 const moment=require("moment");
 async function coneccion_con_tbm(){
   return new Promise(async function(resolve, reject) {
@@ -89,18 +90,19 @@ async function comprueba_rh_inicial(){
   if (rh_leida.length>0) {
     return "OK";
   }else {
-    console.log(rh_leida);
-    console.log("RH no EXISTENTe");
+    // console.log(rh_leida);
+    console.log("NO existe actualmente una remesa hermes con esta bolsa en status iniciada.");
     rh_leida=await ssp.verificar_existencia_de_bolsa();
     return rh_leida;
   }
 }
 module.exports.comprueba_rh_inicial=comprueba_rh_inicial;
+///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
 async function arranca_tambox_os() {
   return new Promise(async function(resolve, reject) {
     try {
-
-
       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       console.log(this_ts);
       let step1=await tambox.finalizar_pagos_en_proceso();
@@ -132,20 +134,27 @@ async function arranca_tambox_os() {
       console.log(chalk.yellow("la informacion local de la maquina es:"));
       console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
       //actualiza los valores remotos de la maquina
-      var x1=status.tienda_id;
-      var x2=status.machine_sn;
-      var x3=status.name;
-      var is_locked11=status.is_locked;
-      ///////////////////////////////////
-      globals.is_locked=status.is_locked;
-      ///////////////////////////////////
-      console.log("x1 (tienda_id) es:"+x1);
-      console.log("x2 (machine_sn) es:"+x2);
-      console.log("x3 (name) es:"+x3);
+      console.log(status);
+       if (status=='Offline') {
+        var x1=status.tienda_id;
+        var x2=status.machine_sn;
+        var x3=status.name;
+        var is_locked11=status.is_locked;
+        ///////////////////////////////////
+        globals.is_locked=status.is_locked;
+        ///////////////////////////////////
+        console.log("x1 (tienda_id) es:"+x1);
+        console.log("x2 (machine_sn) es:"+x2);
+        console.log("x3 (name) es:"+x3);
 
-      await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
-        console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
-        console.log("y el valor de is_locked:"+status.is_locked);
+        await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
+          console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
+          console.log("y el valor de is_locked:"+status.is_locked);
+       }else {
+         console.log("tbm status is not offline.");
+       }
+
+
 
 
       //vuelve a ejecutar coneccion con
@@ -271,8 +280,10 @@ module.exports.timer2 = timer2;
 //     is_os_running();
 //   }, 5000);
 // }
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
 async function tbm_paso1() {
-
     //verificar registro de maquina.
          await comprueba_maquina_inicial();
          await to_tbm.iniciar_handshake_con_tbm();
@@ -401,7 +412,7 @@ async function consulta_this_machine_en_tbm() {
   });
 }
 module.exports.consulta_this_machine_en_tbm = consulta_this_machine_en_tbm;
-/////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function consulta(url) {
 
   const FETCH_TIMEOUT = 3000;
@@ -444,7 +455,7 @@ function consulta(url) {
     });
   return;
 }
-/////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function fetchWithTimeout(url, timeout) {
   return new Promise((resolve, reject) => {
     // Set timeout timer
@@ -911,7 +922,14 @@ async function terminar_nueva_remesa(no_remesa) {
   if (on_startup === false) {
     if (no_remesa) {
       try {
-        await pool.query("UPDATE remesas SET status='terminado', rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+
+        if (global.manual_remesa==false) {
+          await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        }else {
+          await pool.query("UPDATE remesas SET status='terminado', rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+          global.manual_remesa==false
+        }
+
         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
 
         //  remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
@@ -937,11 +955,25 @@ async function terminar_nueva_remesa(no_remesa) {
         await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada' and tebs_barcode=?", [monto_remesa_hermes, no_billetes_en_remesa_hermes, current_tebs_barcode]);
         var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
         console.log(chalk.yellow("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes)));
+
+        var got_tienda_id=nueva_res_hermes[0].tienda_id;
+        console.log("got tienda id is"+JSON.stringify(got_tienda_id));
+        await pool.query("UPDATE machine SET monto_actual=? WHERE tienda_id=?", [monto_remesa_hermes,got_tienda_id]);
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
       //  await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
-              await  to_tbm_synch.synch_required();
+
+        //    try {
+        console.log(chalk.cyan("here tbm_status_is:",tbm_status));
+        if (tbm_status==true) {
+            await  to_tbm_synch.synch_required();
+        }
+
+        //    } catch (e) {
+        //      console.log("no se puso sincronizar en este momento");
+        //    }
+
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
@@ -1038,13 +1070,335 @@ module.exports.begin_remesa_hermes = begin_remesa_hermes;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesa_hermes_actual() {
   const remesa_hermes_entambox = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
-  console.log("esta es la ultima consulta:" + JSON.stringify(remesa_hermes_entambox));
+  console.log("consulta_remesa_hermes_actual en status iniciada:");
+  console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
   return remesa_hermes_entambox;
 }
 module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
 /////////////////////////////////////////////////////////////////
 
+async function crear_nuevo_pay_20(monto,no_remesa, tienda_id, no_caja, codigo_empleado, fechax1, horax1) {
 
+  if (on_startup == false) {
+    // dando por terminada, cualquier operacion que este como iniciada inadecuadamente.
+    await pool.query("UPDATE remesas SET status='error' WHERE status='recibido'");
+    console.log("aqui estoy creando una nuevo pago en la base de datos");
+    console.log(chalk.yellow("iniciando NUEVO PAGO:" + no_remesa));
+    ///////////////////////////////////////////////
+    const number_egreso = await pool.query("SELECT COUNT(no_remesa) AS noPagos FROM remesas WHERE tipo='egreso' and no_remesa=?", [no_remesa]);
+    if (number_egreso[0].noPagos > 0) {
+      console.log('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
+    } else {
+
+      // console.log(fechax1);
+      // console.log(horax1);
+       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+       console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
+       if (monto && tienda_id && no_caja && codigo_empleado && no_remesa) {
+
+         var nueva_res = {
+           monto,
+           tienda_id,
+           no_caja,
+           codigo_empleado,
+           no_remesa,
+           fecha: fechax1,
+           hora: horax1,
+           moneda: country_code,
+           tebs_barcode: tebs_barcode,
+           machine_sn: numero_de_serie,
+           tipo: 'egreso',
+           status:'recibido',
+          // no_billetes: 0, //,
+           ts_inicio:this_ts
+         }
+         await pool.query('INSERT INTO remesas set ?', [nueva_res]);
+         console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa:");
+         console.log(JSON.parse( JSON.stringify(nueva_res)));
+         try {
+                    await validar_pago(nueva_res.no_remesa);
+         } catch (e) {
+              console.log(chalk.cyan("aqui indico que el pago no se pudo realizar por un motivo y lo indique y continue."));
+         }
+
+         //await ejecutar_pago(nueva_res.no_remesa);
+
+          console.log("todo va bien hasta aqui.");
+      //   //return;
+      //   await  validator_enabled_now();
+      //   socketjs.nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
+       } else {
+         console.log('Datos incompletos, revise documentacion');
+         //  return;
+       }
+    }
+  } else {
+    console.log('Estoy en Startup');
+    //return;
+  }
+}
+module.exports.crear_nuevo_pay_20 = crear_nuevo_pay_20;
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////
+var ConvertBase = function(num) {
+  return {
+    from: function(baseFrom) {
+      return {
+        to: function(baseTo) {
+          return parseInt(num, baseFrom).toString(baseTo);
+        }
+      };
+    }
+  };
+};
+ConvertBase.dec2hex = function(num) {
+  return ConvertBase(num).from(10).to(16);
+};
+
+function handlepayoutvalue(data){
+//return  new Promise(function(resolve, reject) {
+//    try {
+var poll_responde=data.match(/.{1,2}/g);
+//  console.log("data en poll_responde es:"+poll_responde);
+var data_length_on_pool=parseInt(poll_responde[0]);
+data_length_on_pool=data_length_on_pool+1;
+poll_responde=poll_responde.slice(0,data_length_on_pool);
+//console.log("data en poll_responde es:"+data_length_on_pool);
+//console.log(poll_responde);
+
+      if(poll_responde[1] == "F0"){
+        console.log(chalk.green("PAGO PROCEDE"));
+        server.io.emit("realizando_pago","realizando_pago");
+        return "ok";
+      }
+        if(poll_responde[1] == "F5"){
+        console.log(chalk.green("Command can not be processed"));
+        //return ("Command can not be processed");
+
+        if(poll_responde[2] == "01"){
+          console.log(chalk.green("Not enough value in device3"));
+          server.io.emit("anuncio_saldo_insuficiente","anuncio_saldo_insuficiente");
+          return "saldo_insuficiente";
+        }
+        if(poll_responde[2] == "02"){
+          console.log(chalk.green("Cannot pay exact amount"));
+          server.io.emit("monto_exacto","monto_exacto");
+          return "no_monto_exacto";
+        }
+        if(poll_responde[2] == "03"){
+          console.log(chalk.green("Device Busy"));
+          return "ocupado";
+        }
+        if(poll_responde[2] == "04"){
+          console.log(chalk.green("Device Disabled"));
+          return  "desabilitado";
+        }
+    }
+}
+///////////////////////////////////////////////////////////////
+
+async function validar_pago(no_remesa){
+  var retiro,posible_monto;
+   return new Promise(async function(resolve, reject) {
+    //  const {no_remesa}=req.params;
+      console.log("consultando retiro:"+no_remesa);
+      try {
+        // ssp.ensureIsSet2()
+        if(on_startup==false){
+          retiro= await pool.query ("SELECT * FROM remesas WHERE no_remesa=? AND tipo='egreso'",[no_remesa]);
+
+          if (retiro.length==0) {
+            console.log("pero ese pago no existe");
+          //  res.json("ese pago no existe");
+            return resolve("ese pago no existe");
+          }else {
+            console.log("retiro:"+retiro[0].monto);
+          }
+            posible_monto=retiro[0].monto;
+          if( retiro.length !== 0){ //si hay un retiro con ese numero de esa remesa verifica que el monto no sobrepase el limite.
+                  console.log("//////////////////////////////////");
+                  console.log(chalk.cyan("se puede pagar?: S/."+posible_monto));
+                  if(posible_monto>500){
+                    console.log("el limite maximo es de 500 soles por transaccion");
+                    //res.json('retiro_limite');
+                    return reject("retiro limite");
+                  }//si el monto es mayor al limite termina la ejecucion
+                  //convertir el monto a hex invertido
+                  posible_monto= posible_monto*100;
+                  //console.log(posible_monto);
+                  posible_monto=ConvertBase.dec2hex(posible_monto).toUpperCase();
+                  //console.log(posible_monto);
+                  posible_monto=enc.pady(posible_monto,8);
+                  //console.log(posible_monto);
+                  posible_monto=enc.changeEndianness(posible_monto);
+                  //console.log(posible_monto);
+                  //console.log("posible_monto HEX reversed:"+posible_monto);
+                  //formar la orden de consulta con el valor del monto actual.
+                  prep0="0933";
+                  prep2="50454E19";
+                  var string= prep0.concat(posible_monto);
+                  string= string.concat(prep2);
+                  //console.log("STRING FINAL:"+string);
+                   const arry=[];
+                   const thelength=string.length/2;
+                  // console.log("the length:"+thelength);
+                   for (var i=0;i<thelength;i++){
+                     var thisy=string.substr(i*2,2);
+                    arry.push(thisy);
+                   }
+
+                   // try {
+                   console.log("justo antes del problema: validator_asddress is:"+global.validator_address);
+                      //var data= await sspo.transmite_encriptado_y_procesa2(validator_address,arry);
+                      var data= await transmite_encriptado_y_procesa2(global.validator_address,arry);
+
+                   // } catch (e) {
+                   //   return reject(e)
+                   // }
+                    console.log("AQUI VOLI:"+data);
+
+                      console.log(chalk.yellow("<-:"+data));
+                      var solucion=handlepayoutvalue(data);
+                      console.log("solucion is:"+solucion);
+                    if(solucion=="ok"){
+                        await pool.query ("UPDATE remesas SET status='procede' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
+                      }
+                      if(solucion=="no_monto_exacto"){
+                        console.log("No_monto_exacto");
+                         await pool.query ("UPDATE remesas SET status='no_monto_exacto' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
+                        // res.json('No_monto_exacto');
+                         return reject("No_monto_exacto");
+                      }
+                      if(solucion=="saldo_insuficiente"){
+                        console.log("Saldo_insuficiente");
+                         await pool.query ("UPDATE remesas SET status='saldo_insuficiente' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
+                         //res.json('Saldo_insuficiente');
+                         return reject("Saldo_insuficientex");
+                      }
+                      if(solucion=="ocupado"){
+                        console.log("Ocupado");
+                         await pool.query ("UPDATE remesas SET status='ocupado' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
+                         //res.json('Ocupado');
+                         return reject("Ocupado");
+                      }
+                      if(solucion=="desabilitado"){
+                          console.log("Deshabilitado");
+                         await pool.query ("UPDATE remesas SET status='desabilitado' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
+                        // res.json('Deshabilitado');
+                         return reject("Deshabilitado");
+                      }
+
+                    console.log("/////////////////////////////////");
+                    const retiro= await pool.query ('SELECT * FROM remesas WHERE no_remesa=? AND tipo="egreso"',[no_remesa]);
+                   if(retiro){
+                    // res.json(retiro);
+                    await ejecutar_pago(no_remesa);
+                    console.log("solo falta a este punto ejecutar el retiro para luego finalizarlo.");
+                     return resolve()
+                   }else {
+                     return reject("no se encontro este retiro");
+                   }
+
+          }else{
+            //res.json('Pago Inexistente'); //funcionA.
+            return reject('Pago Inexistente');
+          }
+        }else{
+          //res.send('Estoy en Startup');
+          return reject('Pago Inexistente');
+        }
+      } catch (e) {
+        console.log("error en consultar retiro:->"+e);
+      }
+    });
+
+}
+module.exports.validar_pago = validar_pago;
+
+async function ejecutar_pago(no_remesa){
+  new Promise(async function(resolve, reject) {
+    try {
+      // ssp.ensureIsSet2()
+      if(on_startup==false){
+        //Aqui verifico que el pago no existe en la base de datos y con status completado., si lo detecta, lo imprime en pagina
+      //  const {no_remesa}=req.params;
+        const valid_payment= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and tipo='egreso' and status='completado'" ,[no_remesa]);
+        if(valid_payment.length>0){
+        //  res.json(valid_payment);
+        console.log("valid payment");
+          return resolve();
+        }else{
+
+        //////////////////////////////////
+        //consulta monto del retiro con codigo tal y estatus aprobado
+        // const monto= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and (tipo='egreso' and status<>'completado' and rms_status='pendiente')" ,[no_remesa]);
+        const retiro= await pool.query ("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' and no_remesa=?",[no_remesa]);
+
+        if(retiro.length>0){
+      const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
+    //  socketjs.io.emit('retiro_en_proceso'," pago en proceso");
+    //  res.json(retirox);
+    console.log("retiro en proceso");
+      return resolve();
+          }else{
+            //consultar el pago que esta como "procede" y ejecutar pago.
+            const monto= await pool.query("SELECT * FROM remesas WHERE no_remesa=? and (tipo='egreso' and status='procede' and rms_status='pendiente')" ,[no_remesa]);
+            if(monto.length>0){
+            console.log("/////////////PAY OUT SENT////////////////////");
+            console.log(chalk.green("Monto a pagar:"+monto[0].monto));
+            ///////////////////////////////////////////////////////////////
+            console.log("////////////LECTURA INICIAL DE RECICLADOR////////////////////");
+            var no_billetes_antes=await concilia_numeros();
+            global.en_reciclador_antes_de_retiro=no_billetes_antes[0].total_notes;
+            console.log("estoy guardando en_reciclador_antes_de_retiro xxy:"+global.en_reciclador_antes_de_retiro);
+            //////////////////////////////////
+            var prep1= monto[0].monto;
+            prep1= prep1*100;
+            prep1=ConvertBase.dec2hex(prep1).toUpperCase();
+            prep1=enc.pady(prep1,4);
+            prep1=enc.changeEndianness(prep1);
+            //console.log("prep1 reversed:"+prep1);
+            prep0="0933";
+            prep2="000050454E58";
+            var string= prep0.concat(prep1);
+            string= string.concat(prep2);
+            //console.log("STRING FINAL:"+string);
+            const arry=[];
+            const thelength=string.length/2;
+            for (var i=0;i<thelength;i++){var thisy=string.substr(i*2,2);arry.push(thisy);}
+            console.log(arry);
+            //var value=tambox.prepare_Encryption(arry);
+          //  ssp.ensureIsSet2()
+            var data =await transmite_encriptado_y_procesa2(global.receptor,arry);
+            const retiro= await pool.query ("UPDATE remesas SET status='en_proceso' WHERE no_remesa=?",[no_remesa]);
+            const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
+
+            var mi_objeto={ nombre:"pago"};
+            socketjs.nuevo_enlace('retiro_en_proceso','../system/retiros/retiro_en_proceso.html',mi_objeto);
+          //  server.io.emit('retiro_en_proceso'," pago en proceso");
+        //    res.json(retirox);
+            return resolve();
+            //////////////////////////////////
+            }else{
+          //    res.json("no se encontro un record valido");
+              console.log("no se encontro un record valido");
+              return reject("no se encontro un record valido")
+            }
+
+    }
+    //////////////////////////////////
+     }
+    //////////////////////////////////
+      }else{
+      //  res.send('Estoy en Startup');
+      console.log('estoy en start_up');
+      }
+    } catch (e) {
+      return reject(e);
+    }
+  });
+}
+module.exports.ejecutar_pago = ejecutar_pago;
 
 async function consulta_historial() {
   var historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
@@ -1113,7 +1467,10 @@ async function idle_poll_loop(receptor) {
                         return resolve("OK");
                       }
                 } catch (e) {
-                  return reject("error en idle poll loop:"+e);
+                //  sp.abrir_puerto_serial();
+                  // return inicializar_validador();
+                //  return arranca_tambox_os();
+                   return reject("error en idle poll loop:"+e);
                 }
                 //var step1= await ssp.envia_encriptado(receptor,global.poll);
               });

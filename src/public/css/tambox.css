@@ -89,12 +89,17 @@ li{
 .panel1{
   grid-area:panel1;
   /* margin:30px; */
+
   background-color: rgb(20, 143, 9) ;
   justify-content: center;
   align-content: center;
+
 }
 .panel2{
   grid-area:panel2;
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(4,1fr);
   /* margin:30px; */
   background-color: rgb(101, 43, 9) ;
   align-content: center;
@@ -760,7 +765,7 @@ li{
   /* background-image: linear-gradient(to bottom, rgba(255,0,0,0), rgb(218, 196, 31)); */
   /* background-image: linear-gradient(to bottom, rgba(80,80,80), rgb(43, 43, 43)); */
   /* background-image: linear-gradient(to bottom, rgba(53,53,53), rgb(23, 22, 22)); */
-  background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(81, 182, 43, 0.6));
+  background-image: linear-gradient(to bottom, rgb(189, 223, 68),rgba(81, 182, 43, 0.6));
 
   grid-gap:6px;
   filter: drop-shadow(1px 1px 15px #000000);
@@ -957,6 +962,7 @@ li{
 }
 .ec_card{
     display:grid;
+    grid-gap: 5px;
     /* grid-template-columns: 50% 50%; */
     background-image: linear-gradient(to bottom, rgba(65,65,65), rgb(43, 43, 43));
     color:white;
@@ -1060,13 +1066,13 @@ li{
 .locking_template {
   /* grid-area: 1 / 9 / span 1 / 12; */
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   grid-column-gap: 0px;
   grid-row-gap: 0px;
 }
 .boton_bloqueo {
-   grid-area: 3 / 3 / 4 / 4;
+   /* grid-area: 3 / 3 / 4 / 4; */
    margin:auto;
    /* grid-column:span1; */
    /* grid-row:span1 */
@@ -1074,7 +1080,7 @@ li{
 .texto_indicador {
   /* grid-column:span1;
   grid-row:span1 */
-   grid-area: 2 / 3 / 3 / 4;
+   /* grid-area: 2 / 3 / 3 / 4; */
    margin:auto;
  }
 
