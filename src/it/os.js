@@ -19,16 +19,19 @@ const moment=require("moment");
 async function coneccion_con_tbm(){
   return new Promise(async function(resolve, reject) {
     try {
-        // var machine_queried=await consulta_this_machine_en_tbm();
+        // var machine_queried=await consulta_this_machine_en_tbm();}
+      //  console.log("flag0568");
         var machine_queried=await tock_tock_tbm();
-      //  console.log("en coneccion con tbm machine queried es:"+machine_queried);
-      if (machine_queried=='Offline') {
-        //  console.log("OFFLINE");
-              tbm_status=false;
+      //  console.log("en coneccion con tbm machine queried es123587:"+machine_queried);
+      //  console.log(tbm_status);
+      if (typeof tbm_status === 'boolean' && tbm_status === false) {
+        //  console.log(" tbm is OFFLINE");
+            //  tbm_status=false;
             //  return resolve(chalk.magenta("Offline"));
               return resolve(chalk.red("Offline"));
 
       }else {
+          console.log(" tbm aparently online");
               var machine_queried=await consulta_this_machine_en_tbm();
               //console.log("en coneccion con tbm machine queried es:"+machine_queried);
               console.log("Info en TBM sobre esta maquina:");
@@ -43,7 +46,7 @@ async function coneccion_con_tbm(){
       }
 
     } catch (e) {
-      return reject("no existe coneccion con servidor remoto");
+      return reject("no existe coneccion con servidor remoto 7685");
     }
   });
 }
@@ -59,6 +62,7 @@ async function tock_tock_tbm() {
       var fix= "/status";
       const url= tbm_adress+fix
       try {
+        //console.log("first use of fetch with timeout");
         var machine_queried=await fetchWithTimeout2(url,5000);
       //  console.log("machine_queried es:"+machine_queried);
         if (machine_queried==undefined) {
@@ -69,7 +73,8 @@ async function tock_tock_tbm() {
         }
 
       } catch (e) {
-        console.log("RESOLVED NO CHECK IN");
+        console.log("RESOLVED NO CHECK IN 2345");
+        tbm_status=FALSE;
         return resolve("no check-in")
       }
       setTimeout(function() {
@@ -111,19 +116,28 @@ async function arranca_tambox_os() {
       var validator = await inicializar_validador();
       console.log(chalk.green("Validador inicio:" + validator));
       console.log(chalk.green("***************************************"));
+
+
       ///////////////////////////////////////////////////////////////////
       var maquina_inicial=await comprueba_maquina_inicial();
-    //  console.log(chalk.green("maquina_inicial es:"+JSON.stringify( maquina_inicial)));
-    //  console.log(chalk.green("***************************************"));
-      var rh_inicial=await comprueba_rh_inicial()
-
-      console.log("RH_incial es:"+rh_inicial);
+      console.log(chalk.green("comprobando maquina inicial"));
+      console.log(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
+      console.log(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
+      var rh_inicial=await comprueba_rh_inicial()
+    //  console.log("RH_incial es:"+rh_inicial);
+    //  console.log(chalk.green("comprobando remesa hermes inicial"));
+    //  console.log(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
+      console.log(chalk.green("***************************************"));
+      ///////////////////////////////////////////////////////////////////
+
+
       console.log(chalk.green("Comprobando conexion con TBM"));
       var status=await coneccion_con_tbm();
     //  console.log("status es:"+JSON.stringify(status));
       console.log("status es:"+ status);
       console.log(chalk.green("***************************************"));
+        return resolve (validator);// esto frena la ejecucion
       //lee los valores locales de la maquina ,
       // var informacion_maquina_local = {
       //   numero_de_serie: global.numero_de_serie,
@@ -134,8 +148,14 @@ async function arranca_tambox_os() {
       console.log(chalk.yellow("la informacion local de la maquina es:"));
       console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
       //actualiza los valores remotos de la maquina
+
+
+
       console.log(status);
-       if (status=='Offline') {
+      var second='Offline';
+            //  var result = status.localeCompare(second)
+            //  console.log(result);
+       if (status.valueOf()== second.valueOf()) {
         var x1=status.tienda_id;
         var x2=status.machine_sn;
         var x3=status.name;
@@ -151,30 +171,26 @@ async function arranca_tambox_os() {
           console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
           console.log("y el valor de is_locked:"+status.is_locked);
        }else {
-         console.log("tbm status is not offline.");
+         console.log("tbm status is online.6758");
        }
-
-
-
-
-      //vuelve a ejecutar coneccion con
-
-    //  return resolve (status);
-      // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
-      await tbm_paso1();
-       // var regis=await is_this_machine_registered();
-       // console.log("resgistered is:"+regis);
-       // console.log("***************************************");
+          //vuelve a ejecutar coneccion con
+          //  return resolve (status);
+          // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
+          //  if (tbm_status== TRUE) {
+          await tbm_paso1();
+          //    }else {
+          //    console.log(chalk.red("TBM still offline at this point!"));
+          //    }
+          // var regis=await is_this_machine_registered();
+          // console.log("resgistered is:"+regis);
+          // console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
       var step7=await enable_payout2(validator_address);
       if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
-
       //to_tbm_synch.are_synched();
-
        on_startup=false;
        server.io.emit("iniciando","iniciando");
        tambox_manager_ping();
-
       return resolve (validator);
     } catch (e) {
       return reject(chalk.cyan("01-Starting Validator->") + e);
@@ -297,9 +313,9 @@ async function tbm_paso1() {
          var x2=regis[1].machine_sn;
          var x3=regis[1].machine_name;
 
-         console.log("x1 es:"+x1);
-         console.log("x2 es:"+x2);
-         console.log("x3 es:"+x3);
+         console.log("x1 tienda-id es:"+x1);
+         console.log("x2 machine_sn es:"+x2);
+         console.log("x3 machine_name es:"+x3);
 
          await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
            console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
@@ -388,6 +404,7 @@ async function consulta_this_machine_en_tbm() {
       var machine_sn = global.numero_de_serie;
       const url= tbm_adress+fix+"/"+machine_sn+"/"+public_machine_ip+"/"+machine_port
       try {
+                console.log("second use of fetch with timeout");
         var machine_queried=await fetchWithTimeout2(url,5000);
       //  console.log("machine_queried es:"+machine_queried);
         if (machine_queried==undefined) {
@@ -413,68 +430,69 @@ async function consulta_this_machine_en_tbm() {
 }
 module.exports.consulta_this_machine_en_tbm = consulta_this_machine_en_tbm;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function consulta(url) {
-
-  const FETCH_TIMEOUT = 3000;
-  let didTimeOut = false;
-
-  return new Promise(function(resolve, reject) {
-      const timeout = setTimeout(function() {
-        didTimeOut = true;
-        reject(new Error('Request timed out'));
-      }, FETCH_TIMEOUT);
-      console.log(url);
-      fetch(url)
-        .then(function(response) {
-          // Clear the timeout as cleanup
-          clearTimeout(timeout);
-          if (!didTimeOut) {
-            console.log('fetch good! ', response);
-            resolve(response);
-          }
-        })
-        .catch(function(err) {
-          console.log('fetch failed! ', err);
-
-          // Rejection already happened with setTimeout
-          if (didTimeOut) return;
-          // Reject with error
-          reject(err);
-        });
-    })
-    .then(function() {
-      // Request success and no timeout
-      //  return resolve(response);
-      console.log('good promise, no timeout! ');
-    })
-    .catch(function(err) {
-      // Error: response error, request timeout or runtime error
-      console.log('promise error! ', err);
-      //  return resolve("no check-in");
-      return;
-    });
-  return;
-}
+// function consulta(url) {
+//
+//   const FETCH_TIMEOUT = 3000;
+//   let didTimeOut = false;
+//
+//   return new Promise(function(resolve, reject) {
+//       const timeout = setTimeout(function() {
+//         didTimeOut = true;
+//         reject(new Error('Request timed out'));
+//       }, FETCH_TIMEOUT);
+//       console.log(url);
+//       fetch(url)
+//         .then(function(response) {
+//           // Clear the timeout as cleanup
+//           clearTimeout(timeout);
+//           if (!didTimeOut) {
+//             console.log('fetch good! ', response);
+//             resolve(response);
+//           }
+//         })
+//         .catch(function(err) {
+//           console.log('fetch failed! ', err);
+//
+//           // Rejection already happened with setTimeout
+//           if (didTimeOut) return;
+//           // Reject with error
+//           reject(err);
+//         });
+//     })
+//     .then(function() {
+//       // Request success and no timeout
+//       //  return resolve(response);
+//       console.log('good promise, no timeout! ');
+//     })
+//     .catch(function(err) {
+//       // Error: response error, request timeout or runtime error
+//       console.log('promise error! ', err);
+//       //  return resolve("no check-in");
+//       return;
+//     });
+//   return;
+// }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-function fetchWithTimeout(url, timeout) {
-  return new Promise((resolve, reject) => {
-    // Set timeout timer
-    let timer = setTimeout(
-      //() => reject( new Error('Request timed out') ),
-      () => resolve('no check-in'),
-
-      timeout
-    );
-
-    fetch(url).then(
-      response => resolve('OK'),
-      err => reject(err)
-    ).finally(() => clearTimeout(timer));
-  })
-}
+// function fetchWithTimeout(url, timeout) {
+//   return new Promise((resolve, reject) => {
+//     // Set timeout timer
+//     let timer = setTimeout(
+//       //() => reject( new Error('Request timed out') ),
+//       () => resolve('no check-in'),
+//
+//       timeout
+//     );
+//
+//     fetch(url).then(
+//       response => resolve('OK'),
+//       err => reject(err)
+//     ).finally(() => clearTimeout(timer));
+//   })
+// }
 /////////////////////////////////////////////////////////////////
 async function fetchWithTimeout2(url, timeout) {
   var respuesta;
+  //console.log("entering to fetchWithTimeout2");
   console.log(chalk.green("Consultando tambox manager:"+url));
 await fetchTimeout(url, {
     method: 'GET',
@@ -498,8 +516,11 @@ await fetchTimeout(url, {
   return json;
 })
 .catch(function(err) {
-    //console.log("error de fetch", err);
-    console.log(chalk.red("Tambox manager no se encuentra disponible"));
+      console.log(chalk.red("Tambox manager no se encuentra disponible"));
+          //  console.log("la variable tbm_status tiene el valor de:",tbm_status);
+      // tbm_status=FALSE; //aqui indico que tambox manager no esta disponible
+
+    // console.log("error de fetch00543", err);
 
 });
 return respuesta;
@@ -1425,8 +1446,8 @@ console.log(JSON.parse(JSON.stringify(historial)));
 module.exports.consulta_historial = consulta_historial;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesas_de_ese_tebsbarcode() {
-  //console.log("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
-  const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=? and monto>'0' ORDER BY id DESC", [current_tebs_barcode]);
+  console.log("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
+  const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=? and monto>'0' and status_hermes='en_tambox' ORDER BY id DESC", [current_tebs_barcode]);
   //console.log(JSON.stringify(remesa_hermes_entambox));
   var remesas_de_tebs2=[];
 

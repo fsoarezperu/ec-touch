@@ -17,7 +17,7 @@ var sinchronized=false;
 async function are_synched(){
   var machine_sn=global.numero_de_serie;
   // -consulta cuantos records hay en db local where machine sn
-  console.log(chalk.green("consulting this machine_sn:"+machine_sn));
+  console.log(chalk.green("Consultando cantidad de remesas en la base de datos local de la maquina:"+machine_sn));
 const local_n_records= await pool.query("SELECT COUNT(no_remesa) AS local_n_records FROM remesas WHERE machine_sn=?",[machine_sn]);
 // -se obtiene un numero local y se guarda en variable current_local_records.
 var current_local_records=local_n_records[0].local_n_records;

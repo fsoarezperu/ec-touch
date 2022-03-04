@@ -68,58 +68,21 @@ httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
 ///////////////////////////////////////////////////
-  console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
-
-
-
-
-// var array_local=[1,2,3,4,5,6,7,8];
-// var array_tbm=[8,10,11];
-// var para_actualizar=synch_tbm.arr_diff(array_local,array_tbm)
-// console.log("para actualizar:"+para_actualizar);
-//
-// return;
-///////////////////////////////////////////////////
-// var rh_actual=await os.consulta_remesa_hermes_actual();
-// //si la remsa hermes actual devulve undefined, crea una en cero con valores validos.
-// if (rh_actual.length==0) {
-//   console.log("lo detecto vacio");
-//   var nueva_info={
-//     monto:0,
-//     tebsbarcode:12345
-//   }
-//   rh_actual.push(nueva_info);
-// }
-// console.log("#7:"+JSON.stringify(rh_actual));
-// var resultado_de_smart_empty={
-//   monto_en_bolsa:rh_actual[0].monto,
-//   tebs_de_la_bolsa:rh_actual[0].tebs_barcode,
-//   numero_de_serie:numero_de_serie
-// }
-// console.log(resultado_de_smart_empty);
-// return;
-////////////////////////////////////////////////////
+//  console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
   try {
-    // await sp.existira_conexion_serial();
     await os.obtener_datos_de_conexion();
     await os.habilita_sockets();
     await os.comprobar_serialcom();
-
-  //  await sp.cerrar_puerto_serial(); //("0x01","0x11");
-  //  var prueba=sp2x.hacer_consulta_serial(0x01,0x11);
-  //  console.log("prueba es:",prueba);
     await os.arranca_tambox_os();
     await synch_tbm.are_synched();
-
-    console.log(chalk.green("El sistema arranco sin problemas"));
    var data=await os.consulta_all_levels();
    console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
-
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
   }finally{
     await os.idle_poll_loop();
-      console.log(chalk.green("idle"));
+    console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
+    console.log(chalk.green("idle"));
   }
 });
 /////////////////////////////////////////////////////////

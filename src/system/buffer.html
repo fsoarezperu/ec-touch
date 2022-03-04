@@ -1,108 +1,126 @@
-
 <script type="text/javascript">
-  $(document).ready(function() {
-    $("#Check-In").click(function(){
-    alert("checkin in to tbm")
-    });
-///////////////////////////////////////////////////////
-//if (mydata["this_machine_info"][0].machine_name == "Autogenerada") {
-if (mydata["this_machine_info"][0].is_locked == true) {
+ $(document).ready(function() {
+   $("#Check-In").click(function() {
+     alert("checkin in to tbm")
+   });
+   ///////////////////////////////////////////////////////
+   //if (mydata["this_machine_info"][0].machine_name == "Autogenerada") {
+   if (mydata["this_machine_info"][0].is_locked == true) {
 
-  //alert ("machine needs Adoption");
-  //$('#overlay, #overlay-back').fadeIn(500);
-  document.getElementById("popup").style.display = "inline";
+     //alert ("machine needs Adoption");
+     //$('#overlay, #overlay-back').fadeIn(500);
+     document.getElementById("popup").style.display = "inline";
 
-}else {
-    document.getElementById("popup").style.display = "none";
-}
-
-socket.on('adopt', function(msg) {
-//  $('#out_of_service').fadeOut(500);
-console.log("adopting machine:"+msg);
-//alert("THIS MACHINE IS REQUESTED TO BE ADOPTED");
-// if (msg.orden=="lock") {
-//   $('#overlay, #overlay-back').fadeIn(500);
-// }else {
-//   $('#overlay, #overlay-back').fadeOut(500);
-// }
-  $('#overlay, #overlay-back').fadeOut(500);
-
-});
-  $('#message').text(mydata["this_machine_info"][0].machine_name);
-  $('#tienda_id').text(mydata["this_machine_info"][0].tienda_id);
-  $('#public_machine_ip').text(mydata["this_machine_info"][0].public_machine_ip);
-  // $('#overlay, #overlay-back').fadeOut(500);
-console.log("ESto es historial"+JSON.stringify(mydata["historial"]));
-//  var no_rhs=0;
-  // forEach((mydata["historial"]), i) => {
-  //   //  no_rhs=no_rhs+1;
-  // //    console.log("sumando 1");
-  // });
-
-  function addCommas(nStr)
-  {
-      nStr += '';
-      x = nStr.split('.');
-      x1 = x[0];
-      x2 = x.length > 1 ? '.' + x[1] : '';
-      var rgx = /(\d+)(\d{3})/;
-      while (rgx.test(x1)) {
-          x1 = x1.replace(rgx, '$1' + ',' + '$2');
-      }
-      return x1 + x2;
-  }
-  var monto_formateado;
-
-  $.each(mydata["historial"], function( index, value ) {
-    var monto_formateado=addCommas(value["monto"]);
-    console.log( index + ": " + value["tebs_barcode"] + " con monto de :S/"+ value["monto"]+ " con fecha de :"+ value["fecha"]+ " con hora de :"+ value["hora"]);
-  if (value["status"]=="iniciada") {
-    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_remesa_hermes_verde'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["ts_inicio"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["ts_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>");
-    //"<div class='ec_panel_tarjeta_historial_remesa_hermes_verde'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha_fin"]+" / "+value["hora_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
-  }else {
-    $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_remesa_hermes_roja'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["ts_inicio"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["ts_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>");
-  //"<div class='ec_panel_tarjeta_historial_remesa_hermes_roja'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha_fin"]+" / "+value["hora_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
-      }
-//  ");
-  });
-  $.each(mydata["remesas_from_this_tebsbarcode"], function( index, value ) {
-    var monto_formateado=addCommas(value["monto"]);
-    console.log( index + ": " + value["tebs_barcode"] + " con monto de :S/"+ value["monto"]+ " con fecha de :"+ value["fecha"]+ " con hora de :"+ value["hora"]);
-      if (value["status"]=="terminado"&value["tipo"]=="ingreso") {
-        console.log("detectando remesa terminada");
-
-        $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_verde'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>"+value["no_remesa"]+"</div><div class='label_tipo'>Tipo:</div><div class='tipo'>"+value["tipo"]+"</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["ts_inicio"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>");
-        //"<div class='ec_panel_tarjeta_historial_verde'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>"+value["no_remesa"]+"</div><div class='label_tipo'>Tipo:</div><div class='tipo'>"+value["tipo"]+"</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
-     }
-    if (value["status"]=="completado"&value["tipo"]=="egreso") {
-      $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_azul'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>"+value["no_remesa"]+"</div><div class='label_tipo'>Tipo:</div><div class='tipo'>"+value["tipo"]+"</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["ts_inicio"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>");
-       }
-
-      if(value["status"]!="terminado"&value["tipo"]=="ingreso"){
-          $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_roja'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>"+value["no_remesa"]+"</div><div class='label_tipo'>Tipo:</div><div class='tipo'>"+value["tipo"]+"</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["ts_inicio"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>");
-      }
-  });
-});
- </script>
-
- <style media="screen">
-   .wrapper{
-   position: relative;
- }
-   #overlay-back {
-     position: absolute;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background: #000000;
-     border-radius: 15px;
-     opacity: 0.6;
-     filter: alpha(opacity=60);
-     z-index: 5;
-     display: none;
+   } else {
+     document.getElementById("popup").style.display = "none";
    }
-   /* #overlay {
+
+   socket.on('adopt', function(msg) {
+     //  $('#out_of_service').fadeOut(500);
+     console.log("adopting machine:" + msg);
+     //alert("THIS MACHINE IS REQUESTED TO BE ADOPTED");
+     // if (msg.orden=="lock") {
+     //   $('#overlay, #overlay-back').fadeIn(500);
+     // }else {
+     //   $('#overlay, #overlay-back').fadeOut(500);
+     // }
+     $('#overlay, #overlay-back').fadeOut(500);
+
+   });
+   $('#message').text(mydata["this_machine_info"][0].machine_name);
+   $('#tienda_id').text(mydata["this_machine_info"][0].tienda_id);
+   $('#public_machine_ip').text(mydata["this_machine_info"][0].public_machine_ip);
+   // $('#overlay, #overlay-back').fadeOut(500);
+   console.log("ESto es historial" + JSON.stringify(mydata["historial"]));
+   //  var no_rhs=0;
+   // forEach((mydata["historial"]), i) => {
+   //   //  no_rhs=no_rhs+1;
+   // //    console.log("sumando 1");
+   // });
+
+   function addCommas(nStr) {
+     nStr += '';
+     x = nStr.split('.');
+     x1 = x[0];
+     x2 = x.length > 1 ? '.' + x[1] : '';
+     var rgx = /(\d+)(\d{3})/;
+     while (rgx.test(x1)) {
+       x1 = x1.replace(rgx, '$1' + ',' + '$2');
+     }
+     return x1 + x2;
+   }
+   var monto_formateado;
+
+   $.each(mydata["historial"], function(index, value) {
+     var monto_formateado = addCommas(value["monto"]);
+     console.log(index + ": " + value["tebs_barcode"] + " con monto de :S/" + value["monto"] + " con fecha de :" + value["fecha"] + " con hora de :" + value["hora"]);
+     if (value["status"] == "iniciada") {
+       document.getElementById("lista_remesas_hermesx").innerHTML = "";
+       $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_remesa_hermes_verde'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>" + value["tebs_barcode"] +
+         "</div><div class='label_status'>Status</div><div class='status'>" + value["status"] + "</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>" + value["ts_inicio"] +
+         "</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>" + value["ts_fin"] + "</div><div class='label_moneda'>" + value["moneda"] + "</div><div class='label_monto'>" + monto_formateado +
+         "</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>" + value["no_billetes"] + "</div>");
+       //"<div class='ec_panel_tarjeta_historial_remesa_hermes_verde'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha_fin"]+" / "+value["hora_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
+     } else {
+       $(".lista_remesas_hermes").append("<div class='ec_panel_tarjeta_historial_remesa_hermes_roja'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>" + value["tebs_barcode"] +
+         "</div><div class='label_status'>Status</div><div class='status'>" + value["status"] + "</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>" + value["ts_inicio"] +
+         "</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>" + value["ts_fin"] + "</div><div class='label_moneda'>" + value["moneda"] + "</div><div class='label_monto'>" + monto_formateado +
+         "</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>" + value["no_billetes"] + "</div>");
+       //"<div class='ec_panel_tarjeta_historial_remesa_hermes_roja'><div class='label_tebs'>TebsBarcode:</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_fecha_cierre'>fecha cierre</div><div class='fecha_cierre'>"+value["fecha_fin"]+" / "+value["hora_fin"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
+     }
+     //  ");
+   });
+
+   $.each(mydata["remesas_from_this_tebsbarcode"], function(index, value) {
+     var monto_formateado = addCommas(value["monto"]);
+     console.log(index + ": " + value["tebs_barcode"] + " con monto de :S/" + value["monto"] + " con fecha de :" + value["fecha"] + " con hora de :" + value["hora"]);
+     if (value["status"] == "terminado" & value["tipo"] == "ingreso") {
+       console.log("detectando remesa terminada");
+
+       $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_verde'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>" + value["no_remesa"] + "</div><div class='label_tipo'>Tipo:</div><div class='tipo'>" +
+         value["tipo"] + "</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>" + value["tebs_barcode"] + "</div><div class='label_status'>Status</div><div class='status'>" + value["status"] +
+         "</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>" + value["ts_inicio"] + "</div><div class='label_moneda'>" + value["moneda"] + "</div><div class='label_monto'>" + monto_formateado +
+         "</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>" + value["no_billetes"] + "</div>");
+       //"<div class='ec_panel_tarjeta_historial_verde'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>"+value["no_remesa"]+"</div><div class='label_tipo'>Tipo:</div><div class='tipo'>"+value["tipo"]+"</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>"+value["tebs_barcode"]+"</div><div class='label_status'>Status</div><div class='status'>"+value["status"]+"</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>"+value["fecha"]+" / "+value["hora"]+"</div><div class='label_moneda'>"+value["moneda"]+"</div><div class='label_monto'>"+monto_formateado+"</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>"+value["no_billetes"]+"</div>"
+     }
+     if (value["status"] == "completado" & value["tipo"] == "egreso") {
+       $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_azul'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>" + value["no_remesa"] + "</div><div class='label_tipo'>Tipo:</div><div class='tipo'>" +
+         value["tipo"] + "</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>" + value["tebs_barcode"] + "</div><div class='label_status'>Status</div><div class='status'>" + value["status"] +
+         "</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>" + value["ts_inicio"] + "</div><div class='label_moneda'>" + value["moneda"] + "</div><div class='label_monto'>" + monto_formateado +
+         "</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>" + value["no_billetes"] + "</div>");
+     }
+
+     if (value["status"] != "terminado" & value["tipo"] == "ingreso") {
+       $(".lista_remesas").append("<div class='ec_panel_tarjeta_historial_roja'><div class='label_no_remesa'># Remesa:</div><div class='no_remesa'>" + value["no_remesa"] + "</div><div class='label_tipo'>Tipo:</div><div class='tipo'>" +
+         value["tipo"] + "</div><div class='label_tebs'>TebsBarcode</div><div class='numero_de_tebs'>" + value["tebs_barcode"] + "</div><div class='label_status'>Status</div><div class='status'>" + value["status"] +
+         "</div><div class='label_fecha_creacion'>fecha creacion</div><div class='fecha_creacion'>" + value["ts_inicio"] + "</div><div class='label_moneda'>" + value["moneda"] + "</div><div class='label_monto'>" + monto_formateado +
+         "</div><div class='label_no_billetes'>no_billetes:</div><div class='no_billetes'>" + value["no_billetes"] + "</div>");
+     }
+   });
+
+  });
+</script>
+
+<style media="screen">
+  .wrapper {
+    position: relative;
+  }
+
+  #overlay-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    border-radius: 15px;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 5;
+    display: none;
+  }
+
+  /* #overlay {
      position: absolute;
      top: 10%;
      left: 10%;
@@ -113,47 +131,57 @@ console.log("ESto es historial"+JSON.stringify(mydata["historial"]));
      display: none;
      margin: 0 auto;
    } */
- </style>
+</style>
 
 
- <div class="ec_wrapper">
-       <div class="cabecera titulo2">
-         <div class=""><div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div></div>
-         <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
-         <div id="message">Tambox 1.0</div>
-         <div></div>
-         <div class="ec_btn volver" id='security_page'><i class="far fa-list-alt fa-2x"></i></div>
-       </div>
+<div class="ec_wrapper">
+  <div class="cabecera titulo2">
+    <div class="">
+      <div id="system_running_indicator"><i class="fas fa-atom fa-xs"></i></div>
+    </div>
+    <div id="TBM_icon"><i class="fas fa-wifi fa-sm" id="status_online"></i></div>
+    <div id="message">Tambox 1.0</div>
+    <div></div>
+    <div class="ec_btn volver" id='security_page'><i class="far fa-list-alt fa-2x"></i></div>
+  </div>
 
-   <div class="area_trabajo_logo ec_panel">
-     <div class="logo">
-            <img  src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
-     </div>
-     </div>
+  <div class="area_trabajo_logo ec_panel">
+    <div class="logo">
+      <img src="img/logo_tambo.png" alt="Tambox" width="380" height="200">
+    </div>
+  </div>
 
-     <div class="area_trabajo ec_panel">
-         <div class="ec_card2 resumen">
-                 <p>Remesas Hermes</p>
-                 <div class="lista_remesas_hermes"></div>
-                  <p>fin de la lista</p>
-         </div>
-         <div class="ec_card panel1" >
-           <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
-           <!-- <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div> -->
+  <div class="area_trabajo ec_panel">
+    <div class="ec_card2 resumen">
+      <p>Remesas Hermes</p>
+      <div class="lista_remesas_hermes" id="lista_remesas_hermesx"></div>
+      <p>fin de la lista</p>
+    </div>
+    <div class="ec_card panel1">
+      <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
+      <div><a class="ec_btn" id="pay_a_20">Pay a 20</a> </div>
+      <div><a class="ec_btn" id="pay_a_50">Pay a 50</a> </div>
+      <div><a class="ec_btn" id="pay_a_100">Pay a 100</a></div>
 
-        </div>
-         <div class="ec_card panel2" >
-           <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
-           <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div>
-           <div><a class="ec_btn" id="lock_machine">Lock Machine</a> </div>
-         </div>
-         <div class="ec_card2 resumen2">
-                 <p>Remesas</p>
-                 <div class="lista_remesas"></div>
-                  <p>fin de la lista</p>
-         </div>
-     </div>
-     <div class="pie_de_pagina">Creado por EC-HOME AUTOMATION PERU.</div>
+      <!-- <div><a class="ec_btn" id="read_new_tebs">read_new_tebs</a> </div> -->
+
+    </div>
+    <div class="ec_card panel2">
+      <div><a class="ec_btn" id="socket_to_tbm">send socket to TBM</a> </div>
+      <div><a class="ec_btn" id="synch_remesas">synch Remesas</a> </div>
+      <div><a class="ec_btn" id="lock_machine">Lock Machine</a> </div>
+      <div><a class="ec_btn" id="close_serial_port">cerrar puerto serial</a> </div>
+      <div><a class="ec_btn" id="open_serial_port">abrir puerto serial</a> </div>
+      <div><a class="ec_btn" id="initialize_validator">inicializar validador</a> </div>
+
+    </div>
+    <div class="ec_card2 resumen2">
+      <p>Remesas</p>
+      <div class="lista_remesas"></div>
+      <p>fin de la lista</p>
+    </div>
+  </div>
+  <div class="pie_de_pagina">Creado por EC-HOME AUTOMATION PERU.</div>
 </div>
 
 <div class="popup" id="popup" style="display:none">

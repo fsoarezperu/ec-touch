@@ -1531,6 +1531,8 @@ async function verificar_existencia_de_bolsa(receptor) {
                       //await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual()]);
 //                      var this_machine2 = await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? ,ts_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual(),moment()]);
                       var this_machine2 = await pool.query("UPDATE remesa_hermes SET status='terminada' WHERE status='iniciada'");
+                       await pool.query("UPDATE machine SET monto_actual='0' WHERE machine_sn=?",global.machine_sn);
+
 
                       console.log("this_machine2 is:"+JSON.stringify(this_machine2));
 
@@ -1550,7 +1552,7 @@ async function verificar_existencia_de_bolsa(receptor) {
                                                 no_billetes:0,
                                                 ts_inicio:this_ts
                                               }
-
+                                                console.log(chalk.cyan("flag3"));
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
                       //await sincroniza_remesa_hermes2([nueva_res_hermes]);
                       try {
@@ -1612,7 +1614,7 @@ async function cambio_de_bolsa(receptor) {
 
                       //await pool.query("UPDATE remesa_hermes SET status='terminada', fecha_fin=?, hora_fin=? WHERE status='iniciada'",[tambox.fecha_actual(), tambox.hora_actual()]);
 
-                      console.log("aqui ya doy por terminadas las RH en estado iniciada.");
+                      console.log("aqui ya doy por terminadas las RH en estado iniciada2.");
                        const this_machine= await pool.query("SELECT * FROM machine");
                        console.log(chalk.yellow("No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+current_tebsxy));
                        const nueva_res_hermes={
@@ -1627,11 +1629,21 @@ async function cambio_de_bolsa(receptor) {
                                                 no_billetes:0,
                                                 ts_inicio:this_ts
                                               }
-
+                      console.log(chalk.cyan("flag2"));
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                      console.log("nueva remesa hermes insertada aqui.");
+                      var query="UPDATE machine SET monto_actual='0' WHERE machine_sn=?"+gobal.machine_sn;
+                      console.log(query);
+                      await pool.query(query);
                     //  await sincroniza_remesa_hermes([nueva_res_hermes]);
                     //  await sincroniza_remesa_hermes2([nueva_res_hermes]);
-                      await crea_rh_en_tbm([nueva_res_hermes]);
+                      if (tbm_status==TRUE) {
+                                              await crea_rh_en_tbm([nueva_res_hermes]);
+                      }else {
+                        console.log("no se pudo sincronizar aun con tbm porque esta offline, se sincronizara cuando se conecte nuevamente.");
+                      }
+
+
                       return resolve("OK");
             }else{
               //RH ya existe con este tebs. no se creara una nueva
