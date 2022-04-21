@@ -112,18 +112,128 @@ return;
 }
 
 ////////////////////////////////////////////////////
-exports.finalizar_pagos_en_proceso=async function(){
+exports.finalizar_remesas_en_proceso=async function(){
+  // return new Promise(async function(resolve, reject) {
+  //   try {
+  //     await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
+  //     await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
+  //     os.logea(chalk.green("Finalizando los pagos inconclusos"));
+  //     return resolve("ok");
+  //   } catch (e) {
+  //     return reject(e);
+  //   }
+  // });
+
   return new Promise(async function(resolve, reject) {
+    var remesay;
+    var id_remesa;
     try {
-      await pool.query ("UPDATE remesas SET status='completado' WHERE tipo='egreso' and status='en_proceso'");
-      await pool.query ("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and status='en_proceso'");
-      os.logea(chalk.green("Finalizando los pagos inconclusos"));
-      return resolve("ok");
+      console.log("Detectando remesa a finalizar");
+      remesay = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
+      if (remesay === undefined || remesay.length == 0) {
+          console.log("no remesa en status iniciada");
+          //res.render('index');
+          return resolve("no remesa en status iniciada")
+      } else {
+        id_remesa = remesay[0].no_remesa;
+        console.log(chalk.cyan("el valor a utilizar como id_remesa:" + id_remesa));
+        const calculando_monto = await pool.query("SELECT SUM(monto) AS monto_acumulado_creditos_en_proceso FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+        var monto_total_remesa_en_proceso = calculando_monto[0].monto_acumulado_creditos_en_proceso;
+
+        const no_billetes_credito = await pool.query("SELECT COUNT(id) AS cantidad_billetes FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+        var no_billetes_en_remesa=no_billetes_credito[0].cantidad_billetes;
+        console.log("se encontraron billetes:"+no_billetes_en_remesa);
+        await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa_en_proceso,no_billetes_en_remesa, id_remesa]);
+        await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [id_remesa]);
+
+      const no_billetes_totales= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+      const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+      const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+      const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
+      console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes_totales[0].total_billetes);
+      await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes_totales[0].total_billetes]);
+      await actualizar_remesa_enTBM(remesay);
+      /////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////
+      console.log("Aqui debo de sincronizar la remesa hermes tambien.");
+      /////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////////////////////
+
+      };
     } catch (e) {
-      return reject(e);
+        return reject("no se pudo finalizar adecuadamente la remesa")
+    } finally {
+      return
     }
+
+
+
   });
 }
+
+exports.finalizar_pagos_en_proceso=async function(){
+return new Promise(async function(resolve, reject) {
+  try {
+    console.log("Detectando egreso a finalizar");
+    remesay = await pool.query("SELECT * FROM remesas WHERE tipo='egreso' and status='recibido' OR  tipo='egreso' and status='en_proceso'");
+    if (remesay === undefined || remesay.length == 0) {
+      console.log("no pago en status iniciada o en proceso");
+      //res.render('index');
+      return resolve("no pago en status iniciada o en proceso")
+  } else {
+    id_remesa = remesay[0].no_remesa;
+    console.log(chalk.cyan("el valor a utilizar como id_remesa:" + id_remesa));
+    const calculando_monto = await pool.query("SELECT SUM(monto) AS monto_acumulado_creditos_en_proceso FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+    var monto_total_remesa_en_proceso = calculando_monto[0].monto_acumulado_creditos_en_proceso;
+
+    const no_billetes_credito = await pool.query("SELECT COUNT(id) AS cantidad_billetes FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+    var no_billetes_en_remesa=no_billetes_credito[0].cantidad_billetes;
+    console.log("se encontraron billetes:"+no_billetes_en_remesa);
+    await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='completado' WHERE no_remesa=?", [monto_total_remesa_en_proceso,no_billetes_en_remesa, id_remesa]);
+    await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [id_remesa]);
+
+  const no_billetes_totales= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+  const no_billetes_pagados= await pool.query("SELECT SUM(no_billetes) AS total_billetes_pagados FROM remesas WHERE tipo='egreso'and status='completado' and status_hermes='en_tambox'");
+
+  const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
+
+  console.log("total billetes:"+no_billetes_totales[0].total_billetes);
+  let billetes_remesa=no_billetes_totales[0].total_billetes;
+  console.log("monto_total_remesas:"+monto_total_remesas[0].totalremesax);
+  console.log("total billetes pagados:"+no_billetes_pagados[0].total_billetes_pagados);
+  let billetes_pagos=no_billetes_pagados[0].total_billetes_pagados;
+  let result=billetes_remesa-billetes_pagos;
+
+  console.log("monto_total_egresos:"+monto_total_egresos[0].totalEgreso);
+  console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+result);
+  await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,result]);
+
+  try {
+      await actualizar_remesa_enTBM(remesay);
+  } catch (e) {
+      console.log("no conection yet");
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////
+  console.log("Aqui debo de sincronizar la remesa hermes tambien.");
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////
+  return resolve("pagos finalizados satisfactoriamente")
+  };
+  } catch (e) {
+    return reject("no se pudo finalizar adecuadamente el pago")
+  } finally {
+      return resolve();
+  }
+});
+};
 ////////////////////////////////////////////////////
 exports.get_all_levels_value=async function (){
   var lod=0;

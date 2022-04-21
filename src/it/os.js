@@ -108,10 +108,15 @@ module.exports.comprueba_rh_inicial=comprueba_rh_inicial;
 async function arranca_tambox_os() {
   return new Promise(async function(resolve, reject) {
     try {
+      // slave_count=0;
+      // ecount=0;
       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       console.log(this_ts);
       let step1=await tambox.finalizar_pagos_en_proceso();
-      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+      console.log(chalk.green("pagos Inconclusos fueron finalizadas:"+step1));
+      let step2=await tambox.finalizar_remesas_en_proceso();
+      console.log(chalk.green("remesas Inconclusas fueron finalizadas:"+step2));
+
       console.log(chalk.green("Iniciando Validador"));
       var validator = await inicializar_validador();
       console.log(chalk.green("Validador inicio:" + validator));
@@ -120,9 +125,9 @@ async function arranca_tambox_os() {
 
       ///////////////////////////////////////////////////////////////////
       var maquina_inicial=await comprueba_maquina_inicial();
-      console.log(chalk.green("comprobando maquina inicial"));
-      console.log(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
-      console.log(chalk.green("***************************************"));
+      //console.log(chalk.green("comprobando maquina inicial"));
+      //console.log(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
+      //console.log(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
       var rh_inicial=await comprueba_rh_inicial()
     //  console.log("RH_incial es:"+rh_inicial);
@@ -137,7 +142,7 @@ async function arranca_tambox_os() {
     //  console.log("status es:"+JSON.stringify(status));
       console.log("status es:"+ status);
       console.log(chalk.green("***************************************"));
-        return resolve (validator);// esto frena la ejecucion
+
       //lee los valores locales de la maquina ,
       // var informacion_maquina_local = {
       //   numero_de_serie: global.numero_de_serie,
@@ -148,14 +153,14 @@ async function arranca_tambox_os() {
       console.log(chalk.yellow("la informacion local de la maquina es:"));
       console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
       //actualiza los valores remotos de la maquina
-
-
-
       console.log(status);
-      var second='Offline';
+
+      // return resolve (validator);// esto frena la ejecucion
+
+    //  var second='Offline';
             //  var result = status.localeCompare(second)
             //  console.log(result);
-       if (status.valueOf()== second.valueOf()) {
+       if (tbm_status== true) {
         var x1=status.tienda_id;
         var x2=status.machine_sn;
         var x3=status.name;
@@ -170,14 +175,15 @@ async function arranca_tambox_os() {
         await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
           console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
           console.log("y el valor de is_locked:"+status.is_locked);
-       }else {
-         console.log("tbm status is online.6758");
-       }
+
           //vuelve a ejecutar coneccion con
           //  return resolve (status);
           // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
           //  if (tbm_status== TRUE) {
           await tbm_paso1();
+          }else {
+          console.log("tbm status is offline 6758");
+          }
           //    }else {
           //    console.log(chalk.red("TBM still offline at this point!"));
           //    }
@@ -206,7 +212,7 @@ async function inicializar_validador() {
       await ssp.sync_and_stablish_presence_of(validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
-
+  //    console.log("validator poll var:",validatorpoll_var);
       if (validatorpoll_var == "no existe bolsa detectada") {
             // console.log("Aqui compruebo que no hay bolsa");
             await bolsa_retrial();
@@ -945,8 +951,10 @@ async function terminar_nueva_remesa(no_remesa) {
       try {
 
         if (global.manual_remesa==false) {
+          console.log("remesa desde API");
           await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
         }else {
+            console.log("remesa desde touchscreen");
           await pool.query("UPDATE remesas SET status='terminado', rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
           global.manual_remesa==false
         }
@@ -978,12 +986,16 @@ async function terminar_nueva_remesa(no_remesa) {
         console.log(chalk.yellow("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes)));
 
         var got_tienda_id=nueva_res_hermes[0].tienda_id;
-        console.log("got tienda id is"+JSON.stringify(got_tienda_id));
+        //got_tienda_id=JSON.stringify(got_tienda_id);
+        //got_tienda_id=parseInt(got_tienda_id);
+        //console.log("got tienda id is"+got_tienda_id);
+        //console.log(typeof(got_tienda_id));
+        got_tienda_id=global.tienda_id;
         await pool.query("UPDATE machine SET monto_actual=? WHERE tienda_id=?", [monto_remesa_hermes,got_tienda_id]);
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
-      //  await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
+        await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
 
         //    try {
         console.log(chalk.cyan("here tbm_status_is:",tbm_status));
@@ -1047,7 +1059,9 @@ async function finalizar_nueva_remesa(no_remesa) {
   if (on_startup === false) {
     if (no_remesa) {
       try {
-        await pool.query("UPDATE remesas SET rms_status='finalizada'WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        //await pool.query("UPDATE remesas SET rms_status='finalizada', status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+        await pool.query("UPDATE remesas SET rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
+
       } catch (e) {
         console.log(chalk.cyan("ERROR 002- No se pudo sincronizar transaccion") + e);
       } finally {
@@ -1091,8 +1105,8 @@ module.exports.begin_remesa_hermes = begin_remesa_hermes;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesa_hermes_actual() {
   const remesa_hermes_entambox = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
-  console.log("consulta_remesa_hermes_actual en status iniciada:");
-  console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
+  //console.log("consulta_remesa_hermes_actual en status iniciada:");
+  //console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
   return remesa_hermes_entambox;
 }
 module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
@@ -1310,7 +1324,7 @@ async function validar_pago(no_remesa){
                       }
 
                     console.log("/////////////////////////////////");
-                    const retiro= await pool.query ('SELECT * FROM remesas WHERE no_remesa=? AND tipo="egreso"',[no_remesa]);
+                    const retiro= await pool.query ('SELECT * FROM remesas WHERE no_remesa=? AND tipo="egreso" AND status="procede" ',[no_remesa]);
                    if(retiro){
                     // res.json(retiro);
                     await ejecutar_pago(no_remesa);
@@ -1476,12 +1490,13 @@ async function idle_poll_loop(receptor) {
                 //  console.log("step1:"+step1);
                       if (step1.length > 0) {
                               await ssp.handlepoll(step1);
-                              setTimeout(async function() {
+                            let myTimeout =  setTimeout(async function() {
                                 logea("//////////////////////////////");
-                                logea(chalk.green("VALIDATOR POLLING"));
+                                logea(chalk.green("VALIDATOR POLLINGx1"));
                                 await idle_poll_loop(validator_address);
                               //  console.log("idle poll loop");
                               }, 500);
+                              module.exports.myTimeout=myTimeout;
                         ready_for_pooling = true;
                         return resolve("OK");
                       } else {
@@ -1491,7 +1506,9 @@ async function idle_poll_loop(receptor) {
                 //  sp.abrir_puerto_serial();
                   // return inicializar_validador();
                 //  return arranca_tambox_os();
-                   return reject("error en idle poll loop:"+e);
+                //   return reject("error en idle poll loop:"+e);
+                   return resolve("error en idle poll loop:"+e);
+
                 }
                 //var step1= await ssp.envia_encriptado(receptor,global.poll);
               });
@@ -1619,13 +1636,13 @@ function habilita_sockets() {
 module.exports.habilita_sockets = habilita_sockets;
 /////////////////////////////////////////////////////////////////
 async function validatorpoll2(receptor) {
-  // console.log("entrando a validator pool2");
+//   console.log("entrando a validator pool2");
     return new Promise(async function(resolve, reject) {
         try {
           var step1 = await ssp.envia_encriptado(receptor, global.poll);
-        //    console.log("step1:"+step1);
+            //console.log("step1:"+step1);
           var data = await ssp.handlepoll(step1);
-        //      console.log("data:"+data);
+          //    console.log("data:"+data);
               if (global.existe_bolsa == false) {
                 return resolve("no existe bolsa detectada");
               }else {
@@ -1640,6 +1657,7 @@ module.exports.validatorpoll2 = validatorpoll2;
 ////////////////////////////////////////////////////
 const sleep = m => new Promise(r => setTimeout(r, m));
 module.exports.sleep=sleep;
+
 async function bolsa_retrial(){
   return new Promise(async function(resolve, reject) {
 
@@ -1992,6 +2010,8 @@ return new Promise(async function(resolve, reject) {
     var this_machine222=await consulta_this_machine();
 
     if (this_machine222.length>0) {
+      limite_maximo_de_retiro=this_machine222[0].limite_maximo_de_retiro;
+      console.log("limite maximo detectado para retiro es de:"+limite_maximo_de_retiro);
     //  console.log("MACHINE FOUND");
     //  console.log("this macine 222="+JSON.stringify(this_machine222));
     //  console.log("this machine222 length:"+this_machine222.length);
@@ -2022,4 +2042,11 @@ async function consulta_this_machine() {
   return this_machine2121;
 }
 module.exports.consulta_this_machine = consulta_this_machine;
+/////////////////////////////////////////////////////////////////
+function borrar_cuentas_encription() {
+console.log("contador borrado");
+
+
+}
+module.exports.borrar_cuentas_encription = borrar_cuentas_encription;
 /////////////////////////////////////////////////////////////////

@@ -92,6 +92,8 @@
     mandar_orden_sin_link("close_serial_port");
     mandar_orden_sin_link("open_serial_port");
     mandar_orden_sin_link("initialize_validator");
+    mandar_orden_sin_link("send_synch");
+
 
     mandar_orden_sin_link("request_support_online");
     mandar_orden_sin_link("reconectar_validador");
@@ -140,6 +142,13 @@
     //orden iniciada en el client the tambox, enviada
      mandar_orden("synch_remesas");
      mandar_orden_sin_link("lock_machine");
+
+
+         socket.on('logeando_a_client_side', function(msg) {
+           ion.sound.play("saldo_insuficiente");
+           console.log(msg);
+         });
+
      socket.on('lock_machine', function(msg) {
        console.log("locking machine");
          $('#overlay, #overlay-back').fadeIn(500);

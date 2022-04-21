@@ -200,6 +200,11 @@
       ion.sound.play("saldo_insuficiente");
     });
 
+    socket.on('logeando_a_client_side', function(msg) {
+      ion.sound.play("saldo_insuficiente");
+      console.log(msg);
+    });
+
     // socket.on('adopt', function(msg) {
     // //  $('#out_of_service').fadeOut(500);
     // console.log("adopting machine:"+msg);
@@ -222,7 +227,9 @@
 //    ion.sound.play("iniciando_remesa_hermes"); //tambox_manager_is_online
 //    ion.sound.play("saldo_insuficiente"); //tambox_manager_is_online
 
-    ion.sound.play("tambox_has_started"); //tambox_manager_is_online
+ion.sound.play("water_droplet"); //tambox_manager_is_online
+
+//    ion.sound.play("tambox_has_started"); //tambox_manager_is_online
 //  await ion.sound.play("a_user_has_connected"); //a_user_has_connected
    //a_user_has_connected
   // ion.sound.play("monto_exacto");

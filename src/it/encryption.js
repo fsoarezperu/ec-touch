@@ -188,12 +188,12 @@ module.exports.pady=pady;
 ////////////////////////////////////////////////////
 function handleRKE(data){
     return new Promise(async function(resolve,reject){
-    //  console.log(data);
+  //    console.log(data);
 try {
   var myData;
   var number_of_byte = data.substr(0, 2);
   myData = data.substr(2, number_of_byte + 2);
-  //console.log("number_of_byte:" + number_of_byte);
+//  console.log("number_of_byte:" + number_of_byte);
   var firstbyte = myData.substr(0, 2);
   var slaveInterKey = myData.substr(2, 8);
    slaveInterKey = changeEndianness(slaveInterKey);
@@ -216,7 +216,7 @@ try {
       lowerpart = changeEndianness(lowerpart);
       final_key = final_key.concat(higherpart);
       full_KEY = lowerpart.concat(final_key);
-    //  console.log(chalk.green("KEY:" + full_KEY));
+      console.log(chalk.green("KEY:" + full_KEY));
     //  ssp.enable_sending();
       //return full_KEY;
        return resolve(full_KEY);
@@ -226,6 +226,9 @@ try {
 
     if (firstbyte == "F8") {
         console.log(chalk.red("Not Possible to create the Key"));
+        sp.port.close();
+        console.log("we need to restart here buddy!...");
+        server.io.emit('initialize_validator','initialize_validator');
     //  console.log(chalk.green("KEY:" + full_KEY));
     // var rKE = exports.send_request_key_exchange();
     // os.logea("/////////////////////////////////");
@@ -380,8 +383,8 @@ function handle_count() {
     ecount = ssp.ConvertBase.dec2hex(ecount);
     ecount= ecount.toUpperCase();
     ecount = pady(ecount, 8);
-  //  console.log("Mi Cuenta(ecount):" + ecount);
-  //  console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
+    //console.log("Mi Cuenta(ecount):" + ecount);
+    //console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
     if(slave_count == ecount){
       //console.log(chalk.green("COINCIDEN"));
       //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma
@@ -390,7 +393,7 @@ function handle_count() {
       ecount = changeEndianness(ecount);
       return resolve(ecount);
     }else{
-  //    console.log(chalk.red.inverse("NO COINCIDEN"));
+      console.log(chalk.red.inverse("NO COINCIDEN"));
       //aqui me falta entender que tengo que hacer cuando los ecounts no coinciden.
       //creo que tengo que reintentar enviar el dato anterior
     //  return reject("los paquetes de ecount no coinciden");

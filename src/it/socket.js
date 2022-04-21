@@ -4,7 +4,7 @@ const os = require('./os');
 const globals= require('./globals');
 const tambox= require('./devices/tambox');
 const to_tbm=require('./tbm_sync/tbm_synch_socket');
-const ssp =require('./ssp');
+const sspx =require('./ssp');
 const path = require('path');
 const val = require("./devices/validator");
 const pool = require('./../database');
@@ -14,6 +14,7 @@ module.exports = function (io) {
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
 const moment=require("moment");
+const synch_tbm = require('./tbm_sync/synchronize');
 function  nuevo_enlace(pagina,ruta,vardata1){
   fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
       if (err) {
@@ -29,13 +30,12 @@ function  nuevo_enlace(pagina,ruta,vardata1){
 module.exports.nuevo_enlace=nuevo_enlace;
 
 io.on('connect', async function(socket) {
-  console.log(chalk.cyan("the client ID"+socket.id+" is connected from ip:"+socket.handshake.address));
+  console.log(chalk.cyan("the client ID:"+socket.id+" is connected from ip:"+socket.handshake.address));
   socket.on('disconnect', function(reason) {
     console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
 
   });
-
-socket.on('synch_remesas', async function(msg){
+  socket.on('synch_remesas', async function(msg){
   var remesas_a_sincronizar= await pool.query("SELECT * FROM remesas WHERE tebs_barcode=?",current_tebs_barcode);
   // var remesas_a_sincronizar={
   //   no_remesa:11111,
@@ -368,7 +368,7 @@ io.on('connection', async function (socket) {
     io.emit('iniciando_remesa', "iniciando_remesa");
    });
 
-   socket.on('pay_a_20',async function(){
+  socket.on('pay_a_20',async function(){
      new_manual_pay= Math.floor((Math.random() * 10000) + 1);
      console.log(chalk.yellow("Nuevo pago manual ejecutado"));
      const this_machine= await pool.query("SELECT * FROM machine");
@@ -379,15 +379,14 @@ io.on('connection', async function (socket) {
      //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
     //io.emit('realizando_pago', "realizando_pago");
     });
-
-    socket.on('pay_a_50',async function(){
+  socket.on('pay_a_50',async function(){
       new_manual_pay= Math.floor((Math.random() * 10000) + 1);
       console.log(chalk.yellow("Nuevo pago manual ejecutado"));
       const this_machine= await pool.query("SELECT * FROM machine");
       global.manual_pay=true;
       os.crear_nuevo_pay_20(50,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
      });
-     socket.on('pay_a_100',async function(){
+  socket.on('pay_a_100',async function(){
        new_manual_pay= Math.floor((Math.random() * 10000) + 1);
        console.log(chalk.yellow("Nuevo pago manual ejecutado"));
        const this_machine= await pool.query("SELECT * FROM machine");
@@ -443,7 +442,7 @@ io.on('connection', async function (socket) {
   //       //   nuevo_enlace('Cashbox_Back_in_Service','../system/buffer.html');
   //       // }
   //      });
-   socket.on('reciclador',async function(msg){
+  socket.on('reciclador',async function(msg){
      var mi_objeto=await os.consulta_all_levels();
      console.log(mi_objeto);
      var solo_values=[
@@ -519,54 +518,101 @@ io.on('connection', async function (socket) {
 
     io.emit('lock_machine','lock_machine');
   });
-
   socket.on('adopt', function(msg) {
   console.log("machine adopted requested");
     io.emit('adopt','adopt');
   });
-
   socket.on('monto_exacto', function(msg) {
     console.log("monto_exacto");
     io.emit('monto_exacto','monto_exacto');
   });
-
   socket.on('pago_completado', function(msg) {
     console.log("pago_completado");
     io.emit('pago_completado','pago_completado');
   });
-
   socket.on('anuncio_saldo_insuficiente', function(msg) {
     console.log("anuncio_saldo_insuficiente");
     io.emit('anuncio_saldo_insuficiente','anuncio_saldo_insuficiente');
   });
-
   socket.on('reconectar_validador', function(msg) {
     console.log("reconectar_validador");
     io.emit('reconectar_validador','reconectar_validador');
   });
-
   socket.on('request_support_online', function(msg) {
     console.log("request_support_online");
     io.emit('request_support_online','request_support_online');
     to_tbm.socket_to_tbm.emit("request_support_online",global.machine_sn);
   });
-
   socket.on('close_serial_port', function(msg) {
     sp2.cerrar_puerto_serial();
     console.log("close_serial_port");
-    io.emit('close_serial_port','close_serial_port');
+    // io.emit('close_serial_port','close_serial_port');
   });
-
   socket.on('open_serial_port', function(msg) {
     sp2.abrir_puerto_serial();
     console.log("open_serial_port");
-    io.emit('open_serial_port','open_serial_port');
+    // io.emit('open_serial_port','open_serial_port');
+  });
+  socket.on('initialize_validator', async function(msg) {
+    slave_count="00000000";
+    ecount="00000000";
+    zerox=false;
+    ready_for_sending=true;
+    console.log("ecount:",ecount+" slave_count:",slave_count);
+    try {
+
+      let step1=await tambox.finalizar_pagos_en_proceso();
+      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+      console.log(chalk.green("Iniciando Validador"));
+      var validator = await inicializar_validador();
+      console.log(chalk.green("Validador inicio:" + validator));
+      console.log(chalk.green("***************************************"));
+    //
+    //   await os.obtener_datos_de_conexion();
+    //   //await os.habilita_sockets();
+    //   await os.comprobar_serialcom();
+    // //  await os.arranca_tambox_os();
+    //
+    //   await sspx.sync_and_stablish_presence_of(global.validator_address);
+    //   await sspx.negociate_encryption(global.validator_address);
+    //   console.log("end of restart");
+    //   var step1xy=await sp2.transmision_insegura(receptor,synch) //<------------------------------ synch
+    //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+    //   var step2=await sspx.handlesynch(step1xy);
+    //   if (show_details) {
+    //     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+    //   }
+    //
+    //    await synch_tbm.are_synched();
+    //   var data=await os.consulta_all_levels();
+//      console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
+    } catch (e) {
+      console.log(chalk.magenta.inverse("error General de OS:"+e));
+    }finally{
+      ultimo_valor_enviado="Poll loop";
+      await os.idle_poll_loop();
+      console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
+      console.log(chalk.green("idle"));
+      return;
+      //  io.emit('open_serial_port','open_serial_port');
+    }
+
+
+  //  await os.arranca_tambox_os();
+  //  console.log("initialize_validator");
+  //  io.emit('initialize_validator','initialize_validator');
+  });
+  socket.on('send_synch', async function(msg) {
+      console.log("sending synch via serialport to de validator");
+      var step1xy=await sp2.transmision_insegura(receptor,synch) //<------------------------------ synch
+      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+      var step2=await sspx.handlesynch(step1xy);
+      if (show_details) {
+        console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+      }
   });
 
-  socket.on('initialize_validator', function(msg) {
-    console.log("initialize_validator");
-    io.emit('initialize_validator','initialize_validator');
-  });
+
 
   var this_machine = await pool.query("SELECT * FROM machine");
   var this_passcode=this_machine[0].passcode

@@ -42,10 +42,14 @@ router.get('/nuevo_retiro/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:monto
              return reject("retiro ya existente");
          }else{
             const {tienda_id,no_caja,codigo_empleado,no_remesa,monto,fecha,hora}=req.params;
-            if(monto>limite_maximo_de_retiro){
-              console.log("el limite maximo es de "+limite_maximo_de_retiro+" "+country_code+" por transaccion");
+            if(parseInt(monto)>parseInt(limite_maximo_de_retiro)){
+              console.log("entre por aqui esta ves.");
+              console.log("el monto leido aqui es:"+monto+ " "+typeof(monto));
+              console.log("el limite maximo es de "+limite_maximo_de_retiro+" "+country_code+" por transaccion"+ " "+typeof(limite_maximo_de_retiro));
               res.json('retiro_limite');
               return reject('retiro_limite');
+            }else {
+              console.log("esto se esta disparando");
             }
                 if(tienda_id&&no_caja&&codigo_empleado&&no_remesa&&monto){
                     var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
@@ -92,8 +96,11 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
           if( retiro.length !== 0){ //si hay un retiro con ese numero de esa remesa verifica que el monto no sobrepase el limite.
                   console.log("//////////////////////////////////");
                   console.log(chalk.cyan("se puede pagar?: S/."+posible_monto));
-                  if(posible_monto>500){
-                    console.log("el limite maximo es de 500 soles por transaccion");
+                  console.log("el limite maximo de retiro en global variable right now is:",limite_maximo_de_retiro);
+                //  if(posible_monto>500){
+                    if(posible_monto>global.limite_maximo_de_retiro){
+
+                    console.log("el limite maximo es de "+ global.limite_maximo_de_retiro+" soles por transaccion");
                     res.json('retiro_limite');
                     return reject("retiro limite");
                   }//si el monto es mayor al limite termina la ejecucion
@@ -206,7 +213,7 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 
         if(retiro.length>0){
       const retirox= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
-      socket.io.emit('retiro_en_proceso'," pago en proceso");
+    //  socket.io.emit('retiro_en_proceso'," pago en proceso");
       res.json(retirox);
       return resolve();
           }else{

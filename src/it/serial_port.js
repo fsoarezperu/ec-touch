@@ -43,6 +43,8 @@ const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
 function cerrar_puerto_serial(){
   port.close(function (err) {
     console.log('port closed', err);
+  //  myTimeout
+    clearTimeout(os.myTimeout);
 });
 
 }
@@ -65,6 +67,7 @@ function transmision_insegura(receiver,command){
 
     try {
               var step1= await hacer_consulta_serial(receiver,command);
+            //  console.log("step1:"+step1);
               if (step1.length>0) {
                 return resolve(step1);
               }else {
@@ -364,7 +367,8 @@ return new Promise(function(resolve, reject) {
   //  console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(single_command)); //este muestra el valor enviado encriptado
 //    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(clean_command.substr(2, clean_command.length).toUpperCase())); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
     console.log(chalk.magenta("------------------------------"));
-    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(ultimo_valor_enviado)); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
+//    console.log(chalk.cyan(enc.changeEndianness(ecount)+"->"+device+'->:'),chalk.cyan(ultimo_valor_enviado)); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
+    console.log(chalk.cyan(enc.changeEndianness(ecount)+"--->"+device+'--->:'),chalk.cyan(ultimo_valor_enviado)); //este muestra el valor enviado SIN encriptar pero lo envia encriptado
 
      }
     var hexiando = "0x" + chunk(command_listo, 2).join('0x');

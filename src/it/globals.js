@@ -1,13 +1,16 @@
 //Adress of the slave used for SSP Communication;
 //global.slave_adress = '00';
 //var seq_bit = 1;
+global.no_billetes_pagados_acumulados=0;
+
+global.tienda_id="0103";
 global.socket_sent="";
 global.en_reciclador_antes_de_retiro=0;
 global.en_reciclador_despues_de_retiro=0;
 global.no_billetes_en_ultimo_retiro=0;
 
 
-global.limite_maximo_de_retiro=500;
+global.limite_maximo_de_retiro=50;
 global.si_existe_bolsa=false;
 global.new_manual_remesa;
 global.on_remesa_hermes=false;

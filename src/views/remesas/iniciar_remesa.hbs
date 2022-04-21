@@ -1,3 +1,4 @@
+<!-- //This file is not in use. -->
 <script type="text/javascript">
 //  var socket = io();
   var counter;
@@ -52,6 +53,7 @@ socket.on('nuevo_billete_recivido', function(msg) {
   window.clearTimeout(counter2);
   console.log("timmer stopped");
   start_timer();
+  console.log("timmer started again");
   });
 /////////////////////////////////////////////////////
 socket.on('Staking', function(msg) {
@@ -87,7 +89,7 @@ socket.on('Note_Stored_in_Payout', function(msg) {
       window.location.replace("/");
       });
 
-});      
+});
 /////////////////////////////////////////////////////
 var depositado = 0;
 function acumular_montos_agregados(monto) {
@@ -129,7 +131,7 @@ function update_in_process(msg){
      counter=window.setTimeout(function(){
      link.click();
      console.log("timer DONE");
-     },300000); //5 min= 300000
+   },30000); //5 min= 300000
       }
    function clear_system_running_indicator(){
        $("#system_running_indicator").hide();

@@ -743,6 +743,9 @@ return new Promise(async function(resolve, reject) {
                                   //actualiza remesa hermes
                                   await pool.query ("UPDATE remesa_hermes SET no_billetes=?, monto=? WHERE status='iniciada'",[current_rh_bills_count, current_monto]);
                                   console.log("remesa hermes actualizada con:"+current_rh_bills_count+" Billetes, un monto nuevo de:"+ current_monto);
+
+                                  await pool.query("UPDATE machine SET monto_actual=? WHERE tienda_id=?", [current_monto,global.tienda_id]);
+                                  //aqui se le puede agragar los datos de all levels a machine local.
                                   //sincroniza remesa heremes
 
                                   //AQUI SINCRONIZAR CON REMEZA HERMES
@@ -750,6 +753,10 @@ return new Promise(async function(resolve, reject) {
 
                                   console.log(chalk.cyan("here tbm_status_is:",tbm_status));
                                   if (tbm_status==true) {
+                                    var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
+                                    console.log(chalk.yellow("voy a actualizar rh con estos datos:" +JSON.stringify(nueva_res_hermes)));
+                                    await sincroniza_remesa_hermes2(nueva_res_hermes);
+
                                       await  to_tbm_synch.synch_required();
                                   }
 
@@ -807,10 +814,23 @@ return new Promise(async function(resolve, reject) {
                                    value_in_hex=value_in_hex/100;
                                   console.log(chalk.cyan("pago acumulado:"+value_in_hex));
                                   //value dispensed:
+                                  //insert in credits
+                                      //await pool.query('INSERT INTO creditos set ?', [nueva_res]);
+                                      // const nueva_note = {
+                                      //   no_remesa: rem1,
+                                      //   monto: value_in_hex,
+                                      //   moneda:country_code,
+                                      //   status: 'processing'
+                                      // }
+                                      // await pool.query('INSERT INTO creditos set ?', [nueva_note]);
+
+
                                   const remesa2 = await pool.query("SELECT * FROM remesas WHERE status='en_proceso' AND tipo='egreso' ");
                                   if(remesa2.length>0){
                                      var id_remesa2 = remesa2[0].no_remesa;
-                                     await pool.query ("UPDATE remesas SET monto=? WHERE no_remesa=?",[value_in_hex,id_remesa2]);
+                                     no_billetes_pagados_acumulados=no_billetes_pagados_acumulados+1;
+                                     console.log("la variable global contine :"+no_billetes_pagados_acumulados+ "acumulados so far...");
+                                     await pool.query ("UPDATE remesas SET monto=?, no_billetes=? WHERE no_remesa=?",[value_in_hex,id_remesa2,no_billetes_pagados_acumulados]);
 
                                    }
                                   server.io.emit('Dispensing', value_in_hex);
@@ -1853,14 +1873,14 @@ module.exports.envia_encriptado2=envia_encriptado2;
 function sync_and_stablish_presence_of(receptor) {
     return new Promise(async function(resolve, reject) {
       try {
-            os.logea("/////////////////////////////////");
-            os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
-            os.logea("/////////////////////////////////");
+          //  console.log("/////////////////////////////////");
+          //  console.log(chalk.green("sync_and_stablish_presence_of:"+device));
+          //  console.log("/////////////////////////////////");
             // os.logea("SYNCH command sent to:"+device);
                   for (var i = 0; i < 3; i++) {
                     ultimo_valor_enviado="synch";
                     var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
-                    //  os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                  //  console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                     var step2=await handlesynch(step1);
                     if (show_details) {
                       console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
@@ -1910,16 +1930,18 @@ function negociate_encryption(receptor) {
                     if (step4=="OK") {
                          //  var step6;
                          var rKE = await enc.send_request_key_exchange();
-                         os.logea("/////////////////////////////////");
-                         os.logea("Request Key Exchange command sent");
+                        // console.log("/////////////////////////////////");
+                        // console.log("Request Key Exchange command sentx1");
                          ultimo_valor_enviado="request key exchange";
+                        // console.log("ecount2:",ecount+" slave_count:",slave_count);
                          var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
                          try {
+                          // console.log("ecount3:",ecount+" slave_count:",slave_count);
                            var step6=await enc.handleRKE(step5);
                            if(step6.length>0){
-                             os.logea(chalk.green('KEY:'), chalk.green(step6));
-                             os.logea(chalk.green("Encripted comunication Active"));
-                             os.logea("/////////////////////////////////");
+                            // console.log(chalk.green('KEY:'), chalk.green(step6));
+                             console.log(chalk.green("Encripted comunication Active"));
+                             console.log("/////////////////////////////////");
                              encryptionStatus = true;
                             //return resolve("OK")
 

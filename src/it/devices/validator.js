@@ -120,7 +120,7 @@ async function validator_poll_loop(receptor) {
           await ssp.handlepoll(step1);
           setTimeout(async function () {
                   os.logea("//////////////////////////////");
-                  os.logea(chalk.green("VALIDATOR POLLING"));
+                  os.logea(chalk.green("VALIDATOR POLLINGx2"));
                   await validator_poll_loop(receptor)
           }, 300);
           ready_for_pooling=true;

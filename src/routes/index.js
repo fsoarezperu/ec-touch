@@ -120,6 +120,56 @@ router.get('/iniciar_remesa', (req, res) => {
   res.render('remesas/iniciar_remesa');
 })
 ///////////////////////////////////////////////////////////////////////////////
+
+// function finalizar_remesas_adecuadamente_posterior_a_fallo(){
+//   return new Promise(function(resolve, reject) {
+//     var remesay;
+//     var id_remesa;
+//     try {
+//       console.log("Detectando remesa a finalizar");
+//       remesay = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
+//       if (remesay === undefined || remesay.length == 0) {
+//           console.log("no remesa en status iniciada");
+//           //res.render('index');
+//           return reject("no remesa en status iniciada")
+//       } else {
+//         id_remesa = remesay[0].no_remesa;
+//         console.log(chalk.cyan("el valor a utilizar como id_remesa:" + id_remesa));
+//         const calculando_monto = await pool.query("SELECT SUM(monto) AS monto_acumulado_creditos_en_proceso FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+//         var monto_total_remesa_en_proceso = calculando_monto[0].monto_acumulado_creditos_en_proceso;
+//
+//         const no_billetes_credito = await pool.query("SELECT COUNT(id) AS cantidad_billetes FROM creditos WHERE no_remesa=? AND status='processing'", [id_remesa]);
+//         var no_billetes_en_remesa=no_billetes_credito[0].cantidad_billetes;
+//         console.log("se encontraron billetes:"+no_billetes_en_remesa);
+//         await pool.query("UPDATE remesas SET monto=?,no_billetes=?,status='terminado' WHERE no_remesa=?", [monto_total_remesa_en_proceso,no_billetes_en_remesa, id_remesa]);
+//         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [id_remesa]);
+//
+//       const no_billetes_totales= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+//       const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
+//       const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+//       const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
+//       console.log("actualizando el monto de remesa hermes:"+monto_remesa_hermes + "y numero de billetes es:"+no_billetes_totales[0].total_billetes);
+//       await pool.query("UPDATE remesa_hermes SET monto=?, no_billetes=? WHERE status='iniciada'",[monto_remesa_hermes,no_billetes_totales[0].total_billetes]);
+//       await actualizar_remesa_enTBM(remesay);
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       console.log("Aqui debo de sincronizar la remesa hermes tambien.");
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       /////////////////////////////////////////////////////////////////////////////////////////
+//       };
+//     } catch (e) {
+//         return reject("no se pudo finalizar adecuadamente la remesa")
+//     } finally {
+//       return
+//     }
+//
+//   });
+//
+// }
+// module.exports.finalizar_remesas_adecuadamente_posterior_a_fallo=finalizar_remesas_adecuadamente_posterior_a_fallo;
+///////////////////////////////////////////////////////////////////////////////
 router.get('/finish/:qty_bill', async (req, res) => {
   //la linea de abajo debe solo de aplicar para las REMESAS (ingresos)
   //console.log(chalk.cyan("SOMETHING IS TRIGGERING FINISH WHAT IS IT?"));

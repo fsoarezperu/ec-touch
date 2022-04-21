@@ -77,13 +77,25 @@ httpx.listen(machine_port, async function(io2) {
     await synch_tbm.are_synched();
    var data=await os.consulta_all_levels();
    console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
+
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
   }finally{
     await os.idle_poll_loop();
     console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
     console.log(chalk.green("idle"));
+
+    logea_a_client_side("hola guapo...");
   }
 });
+
+function logea_a_client_side(mensaje){
+  //if (connected to scokets or send to console.) {
+
+//  }
+  io.emit("logeando_a_client_side",mensaje);
+  console.log(mensaje);
+}
+
 /////////////////////////////////////////////////////////
 module.exports.io=io;

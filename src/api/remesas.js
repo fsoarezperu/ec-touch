@@ -42,8 +42,10 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   console.log(chalk.yellow("iniciando NUEVA REMESA desde restfull api con numero:" + no_remesa));
   new_manual_remesa=no_remesa;
    var current_lock_value=await pool.query("SELECT is_locked FROM machine WHERE tienda_id=?", [tienda_id]);
+   if(current_lock_value.length>0){
    console.log(current_lock_value[0].is_locked);
    is_locked=current_lock_value[0].is_locked;
+
   if(is_locked==false){
   if (on_startup == false) {
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
@@ -90,6 +92,12 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
   res.send('Machine locked');
   return;
 }
+
+}else {
+  console.log(chalk.red("pero esa tienda no existe"));
+  res.send('no existe esa tienda');
+  return;
+}
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/consultar_remesa/:no_remesa', async (req, res) => {
@@ -121,6 +129,7 @@ router.get('/consultar_remesa/:no_remesa', async (req, res) => {
 
 });
 router.get('/terminar_remesa/:no_remesa', async (req, res) => {
+  console.log("si se esta llamando la api de terminar remesa");
   return new Promise(async function(resolve, reject) {
     if (on_startup === false) {
       const {no_remesa} = req.params;

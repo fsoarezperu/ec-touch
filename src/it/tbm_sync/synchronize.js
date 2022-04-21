@@ -134,6 +134,7 @@ async function remote_update_rh(id){
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function synch_required(){
+  console.log(chalk.magenta("Entering synch required..."));
   if (tbm_status) {
     const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[global.numero_de_serie]);
     var local_array=JSON.parse(JSON.stringify(local_id_records));
@@ -158,6 +159,7 @@ async function synch_required(){
   /////////////////////////////////////////////////////////////////
   const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
   var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
+  //var local_rh_array=JSON.stringify(local_rh_records);
   console.log("regarding local_rh_records:",global.numero_de_serie);
   console.log(local_rh_array);
   console.log(local_rh_array.length);
@@ -168,13 +170,13 @@ async function synch_required(){
   try {
     var consulta_rh=await get_tbm_rh();
     console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
-    console.log(chalk.green("rh que yo tengo:"+local_rh[0].tebs_barcode));
-    const toUpdate_rh= arr_diff(consulta_rh,local_rh);
-    console.log("toUpdate rh:"+toUpdate_rh);
-    for (var i=0; i <toUpdate_rh.length;i++){
-      await remote_update_rh(toUpdate_rh[i])
-    }
-    console.log(toUpdate_rh.length+" Records updated succesfully");
+    console.log(chalk.green("rh que yo tengo:"+local_rh_records[0].tebs_barcode));
+    // const toUpdate_rh= arr_diff(consulta_rh,local_rh);
+    // console.log("toUpdate rh:"+toUpdate_rh);
+    // for (var i=0; i <toUpdate_rh.length;i++){
+    //   await remote_update_rh(toUpdate_rh[i])
+    // }
+    // console.log(toUpdate_rh.length+" Records updated succesfully");
   } catch (e) {
     console.log(chalk.red("no se pudo ejecutar esta accion IMPORTANTE"));
   } finally {
