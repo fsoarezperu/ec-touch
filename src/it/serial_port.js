@@ -434,7 +434,7 @@ async function hacer_consulta_serial(receiver,command){
                                                     return resolve(received_command);
                                                   //  }, 20);
                                                   }else{
-                                                    console.log("salgo por aqui1234");
+                                                    console.log("salgo por aqui1234x");
 
                                                     const error= "no respuesta, necesario reintentar...";
                                                       setTimeout(()=>{return reject(error); retrial(error); },3000);
@@ -484,7 +484,7 @@ async function hacer_consulta_serial2(receiver,command){
                       ready_for_sending=true;
                       return resolve(received_command);
                     }else{
-                        console.log("salgo por aqui1234");
+                        console.log("salgo por aqui1234y");
                         const error= "no respuesta, necesario reintentar...";
                         setTimeout(()=>{
                           retrial(error);

@@ -1,6 +1,49 @@
 <script type="text/javascript">
+  var counter;
+  var counter2;
   $(document).ready(function() {
 ///////////////////////////////////////////////////////
+start_timer();
+
+socket.on('nuevo_billete_recivido', function(msg){
+  console.log("nuevo_billete_recivido"+JSON.stringify(msg));
+  document.getElementById("qty_bill").innerHTML = msg.qty_bill2;
+  document.getElementById("depositado").innerHTML = msg.monto_total_remesa;
+  display_message(msg.monto +" "+ msg.country_code+" "+msg.qty_bill2);
+  window.clearTimeout(counter);
+  window.clearTimeout(counter2);
+  console.log("timmer stopped");
+  start_timer();
+  console.log("timmer started again");
+});
+
+socket.on('Staking', function(msg) {
+    display_message("Leyendo Billete");
+      $("#finish").hide();
+  });
+
+  function display_message(mes_to_display) {
+    document.getElementById("message2").innerHTML = mes_to_display;
+    setTimeout(clear_message, 5000);
+  };
+
+  function clear_message() {
+    document.getElementById("message2").innerHTML = "";
+  //  document.getElementById("msg1").innerHTML = "Bloqueado";
+  };
+function start_timer(){
+  console.log("starting timer");
+  var link = document.getElementById('finish');
+  counter2=window.setTimeout(function(){
+  socket.emit('disable_validator');
+  console.log("disabling prior end");
+  },290000);// 10 seconds minus =10 000
+  counter=window.setTimeout(function(){
+  link.click();
+  console.log("timer DONE");
+},30000); //5 min= 300000
+   }
+
 
 });
 </script>

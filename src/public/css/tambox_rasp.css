@@ -237,7 +237,9 @@ and (-webkit-min-device-pixel-ratio: 1)  {
     border-radius: 15px;
     padding: 5px;
     text-align: center;
-
+    display: grid;
+    grid-template-columns: 0.5fr auto 0.5fr;
+    grid-template-rows: 0.5fr 1fr 1fr 0.5fr;
   }
   .panel_oos{
     display: grid;
@@ -392,15 +394,14 @@ and (-webkit-min-device-pixel-ratio: 1)  {
   overflow-y: scroll;
 }
   .info_template {
-    display: flex;
+    /* display: flex; */
+    display:grid;
     justify-content: center;
     /* margin:20px; */
-    /* display: grid; */
     grid-template-columns: repeat(3, 1fr);
-    /* grid-template-rows: repeat(2, 1fr); */
+    grid-template-rows: repeat(2, 1fr);
     grid-column-gap: 5px;
-    grid-row-gap: 20px;
-
+    /* grid-row-gap: 20px; */
     /* grid-column:1; */
     max-height:86vh;
     background-image: linear-gradient(to bottom, rgb(23, 22, 22),rgba(33,33,33));
@@ -410,14 +411,8 @@ and (-webkit-min-device-pixel-ratio: 1)  {
     border-radius: 15px;
     padding: 5px;
     text-align: center;
-    /* margin:15px; */
-    /* display:grid; */
-    /* grid-template-columns: repeat(4,1fr); */
-    /* grid-template-rows:repeat(4,1fr); */
-    /* grid-gap:5px; */
-    /* justify-items:center;
-    align-items: center; */
     }
+
   .info_maquina_template {
   /* grid-area: 1 / 4 / span 1 / 9; */
   grid-row-gap: 15px;
@@ -651,4 +646,35 @@ and (-webkit-min-device-pixel-ratio: 1)  {
     grid-column: 2/4;
     grid-row:2/5;
     padding: 20px;
+  }
+  #pagado{
+    font-size: 120px;
+    font-weight: bold;
+    color:yellow;
+  }
+  #parcial{
+    font-size: 120px;
+    font-weight: bold;
+    color:blue;
+  }
+  #inicializando_sistema {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    /* height: 100%; */
+    opacity: 1;
+    z-index: 10;
+    /* display: none; */
+    margin: 0 auto;
+  }
+  #texto_popoup{
+    font-size: 24px;
+    grid-row: 3 / span 1;
+    grid-column: 2 / span 1;
+  }
+  #mensaje_proceso{
+    font-size: 24px;
+    grid-row: 4 / span 1;
+    grid-column: 2 / span 1;
   }

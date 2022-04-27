@@ -151,7 +151,8 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
                          return reject("No_monto_exacto");
                       }
                       if(solucion=="saldo_insuficiente"){
-                        console.log("Saldo_insuficiente");
+                        console.log("Saldo_insuficiente123");
+                        socket.io.emit('display_message',"Saldo_insuficiente123");
                          await pool.query ("UPDATE remesas SET status='saldo_insuficiente' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                          res.json('Saldo_insuficiente');
                          return reject("Saldo_insuficientex");

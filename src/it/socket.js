@@ -129,9 +129,13 @@ io.on('connection', async function (socket) {
     });
   });
   socket.on('disable_validator',async function(msg) {
-     await ssp.ensureIsSet();
-     await ssp.envia_encriptado(validator_address,desable);
-     console.log(chalk.cyan("DISABLE VALIDATOR"));
+    try {
+      await ssp.ensureIsSet();
+      await ssp.envia_encriptado(validator_address,desable);
+      console.log(chalk.cyan("DISABLE VALIDATOR"));
+    } catch (e) {
+        console.log("validator could not be disabled");
+    }
   });
   /////////////////////////////////////////////////////////////
   socket.on('lock_cashbox', async function(msg) {

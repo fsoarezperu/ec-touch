@@ -6,13 +6,15 @@
    ///////////////////////////////////////////////////////
    //if (mydata["this_machine_info"][0].machine_name == "Autogenerada") {
    if (mydata["this_machine_info"][0].is_locked == true) {
-
+      console.log("locking status for this machine is:"+mydata["this_machine_info"][0].is_locked);
      //alert ("machine needs Adoption");
      //$('#overlay, #overlay-back').fadeIn(500);
      document.getElementById("popup").style.display = "inline";
 
    } else {
      document.getElementById("popup").style.display = "none";
+     console.log("locking status for this machine is:"+mydata["this_machine_info"][0].is_locked);
+
    }
 
    socket.on('adopt', function(msg) {
@@ -158,6 +160,7 @@
       <p>fin de la lista</p>
     </div>
     <div class="ec_card panel1">
+      <div id="message2"></div>
       <div><a class="ec_btn" id="iniciar_nueva_remesa">Iniciar remesa</a> </div>
       <div><a class="ec_btn" id="pay_a_20">Pay a 20</a> </div>
       <div><a class="ec_btn" id="pay_a_50">Pay a 50</a> </div>

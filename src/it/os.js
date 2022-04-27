@@ -1300,12 +1300,15 @@ async function validar_pago(no_remesa){
                       }
                       if(solucion=="no_monto_exacto"){
                         console.log("No_monto_exacto");
+                        server.io.emit('display_message_socket',"No_monto_exacto");
                          await pool.query ("UPDATE remesas SET status='no_monto_exacto' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                         // res.json('No_monto_exacto');
                          return reject("No_monto_exacto");
                       }
                       if(solucion=="saldo_insuficiente"){
-                        console.log("Saldo_insuficiente");
+                        //console.log("Saldo_insuficiente");
+                        console.log("Saldo_insuficiente1234567");
+                        server.io.emit('display_message_socket',"Saldo_insuficiente");
                          await pool.query ("UPDATE remesas SET status='saldo_insuficiente' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                          //res.json('Saldo_insuficiente');
                          return reject("Saldo_insuficientex");
@@ -1318,6 +1321,7 @@ async function validar_pago(no_remesa){
                       }
                       if(solucion=="desabilitado"){
                           console.log("Deshabilitado");
+                            server.io.emit('display_message_socket',"Deshabilitado");
                          await pool.query ("UPDATE remesas SET status='desabilitado' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                         // res.json('Deshabilitado');
                          return reject("Deshabilitado");
