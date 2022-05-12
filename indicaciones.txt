@@ -13,6 +13,12 @@ nueva version de node)
 https://www.youtube.com/watch?v=T9AtKld8USU
 usar esta ruta al final /etc/xdg/lxsession/LXDE-pi/autostart
 
+desactivar rainbow de entrada a pi
+sudo nano /boot/config.txt y se agrega la siguiente linea. disable_splash=1
+sudo nano /boot/cmdline.txt
+(la linea esta asi)
+dwc_otg.lpm_enable=0 console=serial0,115200 console=tty3 loglevel=0 root=/dev/mmcblk0p7 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait logo.nologo quiet splash plymouth.$mouth.ignore-serial-consoles consoleblank=1 plymouth.enable=0 vt.global_cursor_default=0 fastboot noatime nodiratime noram
+
 -se agrego al boot, creando un service
 IMPORTANTE PARA BOOT:tambox_server start 10 2 3 4 5 . stop 90 0 1 6 .
 

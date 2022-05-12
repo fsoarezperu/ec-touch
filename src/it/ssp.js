@@ -1,3 +1,6 @@
+// este archivo guarda lasfunciones necesarias para la comunicacion SSP entre el validador y el host.
+
+
 const sp = require('./serial_port');
 const os = require('./os');
 const socketjs = require('./socket');
@@ -1873,14 +1876,14 @@ module.exports.envia_encriptado2=envia_encriptado2;
 function sync_and_stablish_presence_of(receptor) {
     return new Promise(async function(resolve, reject) {
       try {
-          //  console.log("/////////////////////////////////");
-          //  console.log(chalk.green("sync_and_stablish_presence_of:"+device));
-          //  console.log("/////////////////////////////////");
+            console.log("/////////////////////////////////");
+            console.log(chalk.green("sync_and_stablish_presence_of:"+device));
+            console.log("/////////////////////////////////");
             // os.logea("SYNCH command sent to:"+device);
                   for (var i = 0; i < 3; i++) {
                     ultimo_valor_enviado="synch";
                     var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
-                  //  console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                    console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                     var step2=await handlesynch(step1);
                     if (show_details) {
                       console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
@@ -1906,20 +1909,20 @@ function negociate_encryption(receptor) {
 //  return reject("no negociation");
       try {
         enc.getkeys();
-        setGenerator = enc.set_generator_();
-        os.logea("/////////////////////////////////");
-        os.logea("SET GENERATOR command sent");
+        var setGenerator = enc.set_generator_();
+        console.log("/////////////////////////////////");
+        console.log("SET GENERATOR command sent");
          ultimo_valor_enviado="setGenerator";
           var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
-            os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+            console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
           var step2=await enc.handleSetgenerator(step1);
           if (show_details) {
             console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
           }
              if (step2=="OK") {
                var setModulus = enc.set_modulus();
-               os.logea("/////////////////////////////////");
-               os.logea("SET MODULUS command sent");
+               console.log("/////////////////////////////////");
+              console.log("SET MODULUS command sent");
                            ultimo_valor_enviado="setModulus";
                var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
                  os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
@@ -1930,16 +1933,16 @@ function negociate_encryption(receptor) {
                     if (step4=="OK") {
                          //  var step6;
                          var rKE = await enc.send_request_key_exchange();
-                        // console.log("/////////////////////////////////");
-                        // console.log("Request Key Exchange command sentx1");
+                         console.log("/////////////////////////////////");
+                         console.log("Request Key Exchange command sentx1");
                          ultimo_valor_enviado="request key exchange";
-                        // console.log("ecount2:",ecount+" slave_count:",slave_count);
+                         console.log("ecount2:",ecount+" slave_count:",slave_count);
                          var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
                          try {
-                          // console.log("ecount3:",ecount+" slave_count:",slave_count);
+                           console.log("ecount3:",ecount+" slave_count:",slave_count);
                            var step6=await enc.handleRKE(step5);
                            if(step6.length>0){
-                            // console.log(chalk.green('KEY:'), chalk.green(step6));
+                             console.log(chalk.green('KEY:'), chalk.green(step6));
                              console.log(chalk.green("Encripted comunication Active"));
                              console.log("/////////////////////////////////");
                              encryptionStatus = true;
@@ -2065,12 +2068,12 @@ return new Promise(async function(resolve, reject) {
 }
 module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;
 
-function pruebita(){
-  return new Promise(function(resolve, reject) {
-    return resolve("OK");
-  });
-}
-module.exports.pruebita=pruebita;
+// function pruebita(){
+//   return new Promise(function(resolve, reject) {
+//     return resolve("OK");
+//   });
+// }
+// module.exports.pruebita=pruebita;
 ///////////////////////////////////////////////////////
 function handleSetInhivits(data){
 //exports.handleSetInhivits=function(data){

@@ -557,51 +557,58 @@ io.on('connection', async function (socket) {
     console.log("open_serial_port");
     // io.emit('open_serial_port','open_serial_port');
   });
-  socket.on('initialize_validator', async function(msg) {
-    slave_count="00000000";
-    ecount="00000000";
-    zerox=false;
-    ready_for_sending=true;
-    console.log("ecount:",ecount+" slave_count:",slave_count);
-    try {
 
-      let step1=await tambox.finalizar_pagos_en_proceso();
-      console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
-      console.log(chalk.green("Iniciando Validador"));
-      var validator = await inicializar_validador();
-      console.log(chalk.green("Validador inicio:" + validator));
-      console.log(chalk.green("***************************************"));
-    //
-    //   await os.obtener_datos_de_conexion();
-    //   //await os.habilita_sockets();
-    //   await os.comprobar_serialcom();
-    // //  await os.arranca_tambox_os();
-    //
-    //   await sspx.sync_and_stablish_presence_of(global.validator_address);
-    //   await sspx.negociate_encryption(global.validator_address);
-    //   console.log("end of restart");
-    //   var step1xy=await sp2.transmision_insegura(receptor,synch) //<------------------------------ synch
-    //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
-    //   var step2=await sspx.handlesynch(step1xy);
-    //   if (show_details) {
-    //     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
-    //   }
-    //
-    //    await synch_tbm.are_synched();
-    //   var data=await os.consulta_all_levels();
+async function autostart(){
+  console.log("this is autostart beginning");
+  slave_count="00000000";
+  ecount="00000000";
+  zerox=false;
+  ready_for_sending=true;
+  console.log("ecount:",ecount+" slave_count:",slave_count);
+  try {
+
+    let step1=await tambox.finalizar_pagos_en_proceso();
+    console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+    console.log(chalk.green("Iniciando Validador"));
+    var validator = await os.inicializar_validador();
+    console.log(chalk.green("Validador inicio:" + validator));
+    console.log(chalk.green("***************************************"));
+  //
+  //   await os.obtener_datos_de_conexion();
+  //   //await os.habilita_sockets();
+  //   await os.comprobar_serialcom();
+  // //  await os.arranca_tambox_os();
+  //
+  //   await sspx.sync_and_stablish_presence_of(global.validator_address);
+  //   await sspx.negociate_encryption(global.validator_address);
+  //   console.log("end of restart");
+  //   var step1xy=await sp2.transmision_insegura(receptor,synch) //<------------------------------ synch
+  //   console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+  //   var step2=await sspx.handlesynch(step1xy);
+  //   if (show_details) {
+  //     console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
+  //   }
+  //
+  //    await synch_tbm.are_synched();
+  //   var data=await os.consulta_all_levels();
 //      console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
-    } catch (e) {
-      console.log(chalk.magenta.inverse("error General de OS:"+e));
-    }finally{
-      ultimo_valor_enviado="Poll loop";
-      await os.idle_poll_loop();
-      console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
-      console.log(chalk.green("idle"));
-      return;
-      //  io.emit('open_serial_port','open_serial_port');
-    }
+  } catch (e) {
+    console.log(chalk.magenta.inverse("error General de OS:"+e));
+  }finally{
+    ultimo_valor_enviado="Poll loop";
+    await os.idle_poll_loop();
+    console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
+    console.log(chalk.green("idle"));
+    return;
+    //  io.emit('open_serial_port','open_serial_port');
+  }
 
 
+}
+module.exports.autostart=autostart;
+
+  socket.on('initialize_validator', async function(msg) {
+    await autostart();
   //  await os.arranca_tambox_os();
   //  console.log("initialize_validator");
   //  io.emit('initialize_validator','initialize_validator');

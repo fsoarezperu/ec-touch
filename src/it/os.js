@@ -210,6 +210,7 @@ async function inicializar_validador() {
   return new Promise(async function(resolve, reject) {
     try {
       await ssp.sync_and_stablish_presence_of(validator_address);
+      console.log("validator address is:"+validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
   //    console.log("validator poll var:",validatorpoll_var);
@@ -1750,12 +1751,12 @@ function enable_payout2(receptor) {
  });
 }
 
-function pruebita(){
-  return new Promise(function(resolve, reject) {
-    return resolve("OK");
-  });
-}
-module.exports.pruebita=pruebita;
+// function pruebita(){
+//   return new Promise(function(resolve, reject) {
+//     return resolve("OK");
+//   });
+// }
+// module.exports.pruebita=pruebita;
 ////////////////////////////////////////////////////////////////////
 async function transmite_encriptado_y_procesa2(receptorx,polly){
   // await ssp.ensureIsSet()

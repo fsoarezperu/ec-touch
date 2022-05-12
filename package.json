@@ -15,6 +15,7 @@
     "express-handlebars": "^3.1.0",
     "express-mysql-session": "^2.1.0",
     "express-session": "^1.16.2",
+    "fetch-timeout": "0.0.2",
     "forever": "^0.15.3",
     "javascript-time-ago": "^2.0.1",
     "jquery": "^3.4.1",
@@ -22,7 +23,7 @@
     "moment": "^2.27.0",
     "morgan": "^1.9.1",
     "node-crc": "^1.2.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-forge": "^0.7.6",
     "nodemon": "^1.19.1",
     "path": "^0.12.7",
@@ -39,7 +40,6 @@
     "start": "pm2 start src/server.js",
     "dev": "nodemon src/server.js",
     "dev2": "forever src/server.js"
-
   },
   "author": "edgar fernando soarez arteta",
   "license": "ISC"

@@ -4,7 +4,7 @@ var Big_Number = require('big-number');
 const BigNumber = require('bignumber.js');
 const ssp = require('./ssp');
 const os = require('./os');
-
+const socket= require('./socket')
 const chalk=require('chalk');
 const glo = require('./globals');
 const sp = require('./serial_port');
@@ -13,7 +13,7 @@ const sp = require('./serial_port');
 var acomodando2,acomodando,hexiando,hexiado;
 //var slave_count;
 ////////////////////////////////////////////////////
-exports.set_generator_=function() {
+function set_generator_(){
   //console.log("set generator to send:" + set_generator + " this has to be a prime number");
   calc_generator = set_generator;
   //console.log(calc_generator);
@@ -37,6 +37,7 @@ exports.set_generator_=function() {
   //console.log(set_generator);
   return set_generator;
 }
+module.exports.set_generator_=set_generator_;
 ////////////////////////////////////////////////////
 const changeEndianness = (string) => {
   const result = [];
@@ -99,9 +100,9 @@ exports.getkeys=function(){
   var my_key;
   set_generator = keyPair.privateKey.p;
   set_modulus = keyPair.privateKey.q;
-  //console.log("GENERADOR:" + set_generator);
-  //console.log("MODULUS:" + set_modulus);
-  //console.log("Prime numbers generated!");
+  console.log("GENERADOR:" + set_generator);
+  console.log("MODULUS:" + set_modulus);
+  console.log("Prime numbers generated!");
 //  enable_sending();
 return;
 }
@@ -186,6 +187,14 @@ function pady(n, width, z) {
 }
 module.exports.pady=pady;
 ////////////////////////////////////////////////////
+function this_timer(amount){
+  return new Promise(function(resolve, reject) {
+    setTimeout(function () {
+      return resolve ("ok");
+    }, amount);
+  });
+}
+
 function handleRKE(data){
     return new Promise(async function(resolve,reject){
   //    console.log(data);
@@ -226,9 +235,21 @@ try {
 
     if (firstbyte == "F8") {
         console.log(chalk.red("Not Possible to create the Key"));
-        sp.port.close();
-        console.log("we need to restart here buddy!...");
-        server.io.emit('initialize_validator','initialize_validator');
+        //sp.port.close();
+        //sp.port.open();
+        console.log("we need to restart here buddy!...123");
+      var abc1= await sp.cerrar_puerto_serial();
+      console.log("abc1"+abc1);
+        console.log("starting wait");
+      var  abc2=await this_timer(10000);
+      console.log("abc2"+abc2);
+        console.log("finish wait");
+      var  abc3=await sp.abrir_puerto_serial();
+      console.log("abc3"+abc3);
+      var  abc4=await socket.autostart();
+      console.log("abc4"+abc4);
+
+      //  server.io.emit('initialize_validator','initialize_validator');
     //  console.log(chalk.green("KEY:" + full_KEY));
     // var rKE = exports.send_request_key_exchange();
     // os.logea("/////////////////////////////////");
@@ -256,7 +277,8 @@ try {
     // setTimeout(function () {
     //   sp.retrial();
     // }, 1000);
-       return reject("Not Possible to create the Key");
+       return resolve("Not Possible to create the Key");
+
     }
     if (firstbyte == "F4") {
       console.log(chalk.red("Parameter out of range"));
