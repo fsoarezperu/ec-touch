@@ -327,7 +327,7 @@ try {
   }
   console.log(chalk.cyan("flag1"));
   await pool.query('INSERT INTO remesa_hermes set ?', [new_remesa_hermes]);
-  await pool.query("UPDATE machine SET monto_actual='0' WHERE machine_sn=?",global.machine_sn);
+  await pool.query("UPDATE machine SET monto_actual='0',no_billetes_bolsa='0',no_billetes_reci='0',billetes_de_10='0',billetes_de_20='0',billetes_de_50='0',billetes_de_100='0',billetes_de_200='0',monto_en_reciclador='0' WHERE machine_sn=?",machine_sn);
 
   ///////////////////////////////
  const remesax= await pool.query ("SELECT * FROM remesa_hermes WHERE status='iniciada'");

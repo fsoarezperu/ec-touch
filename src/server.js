@@ -70,7 +70,12 @@ httpx.listen(machine_port, async function(io2) {
 ///////////////////////////////////////////////////
 //  console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
   try {
-    await os.obtener_datos_de_conexion();
+    try {
+          await os.obtener_datos_de_conexion();
+    } catch (e) {
+      console.log(e);
+    }
+
     await os.habilita_sockets();
     await os.comprobar_serialcom();
     await os.arranca_tambox_os();

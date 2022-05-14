@@ -19,10 +19,10 @@ global.my_resgistered_machine_name="New machine";
 global.ultimo_valor_enviado="";
 global.ECOSVersion="1.0";
 global.last_sent="";
-global.view_log=true;
-global.show_details=true;
-//global.view_log=false;
-//global.show_details=false;
+//global.view_log=true;
+//global.show_details=true;
+global.view_log=false;
+global.show_details=false;
 
 global.seq_bit=0;
 global.sync=false;//esto tiene que iniciar en falso para que pueda agenciarse la negociacion de la llave de encriptacion

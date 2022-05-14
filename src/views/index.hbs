@@ -19,7 +19,9 @@
         console.log("receiving:"+a1);
         $('#display').html(msg[1]);
         mydata=msg[0];
-        console.log("esto viene de enlace a:"+JSON.stringify(mydata));
+        //console.log("esto viene de enlace a:"+JSON.stringify(mydata));
+        console.log(mydata);
+        console.log("lo anterior vino de aqui. 12543");
       });
       return;
     }
@@ -135,7 +137,7 @@
      mandar_orden("rm_5");
     // mandar_orden("connected");
     //orden iniciada en el client the tambox, enviada
-     mandar_orden("synch_remesas");
+     mandar_orden("orden_sync");
      mandar_orden_sin_link("lock_machine");
 
 
@@ -175,7 +177,7 @@
     socket.on('system_running_indicator', function(msg) {
       display_system_running_indicator();
       online = true;
-      console.log("system running ok");
+      //console.log("system running ok");
     });
     function display_system_running_indicator() {
       $("#system_running_indicator").show();
@@ -260,7 +262,7 @@
     function control(variable) {
       tim = setTimeout(function() {
         updateStatus(online);
-      }, 1000);
+      }, 3000); //aqui decia 1000
     }
     control(online);
     /////////////////////////////////////////////////////////////

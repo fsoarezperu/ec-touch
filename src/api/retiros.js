@@ -12,6 +12,8 @@ const glo = require('./../it/globals');
 const server= require('./../server');
 const os = require('./../it/os');
 const moment=require("moment");
+const to_tbm_synch = require('./../it/tbm_sync/synchronize');
+
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 /////////////////////////////////////////////////////////
 var ConvertBase = function(num) {
@@ -128,19 +130,19 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
                     arry.push(thisy);
                    }
 
-                   // try {
+                    try {
                    console.log("justo antes del problema: validator_asddress is:"+global.validator_address);
                       //var data= await sspo.transmite_encriptado_y_procesa2(validator_address,arry);
                       var data= await os.transmite_encriptado_y_procesa2(global.validator_address,arry);
 
-                   // } catch (e) {
-                   //   return reject(e)
-                   // }
+                    } catch (e) {
+                      console.log(e);
+                    }
                     console.log("AQUI VOLI:"+data);
 
                       console.log(chalk.yellow("<-:"+data));
                       var solucion=handlepayoutvalue(data);
-                      os.logea("solucion is:"+solucion);
+                      console.log("solucion is:"+solucion);
                     if(solucion=="ok"){
                         await pool.query ("UPDATE remesas SET status='procede' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                       }
@@ -279,16 +281,22 @@ router.get('/ejecutar_retiro/:no_remesa',async(req,res)=>{
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
-  console.log("termninando retiro");
+
   new Promise(async function(resolve, reject) {
+    console.log("termninando retiro");
     try {
       // ssp.ensureIsSet2()
       if(on_startup==false){
-        const {no_remesa}=req.params;
+
+          const {no_remesa}=req.params;
           if(no_remesa){
-                const {no_remesa}=req.params;
+
+                //const {no_remesa}=req.params;
                 const remesa= await pool.query ("UPDATE remesas SET rms_status='finalizada' WHERE tipo='egreso' and no_remesa=?",[no_remesa]);
                 const remesax= await pool.query ('SELECT * FROM remesas WHERE no_remesa=?',[no_remesa]);
+
+                console.log(remesax);
+
 
                 //   io.to_tbm.emit('un_pago_mas',"transaccion satisfactoria retiro");
                 //   /////////////////////////////////////////////////////////////////////
@@ -331,7 +339,10 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
 
                   var nueva_res_hermes = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada'");
                   console.log("voy a actualizar rh con estos datos:" + nueva_res_hermes);
-                  await os.sincroniza_remesa_hermes2(nueva_res_hermes);
+
+                //  await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
+
+                  await to_tbm_synch.remote_update_rh(global.tebs_barcode);
 
                   /////////////////////////////////////////////////////////////////////
                 res.json(remesax);
@@ -341,11 +352,13 @@ router.get('/terminar_retiro/:no_remesa',async(req,res)=>{
             return resolve();
           }
         //  res.send('finalizando remesa');
+
       }else{
         res.send('Estoy en Startup');
         return resolve ();
       }
     } catch (e) {
+      console.log(e);
       return reject(e);
     }
   });

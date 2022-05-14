@@ -57,8 +57,10 @@ console.log(chalk.yellow("TBM ADRESS HARDCODED IS:"+global.tbm_adressx));
 var socket_to_tbm = require("socket.io-client")(adrees);
 socket_to_tbm.on("connect",async function(socket) {
   console.log(chalk.yellow("a user connected :"+socket_to_tbm.id));
-  synchronize.synch_required();
   tbm_status=true;
+  await os.comprueba_maquina_inicial();
+  await synchronize.synch_required();
+
 
 });
   socket_to_tbm.on('disconnect', function() {

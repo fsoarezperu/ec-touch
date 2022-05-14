@@ -35,7 +35,7 @@ io.on('connect', async function(socket) {
     console.log(chalk.yellow("a user leave, reason:"+ chalk.cyan(reason)));
 
   });
-  socket.on('synch_remesas', async function(msg){
+  socket.on('orden_sync', async function(msg){
   var remesas_a_sincronizar= await pool.query("SELECT * FROM remesas WHERE tebs_barcode=?",current_tebs_barcode);
   // var remesas_a_sincronizar={
   //   no_remesa:11111,
@@ -43,7 +43,12 @@ io.on('connect', async function(socket) {
 //  }
   console.log("estoy detectando una orden para sincronizar remesas esta remesa:"+JSON.stringify(remesas_a_sincronizar));
     to_tbm.socket_to_tbm.emit("synch_remesas",remesas_a_sincronizar);
+    await synch_tbm.remote_update_rh(global.tebs_barcode);
 })
+socket.on('orden_sync2', async function(msg){
+console.log("orden sync recibida; "+msg);
+})
+
 
 // function update_remesas_hermes_via_socket_to_tbm(res) {
 //   var remesas_a_sincronizar={
@@ -545,7 +550,7 @@ io.on('connection', async function (socket) {
   socket.on('request_support_online', function(msg) {
     console.log("request_support_online");
     io.emit('request_support_online','request_support_online');
-    to_tbm.socket_to_tbm.emit("request_support_online",global.machine_sn);
+    to_tbm.socket_to_tbm.emit("request_support_online",global.numero_de_serie);
   });
   socket.on('close_serial_port', function(msg) {
     sp2.cerrar_puerto_serial();
@@ -567,17 +572,17 @@ async function autostart(){
   console.log("ecount:",ecount+" slave_count:",slave_count);
   try {
 
-    let step1=await tambox.finalizar_pagos_en_proceso();
-    console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
-    console.log(chalk.green("Iniciando Validador"));
-    var validator = await os.inicializar_validador();
-    console.log(chalk.green("Validador inicio:" + validator));
-    console.log(chalk.green("***************************************"));
-  //
-  //   await os.obtener_datos_de_conexion();
-  //   //await os.habilita_sockets();
-  //   await os.comprobar_serialcom();
-  // //  await os.arranca_tambox_os();
+  //   let step1=await tambox.finalizar_pagos_en_proceso();
+  //   console.log(chalk.green("Operaciones Inconclusas fueron finalizadas:"+step1));
+  //   console.log(chalk.green("Iniciando Validador"));
+  //   var validator = await os.inicializar_validador();
+  //   console.log(chalk.green("Validador inicio:" + validator));
+  //   console.log(chalk.green("***************************************"));
+  // //
+     await os.obtener_datos_de_conexion();
+     await os.habilita_sockets();
+     await os.comprobar_serialcom();
+     await os.arranca_tambox_os();
   //
   //   await sspx.sync_and_stablish_presence_of(global.validator_address);
   //   await sspx.negociate_encryption(global.validator_address);

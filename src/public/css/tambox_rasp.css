@@ -596,6 +596,45 @@ and (-webkit-min-device-pixel-ratio: 1)  {
      font-weight: bold;
      color:yellow;
    }
+
+
+
+   .teclado{
+     margin:10px;
+     display:grid;
+     grid-template-columns: repeat(3, auto);
+     grid-template-rows: repeat(3, auto);
+     justify-items: stretch;
+     grid-gap:10px;
+   }
+   .boton_teclado{
+     color:white;
+     font-size:60px;
+     background:rgb(48, 48, 48);
+     border: 2px solid white;
+     text-align:center;
+   }
+   .pass_screen{
+     grid-column-start: 1;
+     grid-column-end: 4;
+     color:white;
+     font-size:60px;
+     background:rgb(48, 48, 48);
+     border: 2px solid white;
+     text-align:center;
+   }
+   #validating{
+     font-size:40px;
+   }
+   #canceling{
+     font-size:20px;
+
+   }
+   #cancel{
+   justify-text: center;
+   }
+
+
 }
   .smart {
     display: grid;

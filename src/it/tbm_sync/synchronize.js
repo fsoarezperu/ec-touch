@@ -63,8 +63,8 @@ async function get_tbm_remesas(){
 return  new Promise(function(resolve, reject) {
     //emit al tbm
     // if (true) {
-    console.log("tryng to get records here.");
-    to_tbm.socket_to_tbm.emit('consultando_excistencia_de_records',global.numero_de_serie);
+    console.log(chalk.cyan("get_tbm_remesas.....enviando socket para consultar remesas."));
+    to_tbm.socket_to_tbm.emit('consultando_excistencia_de_records',numero_de_serie);
 
     // }else {
     //   return reject("error");
@@ -75,13 +75,18 @@ return  new Promise(function(resolve, reject) {
     return resolve("ok")
     // io.emit('messages', 'Hello');
     });
+
+
     to_tbm.socket_to_tbm.on('tbm_records', function(data) {
-//    console.log(chalk.cyan("tbm_records:"+JSON.stringify(data)));
+    console.log(chalk.cyan("tbm_records received by sockets:"+JSON.stringify(data)));
     var new_data=[];
     for (var i=0; i <data.length;i++){
     new_data.push(data[i].no_remesa);
     }
-
+    console.log(chalk.cyan("//////////////////////////////////////////////////////"));
+    console.log(chalk.cyan("/////////////RESOLVING HERE//////////////////////////////"));
+    console.log(chalk.cyan("//////////////////////////////////////////////////////"));
+    console.log("new_data received by socket"+new_data);
     return resolve(new_data)
     // io.emit('messages', 'Hello');
     });
@@ -103,89 +108,156 @@ async function remote_update(id){
 
   // function remote_update= every time a transaction is done on the machine , this function will be used to send via sockets the transaccion just accomplished , manteining both machines always synced
 };
-async function get_tbm_rh(){
-return  new Promise(function(resolve, reject) {
-    to_tbm.socket_to_tbm.emit('consultando_excistencia_de_rh',global.numero_de_serie);
-    to_tbm.socket_to_tbm.on('no_records', function(data) {
-    console.log(chalk.cyan("no_records:"+data));
-    return resolve("ok")
-    });
-    to_tbm.socket_to_tbm.on('tbm_rh', function(data) {
-    var new_data_rh=[];
-    for (var i=0; i <data.length;i++){
-    new_data_rh.push(data[i].tebs_barcode);
-    }
-    return resolve(new_data_rh)
-    });
+//////////////////////////////////////////////////////////
+async function get_tbm_rh(this_tebs){ //envie socket a tbm consultando la existencia de
+  // remesas hermes en la base de datos y devuelve un array con los tebs existentes.
+try {
+  return  new Promise(function(resolve, reject) {
+  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+  console.log(chalk.cyan("/////////////// Socket Requestd to TBM /////////////////////////"));
+  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+  to_tbm.socket_to_tbm.emit('consultando_excistencia_de_rh',this_tebs);
+  to_tbm.socket_to_tbm.on('no_records', function(data) {
+  console.log(chalk.cyan("no_records:"+data));
+  return resolve("ok")
   });
-}
-async function remote_update_rh(id){
-      console.log("updading rh... id:"+id);
-      var rh_to_synch=await pool.query("SELECT * FROM remesa_hermes WHERE tebs_barcode=?",[id]);
-      if (rh_to_synch.length!=0) {
-              console.log("this rh:"+JSON.stringify(rh_to_synch));
-              to_tbm.socket_to_tbm.emit('synch_rh',rh_to_synch);
-              //await confirmation_from_tbm()
-      }else {
-        console.log("record skipped");
-      }
+  to_tbm.socket_to_tbm.on('tbm_rh', function(data) {
+  var new_data_rh=[];
+  for (var i=0; i <data.length;i++){
+  new_data_rh.push(data[i].tebs_barcode);
+  }
 
-  // function remote_update= every time a transaction is done on the machine , this function will be used to send via sockets the transaccion just accomplished , manteining both machines always synced
+  return resolve(new_data_rh)
+  });
+    });
+} catch (e) {
+  console.log(e);
+} finally {
+  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+  console.log(chalk.cyan("/////////////// Socket responded from TBM /////////////////////////"));
+  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+}
+
+}
+module.exports.get_tbm_rh=get_tbm_rh;
+//////////////////////////////////////////////////////////////
+async function consulta_limite_maximo_de_pago_en_tbm(){
+  if (tbm_status==true) {
+    return new Promise(async function(resolve, reject) {
+      try {
+        to_tbm.socket_to_tbm.emit('consulta_limite_maximo_de_pago_en_tbm',global.numero_de_serie);
+        console.log("socket enviado consultado limite para machine_sn:"+global.numero_de_serie);
+        to_tbm.socket_to_tbm.on('consulta_limite_maximo_de_pago_en_tbm', async function(data) {
+        console.log(chalk.cyan("consulta_limite_maximo_de_pago_en_tbm:"+data));
+        var respuesta123=data[0].limite_maximo_de_retiro;
+        return resolve(respuesta123);
+        });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        console.log("consulta_limite_maximo_de_pago_en_tbm ejecutada");
+      }
+    });
+  }else {
+    console.log("no tbm socket");
+  }
+
+}
+module.exports.consulta_limite_maximo_de_pago_en_tbm=consulta_limite_maximo_de_pago_en_tbm;
+/////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+async function remote_update_rh(this_tebs){
+  try {
+    if(tbm_status==true){
+      console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+      console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+      console.log("///////////// updading rh... tebs:"+this_tebs);
+      console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+
+          var rh_to_synch=await pool.query("SELECT * FROM remesa_hermes WHERE tebs_barcode=?",[this_tebs]);
+          if (rh_to_synch.length!=0) {
+                  console.log("this rh:"+JSON.stringify(rh_to_synch));
+                  to_tbm.socket_to_tbm.emit('synch_rh',rh_to_synch);
+                  //await confirmation_from_tbm()
+          }else {
+            console.log("record skipped");
+          }
+
+      // function remote_update= every time a transaction is done on the machine , this function will be used to send via sockets the transaccion just accomplished , manteining both machines always synced
+
+    }else {
+      console.log("TBM Offline right now, booomer");
+    }
+  } catch (e) {
+    console.log(e);
+  } finally {
+    console.log("remote update function finished.");
+  }
+
 };
+module.exports.remote_update_rh=remote_update_rh;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 async function synch_required(){
   console.log(chalk.magenta("Entering synch required..."));
-  if (tbm_status) {
-    const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[global.numero_de_serie]);
-    var local_array=JSON.parse(JSON.stringify(local_id_records));
-    console.log("a continuacion se muestran los "+local_array.length+" records a ser sincronizados");
-    console.log(local_array);
-    // console.log(local_array.length);
-    var local=[];
-    for (var i=0; i <local_array.length;i++){
-      local.push(local_array[i].no_remesa);
+  return new Promise(async function(resolve, reject) {
+    if (tbm_status) {
+      console.log(chalk.green("Conexion a tambx manager satisfactoria"));
+      const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[numero_de_serie]);
+      var local_array=JSON.parse(JSON.stringify(local_id_records));
+      console.log("a continuacion se muestran las "+local_array.length+" remesas a ser sincronizados");
+      console.log(local_array);
+       console.log(local_array.length);
+      var local=[];
+      for (var i=0; i <local_array.length;i++){
+        local.push(local_array[i].no_remesa);
+      }
+      var consulta=await get_tbm_remesas();
+      console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
+      console.log(chalk.green("lo que yo tengo:"+local));
+      const toUpdate= arr_diff(consulta,local);
+      console.log("toUpdate:"+toUpdate);
+      for (var i=0; i <toUpdate.length;i++){
+        await remote_update(toUpdate[i])
+      }
+      console.log(toUpdate.length+" Records updated succesfully");
+    /////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
+    const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
+    var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
+    //var local_rh_array=JSON.stringify(local_rh_records);
+    console.log("regarding local_rh_records:",global.numero_de_serie);
+    console.log(local_rh_array);
+    console.log(local_rh_array.length);
+    var local_rh=[];
+    for (var i=0; i <local_rh_array.length;i++){
+      local_rh.push(local_rh_array[i].no_remesa);
     }
-    var consulta=await get_tbm_remesas();
-    console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
-    console.log(chalk.green("lo que yo tengo:"+local));
-    const toUpdate= arr_diff(consulta,local);
-    console.log("toUpdate:"+toUpdate);
-    for (var i=0; i <toUpdate.length;i++){
-      await remote_update(toUpdate[i])
+    try {
+      var consulta_rh=await get_tbm_rh();
+      console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
+    //  console.log(chalk.green("rh que yo tengo:"+local_rh_records[0].tebs_barcode));
+      console.log(chalk.green("rh que yo tengo:"+local_rh));
+
+      const toUpdate_rh= arr_diff(consulta_rh,local_rh);
+      console.log("toUpdate rh:12345:"+toUpdate_rh);
+      for (var i=0; i <toUpdate_rh.length;i++){
+        await remote_update_rh(toUpdate_rh[i])
+      }
+      console.log(toUpdate_rh.length+" Records updated succesfully");
+      return resolve("OK")
+    } catch (e) {
+      console.log(chalk.red("no se pudo ejecutar esta accion IMPORTANTE"));
+      resolve("no se pudo ejecutar esta accion IMPORTANTE")
     }
-    console.log(toUpdate.length+" Records updated succesfully");
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////
-  const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
-  var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
-  //var local_rh_array=JSON.stringify(local_rh_records);
-  console.log("regarding local_rh_records:",global.numero_de_serie);
-  console.log(local_rh_array);
-  console.log(local_rh_array.length);
-  var local_rh=[];
-  for (var i=0; i <local_rh_array.length;i++){
-    local_rh.push(local_rh_array[i].no_remesa);
-  }
-  try {
-    var consulta_rh=await get_tbm_rh();
-    console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
-    console.log(chalk.green("rh que yo tengo:"+local_rh_records[0].tebs_barcode));
-    // const toUpdate_rh= arr_diff(consulta_rh,local_rh);
-    // console.log("toUpdate rh:"+toUpdate_rh);
-    // for (var i=0; i <toUpdate_rh.length;i++){
-    //   await remote_update_rh(toUpdate_rh[i])
-    // }
-    // console.log(toUpdate_rh.length+" Records updated succesfully");
-  } catch (e) {
-    console.log(chalk.red("no se pudo ejecutar esta accion IMPORTANTE"));
-  } finally {
 
-  }
+    }else {
+      console.log(chalk.red("TBM is offline right now, sorry"));
+      resolve("TBM is offline right now, sorry")
+    }
 
-  }else {
-    console.log(chalk.cyan("TBM is offline right now, sorry"));
-  }
+  });
+
 
 
 };

@@ -532,6 +532,7 @@ await fetchTimeout(url, {
 });
 return respuesta;
 }
+module.exports.fetchWithTimeout2=fetchWithTimeout2;
 /////////////////////////////////////////////////////////////////
 async function calcular_cifras_generales() {
   console.log("this is data from cifras generales:");
@@ -944,7 +945,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
 module.exports.crear_nueva_remesa = crear_nueva_remesa;
 /////////////////////////////////////////////////////////////////
 async function terminar_nueva_remesa(no_remesa) {
-  console.log("aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
+  console.log("terminar_nueva_remesa...aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
   //return new Promise(async function(resolve, reject) {
   console.log("al momento de terminar nueva remesa se detecta un current_tebs_barcode:" + current_tebs_barcode);
   if (on_startup === false) {
@@ -956,10 +957,11 @@ async function terminar_nueva_remesa(no_remesa) {
           await pool.query("UPDATE remesas SET status='terminado' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
         }else {
             console.log("remesa desde touchscreen");
+            //da por terminada la remesa que figure como ingreso y tenga el numero de remesa.
           await pool.query("UPDATE remesas SET status='terminado', rms_status='finalizada' WHERE tipo='ingreso' and no_remesa=?", no_remesa);
           global.manual_remesa==false
         }
-
+        //aqui va por procesados los billetes que tengan ese numero de remesa.
         await pool.query("UPDATE creditos SET status='processed' WHERE no_remesa=?", [no_remesa]);
 
         //  remesax = await pool.query('SELECT * FROM remesas WHERE no_remesa=?', [no_remesa]);
@@ -968,7 +970,7 @@ async function terminar_nueva_remesa(no_remesa) {
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
       //    await actualizar_remesa_enTBM2(remesax);
-    //    await  to_tbm_synch.synch_required();
+        await  to_tbm_synch.synch_required();
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
@@ -989,19 +991,22 @@ async function terminar_nueva_remesa(no_remesa) {
         var got_tienda_id=nueva_res_hermes[0].tienda_id;
         //got_tienda_id=JSON.stringify(got_tienda_id);
         //got_tienda_id=parseInt(got_tienda_id);
-        //console.log("got tienda id is"+got_tienda_id);
+        console.log("got tienda id is"+got_tienda_id);
         //console.log(typeof(got_tienda_id));
-        got_tienda_id=global.tienda_id;
+        got_tienda_id=tienda_id;
+        console.log(chalk.red("aqui obten all levels, y usa ese dato para hacer update machine en la siguiente linea"));
         await pool.query("UPDATE machine SET monto_actual=? WHERE tienda_id=?", [monto_remesa_hermes,got_tienda_id]);
         //////////////////////////////////////////////////////////////////////////////
+        // aqui tambien actualizar all levers en la tabla machine
         //////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////
-        await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
 
         //    try {
         console.log(chalk.cyan("here tbm_status_is:",tbm_status));
         if (tbm_status==true) {
-            await  to_tbm_synch.synch_required();
+          //  await  to_tbm_synch.synch_required();
+            //await ssp.sincroniza_remesa_hermes2(nueva_res_hermes);
+            await to_tbm_synch.remote_update_rh(global.tebs_barcode);
         }
 
         //    } catch (e) {
@@ -1444,8 +1449,9 @@ async function consulta_historial() {
   var historial = await pool.query("SELECT * FROM remesa_hermes ORDER BY id DESC");
   console.log(chalk.cyan("consultando historial de remesas hermes locales:"));//+JSON.parse(JSON.stringify(historial)));
 //  console.log(JSON.stringify(historial));
-console.log(JSON.parse(JSON.stringify(historial)));
-//  console.log("antes"+JSON.stringify(historial));
+//console.log(JSON.parse(JSON.stringify(historial)));
+  console.log(historial);
+
   var historial2=[];
 
  moment.locale("es");
@@ -1554,23 +1560,40 @@ async function get_my_phisical_current_ip() {
   });
 };
 async function get_my_current_public_ip() {
+  console.log("1x1");
   const publicIp = require('public-ip');
+  console.log("1x2");
   return new Promise(async function(resolve, reject) {
+    console.log("1x3");
     //	console.log(await publicIp.v4());
     //=> '46.5.21.123'
     //	console.log(await publicIp.v6());
     //=> 'fe80::200:f8ff:fe21:67cf'
-    var p_ip = await publicIp.v4();
-    resolve(p_ip);
+    try {
+      var p_ip = await publicIp.v4();
+      console.log(p_ip);
+      resolve(p_ip);
+    } catch (e) {
+      console.log(3);
+      resolve("no network")
+    } finally {
+
+    }
+
+    console.log("1x4");
+
   });
 
 };
 async function obtener_datos_de_conexion() {
   return new Promise(async function(resolve, reject) {
     try {
+      console.log("entrando a revisar mis ips");
       var mi_ip = await get_my_phisical_current_ip();
+      console.log(mi_ip);
       global.machine_ip = mi_ip;
       var mi_public_ip = await get_my_current_public_ip();
+      console.log(mi_public_ip);
       global.public_machine_ip = mi_public_ip;
       //console.dir("detecting public ip assigned is:"+mi_public_ip);
       console.log(chalk.yellow("/////////////////////////////////////////////////////////////////"));
@@ -1833,44 +1856,7 @@ module.exports.transmite_encriptado_y_procesa2=transmite_encriptado_y_procesa2;
 //   });
 // };
 /////////////////////////////////////////////////////////////////
-function sincroniza_remesa_hermes2(res){
-console.log("iniciando actualizacion de remesa hermes:");
- return new Promise(async function(resolve, reject) {
-  try {
-    var tbm_adress=tbm_adressx;
-    var fix= "/sync_remesa_hermes2";
-    var tienda_idy=res[0].tienda_id;
-    var monto=res[0].monto;
-    var moneda=res[0].moneda;
-    var status=res[0].status;
-    var tebs_barcode4=res[0].tebs_barcode;
-    var no_billetes=res[0].no_billetes;
-    var machine_snx=res[0].machine_sn;
-    var fechay=res[0].fecha;
-    var horay=res[0].hora;
-    var no_billetesy=res[0].no_billetes;
-    var fechafin=res[0].fecha_fin;
-    var horafin=res[0].hora_fin;
 
-    // var rms_status=remesax[0].rms_status;
-    // var tipo=remesax[0].tipo;
-    // var status_hermes=remesax[0].status_hermes;
-    const urly= tbm_adress+fix+"/"+tienda_idy+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode4+"/"+machine_snx+"/"+fechay+"/"+horay+"/"+no_billetesy+"/"+fechafin+"/"+horafin
-    console.log("url:"+urly);
-    /////////////////
-    const Http= new XMLHttpRequest();
-  //  const url= 'http://192.168.1.2:3000/sync_remesa/22222/001/0002/9999/15000/PEN/14444330/234765/ingreso/2019-05-09/17:22:10'
-    Http.open("GET",urly);
-    Http.send();
-    return resolve();
-  } catch (e) {
-    return reject(e);
-  } finally {
-    //return;
-  }
-});
-}
-module.exports.sincroniza_remesa_hermes2=sincroniza_remesa_hermes2;
 /////////////////////////////////////////////////////////////////
 async function consulta_all_levels(){
 return new Promise(async function(resolve, reject) {
@@ -2012,6 +1998,14 @@ async function comprueba_maquina_inicial(){
 return new Promise(async function(resolve, reject) {
   try {
     //cuenta cuantas maquinas existen en la base de datos.
+    if (tbm_status==true) {
+      console.log(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
+      var limites =await to_tbm_synch.consulta_limite_maximo_de_pago_en_tbm();
+      console.log("el limite es:"+limites);
+      await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,global.numero_de_serie]);
+    }
+
+    console.log("USO LOCAL DE LIMITE DE PAGO");
     var this_machine222=await consulta_this_machine();
 
     if (this_machine222.length>0) {
@@ -2028,7 +2022,8 @@ return new Promise(async function(resolve, reject) {
         machine_sn: global.numero_de_serie,
         tipo: global.note_validator_type,
         public_machine_ip: global.public_machine_ip,
-        machine_ip:global.machine_ip
+        machine_ip:global.machine_ip,
+        limite_maximo_de_retiro:200
       }
       await pool.query('INSERT INTO machine set ?', [nueva_machine_inicial]);
       return resolve("OK");
