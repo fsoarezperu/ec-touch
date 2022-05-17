@@ -1247,12 +1247,15 @@ function handlesetuprequest(data){
     switch(note_validator_type) {
       case "0E":
         note_validator_type = "TEBS+Payout"
+        global.note_validator_type=note_validator_type;
         break;
       case "00":
         note_validator_type = "NV200 Spectral"
+        global.note_validator_type=note_validator_type;
         break;
       case "03":
         note_validator_type = "Smart Hopper"
+        global.note_validator_type=note_validator_type;
         break;
       default:
     }

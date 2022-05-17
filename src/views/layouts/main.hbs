@@ -159,9 +159,15 @@
     socket.on('lock_machinex', function(msg) {
         console.log("lock_machinex:"+msg.orden);
           if (msg.orden=="lock") {
-            $('#overlay, #overlay-back').fadeIn(500);
+            //$('#overlay, #overlay-back').fadeIn(500);
+            $('.overlay-back').fadeIn(500);
+            $('.oss').fadeIn(500);
+            $('#out_of_service').fadeIn(500);
           }else {
-            $('#overlay, #overlay-back').fadeOut(500);
+            // $('#overlay, #overlay-back').fadeOut(500);
+            $('.overlay-back').fadeOut(500);
+            $('.oss').fadeOut(500);
+            $('#out_of_service').fadeOut(500);
           }
     });
     socket.on('iniciando_remesa', function(msg) {

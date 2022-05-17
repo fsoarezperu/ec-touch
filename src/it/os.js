@@ -745,7 +745,7 @@ async function tambox_manager_ping() {
         //  }
           tambox_manager_ping();
           return resolve();
-        }, 20000);
+        }, 10000);
       } else {
         console.log(chalk.red("Connection to TBM lost...."));
       }

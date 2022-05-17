@@ -191,7 +191,8 @@ async function remote_update_rh(this_tebs){
                    billetes_de_50:global.billetes_de_50_en_reciclador,
                    billetes_de_100:global.billetes_de_100_en_reciclador,
                    billetes_de_200:global.billetes_de_200_en_reciclador,
-                   public_machine_ip:global.public_machine_ip
+                   public_machine_ip:global.public_machine_ip,
+                   note_validator_type:global.note_validator_type
 
                 //   billetes_de_10:new_values[0].cantidad_de_billetes_en_reciclador.de10,
                 //   billetes_de_20:new_values[0].cantidad_de_billetes_en_reciclador.de20,
