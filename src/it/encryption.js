@@ -405,8 +405,8 @@ function handle_count() {
     ecount = ssp.ConvertBase.dec2hex(ecount);
     ecount= ecount.toUpperCase();
     ecount = pady(ecount, 8);
-    //console.log("Mi Cuenta(ecount):" + ecount);
-    //console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
+    console.log("Mi Cuenta(ecount):" + ecount);
+    console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
     if(slave_count == ecount){
       //console.log(chalk.green("COINCIDEN"));
       //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma

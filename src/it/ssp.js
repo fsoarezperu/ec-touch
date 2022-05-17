@@ -759,7 +759,45 @@ return new Promise(async function(resolve, reject) {
                                   await pool.query ("UPDATE remesa_hermes SET no_billetes=?, monto=? WHERE status='iniciada'",[current_rh_bills_count, current_monto]);
                                   console.log("remesa hermes actualizada con:"+current_rh_bills_count+" Billetes, un monto nuevo de:"+ current_monto);
 
-                                  await pool.query("UPDATE machine SET monto_actual=? WHERE tienda_id=?", [current_monto,tienda_id]);
+                                  //GET ALL LEVELS Aqui
+                                  try {
+                                      var new_values=await os.consulta_all_levels();
+                                      console.log(new_values);
+                                  } catch (e) {
+                                    console.log(e);
+                                  }finally{
+                                    console.log("get new values se ejecuto correctamente");
+                                    console.log("abajo monto actual");
+                                    console.log(current_monto);
+                                  //  console.log(new_values[0].cantidad_de_billetes_en_reciclador);
+                                  //  console.log(new_values[1]);
+                                    //console.log(new_values.totaccum[0]);
+
+
+                                  }
+
+                                  //ARMA values_to_update_machines=
+
+                                  var values_to_update_machines={
+                                    tienda_id:remesa1[0].tienda_id,
+                                     monto_actual:current_monto,
+                                     monto_en_reciclador:new_values[1],
+                                     billetes_de_10:new_values[0].cantidad_de_billetes_en_reciclador.de10,
+                                     billetes_de_20:new_values[0].cantidad_de_billetes_en_reciclador.de20,
+                                     billetes_de_50:new_values[0].cantidad_de_billetes_en_reciclador.de50,
+                                     billetes_de_100:new_values[0].cantidad_de_billetes_en_reciclador.de100,
+                                     billetes_de_200:new_values[0].cantidad_de_billetes_en_reciclador.de200
+                                    // no_billetes_bolsa:099,
+                                    // no_billetes_reci:new_values.total_notes
+                                  }
+                                  console.log(values_to_update_machines);
+                                  try {
+                                    await pool.query("UPDATE machine SET ? WHERE tienda_id=?", [values_to_update_machines,values_to_update_machines.tienda_id]);
+
+                                  } catch (e) {
+                                    console.log(chalk.cyan("esto es la respuesta "));
+                                    console.log(e);
+                                  }
                                   //aqui se le puede agragar los datos de all levels a machine local.
                                   //sincroniza remesa heremes
                                   console.log(chalk.cyan("banderaso de actualizacion aqui, aqui sinmcronizar la tabla remesa heremes, get all levels, y para la tabla machine. cosa que indique la cantidad de billetes."));
@@ -1770,7 +1808,7 @@ async function cambio_de_bolsa(receptor) {
                         await pool.query(query);
                       } catch (e) {
                         console.log(e);
-                      } 
+                      }
 
                     //  await sincroniza_remesa_hermes([nueva_res_hermes]);
                     //  await sincroniza_remesa_hermes2([nueva_res_hermes]);

@@ -9,7 +9,7 @@ const pool= require ('../../database');
 const io = require("../../server.js");
 const glo = require('../../it/globals');
 const to_tbm=require("./tbm_synch_socket");
-
+const os = require('./../os');
 
 //console.log("machine_sn="+numero_de_serie);
 var sinchronized=false;
@@ -177,8 +177,40 @@ async function remote_update_rh(this_tebs){
           var rh_to_synch=await pool.query("SELECT * FROM remesa_hermes WHERE tebs_barcode=?",[this_tebs]);
           if (rh_to_synch.length!=0) {
                   console.log("this rh:"+JSON.stringify(rh_to_synch));
-                  to_tbm.socket_to_tbm.emit('synch_rh',rh_to_synch);
-                  //await confirmation_from_tbm()
+//aqui get alllevels.,
+//GET ALL LEVELS Aqui
+//try {
+//    var new_valuesy5=await os.consulta_all_levels();
+//    console.log(new_valuesy5);
+    //respuesta agragada a socket emitido.
+                 var machine_level_values=[{
+                   no_billetes_reci:global.no_billetes_reci,
+                   monto_en_reciclador:global.total_dinero_acumulado_en_reciclador,
+                   billetes_de_10:global.billetes_de_10_en_reciclador,
+                   billetes_de_20:global.billetes_de_20_en_reciclador,
+                   billetes_de_50:global.billetes_de_50_en_reciclador,
+                   billetes_de_100:global.billetes_de_100_en_reciclador,
+                   billetes_de_200:global.billetes_de_200_en_reciclador,
+                   public_machine_ip:global.public_machine_ip
+
+                //   billetes_de_10:new_values[0].cantidad_de_billetes_en_reciclador.de10,
+                //   billetes_de_20:new_values[0].cantidad_de_billetes_en_reciclador.de20,
+                //   billetes_de_50:new_values[0].cantidad_de_billetes_en_reciclador.de50,
+                //   billetes_de_100:new_values[0].cantidad_de_billetes_en_reciclador.de100,
+                //   billetes_de_200:new_values[0].cantidad_de_billetes_en_reciclador.de200
+              }];
+                       var rh_y_machine={rh_to_synch,machine_level_values}
+                       to_tbm.socket_to_tbm.emit('synch_rh',rh_y_machine);
+
+// } catch (e) {
+//   console.log(e);
+// }finally{
+//   console.log("get new values se ejecuto correctamente");
+//   console.log("abajo monto actual");
+//   console.log(rh_to_synch[0].monto);
+//
+// }
+
           }else {
             console.log("record skipped");
           }

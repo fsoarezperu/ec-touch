@@ -353,6 +353,14 @@ exports.get_all_levels_value=async function (){
 console.log("total billetes en reciclador:"+totbills);
 totaccum=acum_level1+acum_level2+acum_level3+acum_level4+acum_level5;
 console.log("total monto acumulado en reciclador:"+totaccum);
+// var bill_details={
+//   billetes_de_10:note_level1,
+//   billetes_de_20:note_level2,
+//   billetes_de_50:note_level3,
+//   billetes_de_100:note_level4,
+//   billetes_de_200:note_level5
+// }
+// console.log("bill_details");
     console.log("/////////// ALL LEVELS ///////////////");
 return {totbills,totaccum};
 //})

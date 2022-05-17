@@ -132,7 +132,9 @@ router.get('/consultar_retiro/:no_remesa',async (req,res)=>{
 
                     try {
                    console.log("justo antes del problema: validator_asddress is:"+global.validator_address);
+                   console.log("probando");
                       //var data= await sspo.transmite_encriptado_y_procesa2(validator_address,arry);
+                      console.log(arry);
                       var data= await os.transmite_encriptado_y_procesa2(global.validator_address,arry);
 
                     } catch (e) {

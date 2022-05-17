@@ -242,3 +242,11 @@ global.bypass=false; //esta variable evitara que ensure is set sea llamada multi
 global.mis_cifras_generales;
 global.manual_pay=false;
 global.manual_remasa=false;
+
+global.billetes_de_10_en_reciclador=0,
+global.billetes_de_20_en_reciclador=0,
+global.billetes_de_50_en_reciclador=0,
+global.billetes_de_100_en_reciclador=0,
+global.billetes_de_200_en_reciclador=0,
+global.total_dinero_acumulado_en_reciclador=0;
+global.no_billetes_reci=0;
