@@ -188,7 +188,20 @@
       // $('#overlay-back').fadeIn(500);
     };
     ////////////////////////////////////////////////////
+    var announce_once=true;
     socket.on('show_connected_to_TBM', function(msg) {
+    //  ion.sound.play("tambox_manager_is_online");
+    // if (is_connected==true) {
+    //
+    // }
+    if (announce_once) {
+      setTimeout(function () {
+        ion.sound.play("conected_tbm");
+      }, 3000);
+
+      announce_once=false;
+
+    }
       is_connected = true;
       display_remote_conection_to_TBM();
       clearTimeout(timer_de_display_remote_conection_to_tbm);
@@ -197,7 +210,30 @@
     });
     socket.on('show_not_connected', function(msg) {
       is_connected = false;
+      announce_once=true;
+      //aqui audio de perdida de conexion.
+      //ion.sound.play("glass");
+      ion.sound.play("not_conected");
     });
+    socket.on('announce_user_connected', function(msg) {
+      console.log("a_user_has_connected");
+    //  ion.sound.play("glass");
+
+    });
+
+    socket.on('announce_tbm_is_online', function(msg) {
+      console.log("a_user_has_connected");
+    //  ion.sound.play("glass");
+    server.io.emit('announce_tbm_is_online',"announce_tbm_is_online");
+    });
+
+    socket.on('announce_tbm_is_offline', function(msg) {
+      clear_conection_to_TBM();
+      console.log("announce_tbm_is_offline");
+      //ion.sound.play("not_conected");
+
+    });
+
     socket.on('display_message_socket', function(msg) {
       display_message(msg);
       console.log(msg);

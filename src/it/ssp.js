@@ -972,7 +972,7 @@ return new Promise(async function(resolve, reject) {
                                   //console.log("aqui last_Sent es:"+global.last_sent);
                                   //console.log("aqui el dato es:"+poll_responde[2]);
                                   if(global.last_sent===""){
-                                    console.log(chalk.yellow("Validator Disabled"));
+                                    os.logea(chalk.yellow("Validator Disabled"));
                                     //existe_bolsa=true;
                                     io.emit('Validator_Disabled', "Validator Disabled");
                                     global.last_sent=poll_responde[2];
@@ -1259,7 +1259,7 @@ function handlesetuprequest(data){
         break;
       default:
     }
-    console.log(chalk.white("Device type: " + chalk.yellow(note_validator_type)));
+    console.log(chalk.green("Device type: " + chalk.yellow(note_validator_type)));
 
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
@@ -1384,7 +1384,7 @@ function handleGetSerialNumber(data){
     global.numero_de_serie=serialN;
     // await pool.query("UPDATE machine SET machine_sn=?", [global.numero_de_serie]);
     await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
-    console.log(chalk.white("The serial number is: " + chalk.yellow(global.numero_de_serie)));
+    console.log(chalk.green("The serial number is: " + chalk.yellow(global.numero_de_serie)));
 
     //console.log("/////////////////////////////////");
     return resolve(data);
@@ -1599,8 +1599,8 @@ async function verificar_existencia_de_bolsa(receptor) {
       if (tebs_barcode.length===undefined) {
         return resolve(chalk.red("SIN BOLSA"));
        }else {
-              console.log("en verificando bolsa");
-              console.log(chalk.white("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
+              os.logea("en verificando bolsa");
+              console.log(chalk.green("TEBSBarCode es:"+chalk.yellow(parseInt(tebs_barcode))));
                const existe_remesa_hermes= await pool.query("SELECT COUNT(tebs_barcode) AS RH FROM remesa_hermes WHERE tebs_barcode=?",[tebs_barcode]);
                if(existe_remesa_hermes[0].RH ===0){
               //       //  console.log(existe_remesa_hermes[0].RH);
@@ -1668,12 +1668,12 @@ async function verificar_existencia_de_bolsa(receptor) {
 
             }else{
               //RH ya existe con este tebs. no se creara una nueva
-              console.log("al momento del arranque la bolsa dentro de la maqquina ya existe en la base de datos, no sera necesario crear una nueva.");
+              os.logea(chalk.green("al momento del arranque la bolsa dentro de la maqquina ya existe en la base de datos, no sera necesario crear una nueva."));
               console.log(chalk.yellow("AQUI TIENES QUE CONSULTAR SI EXISTE ESA REMESA HERMES EN TBM y si no, crearla."));
               if (tbm_status==true) {
                 try {
-                  var this_time_teb=await consulta_si_existe_rh_en_tbm_con_tebsbarcode(parseInt(current_tebs));
-              console.log(this_time_teb);
+                  var this_time_teb=await consulta_si_existe_rh_en_tbm_con_tebsbarcode(global.tebs_barcode);
+                    console.log(this_time_teb);
                   if (this_time_teb=="OK") {
                     console.log("remesa hermes si se encontro en TBM no es necesario crearla pero se sincronizara igual");
                     to_tbm_synch.remote_update_rh(global.tebs_barcode);
@@ -1693,7 +1693,7 @@ async function verificar_existencia_de_bolsa(receptor) {
 
                 }
               }else{
-                console.log("no link to tbm ahorita");
+                console.log(chalk.yellow("no link to tbm ahorita"));
               }
 
 
@@ -2031,14 +2031,14 @@ module.exports.envia_encriptado2=envia_encriptado2;
 function sync_and_stablish_presence_of(receptor) {
     return new Promise(async function(resolve, reject) {
       try {
-            console.log("/////////////////////////////////");
+            os.logea(chalk.green("/////////////////////////////////"));
             console.log(chalk.green("sync_and_stablish_presence_of:"+device));
-            console.log("/////////////////////////////////");
+            os.logea(chalk.green("/////////////////////////////////"));
             // os.logea("SYNCH command sent to:"+device);
                   for (var i = 0; i < 3; i++) {
                     ultimo_valor_enviado="synch";
                     var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
-                    console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+                    os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                     var step2=await handlesynch(step1);
                     if (show_details) {
                       console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
@@ -2065,19 +2065,19 @@ function negociate_encryption(receptor) {
       try {
         enc.getkeys();
         var setGenerator = enc.set_generator_();
-        console.log("/////////////////////////////////");
-        console.log("SET GENERATOR command sent");
+        os.logea(chalk.green("/////////////////////////////////"));
+        console.log(chalk.green("SET GENERATOR command sent"));
          ultimo_valor_enviado="setGenerator";
           var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
-            console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1));
+            os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
           var step2=await enc.handleSetgenerator(step1);
           if (show_details) {
             console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
           }
              if (step2=="OK") {
                var setModulus = enc.set_modulus();
-               console.log("/////////////////////////////////");
-              console.log("SET MODULUS command sent");
+               os.logea(chalk.green("/////////////////////////////////"));
+              console.log(chalk.green("SET MODULUS command sent"));
                            ultimo_valor_enviado="setModulus";
                var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
                  os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
@@ -2088,18 +2088,18 @@ function negociate_encryption(receptor) {
                     if (step4=="OK") {
                          //  var step6;
                          var rKE = await enc.send_request_key_exchange();
-                         console.log("/////////////////////////////////");
-                         console.log("Request Key Exchange command sentx1");
+                         os.logea(chalk.green("/////////////////////////////////"));
+                         console.log(chalk.green("Request Key Exchange command sentx1"));
                          ultimo_valor_enviado="request key exchange";
-                         console.log("ecount2:",ecount+" slave_count:",slave_count);
+                         os.logea("ecount2:",ecount+" slave_count:",slave_count);
                          var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
                          try {
-                           console.log("ecount3:",ecount+" slave_count:",slave_count);
+                           os.logea("ecount3:",ecount+" slave_count:",slave_count);
                            var step6=await enc.handleRKE(step5);
                            if(step6.length>0){
-                             console.log(chalk.green('KEY:'), chalk.green(step6));
+                             os.logea(chalk.green('KEY:'), chalk.green(step6));
                              console.log(chalk.green("Encripted comunication Active"));
-                             console.log("/////////////////////////////////");
+                             os.logea(chalk.green("/////////////////////////////////"));
                              encryptionStatus = true;
                             //return resolve("OK")
 

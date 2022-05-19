@@ -100,9 +100,9 @@ exports.getkeys=function(){
   var my_key;
   set_generator = keyPair.privateKey.p;
   set_modulus = keyPair.privateKey.q;
-  console.log("GENERADOR:" + set_generator);
-  console.log("MODULUS:" + set_modulus);
-  console.log("Prime numbers generated!");
+  os.logea(chalk.green("GENERADOR:" + set_generator));
+  os.logea(chalk.green("MODULUS:" + set_modulus));
+  os.logea(chalk.green("Prime numbers generated!"));
 //  enable_sending();
 return;
 }
@@ -225,7 +225,7 @@ try {
       lowerpart = changeEndianness(lowerpart);
       final_key = final_key.concat(higherpart);
       full_KEY = lowerpart.concat(final_key);
-      console.log(chalk.green("KEY:" + full_KEY));
+      os.logea(chalk.green("KEY:" + full_KEY));
     //  ssp.enable_sending();
       //return full_KEY;
        return resolve(full_KEY);
@@ -405,8 +405,8 @@ function handle_count() {
     ecount = ssp.ConvertBase.dec2hex(ecount);
     ecount= ecount.toUpperCase();
     ecount = pady(ecount, 8);
-    console.log("Mi Cuenta(ecount):" + ecount);
-    console.log(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
+    os.logea("Mi Cuenta(ecount):" + ecount);
+    os.logea(chalk.cyan("lo que asumo que tiene el:(slave_count)" + slave_count));
     if(slave_count == ecount){
       //console.log(chalk.green("COINCIDEN"));
       //tengo que usar esta punta para continuar, desde aqui ya que aqui se verifica que la suma

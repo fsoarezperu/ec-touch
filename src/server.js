@@ -79,9 +79,12 @@ httpx.listen(machine_port, async function(io2) {
     await os.habilita_sockets();
     await os.comprobar_serialcom();
     await os.arranca_tambox_os();
-    await synch_tbm.are_synched();
+    if (tbm_status) {
+      await synch_tbm.are_synched();
+    };
+
    var data=await os.consulta_all_levels();
-   console.log("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador));
+   console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
 
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
@@ -89,6 +92,10 @@ httpx.listen(machine_port, async function(io2) {
     await os.idle_poll_loop();
     console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
     console.log(chalk.green("idle"));
+    setTimeout(function () {
+      io.emit("tambox_has_started");
+    }, 1000);
+
 
     logea_a_client_side("hola guapo...");
   }

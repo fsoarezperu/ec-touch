@@ -57,14 +57,20 @@ console.log(chalk.yellow("TBM ADRESS HARDCODED IS:"+global.tbm_adressx));
 var socket_to_tbm = require("socket.io-client")(adrees);
 socket_to_tbm.on("connect",async function(socket) {
   console.log(chalk.yellow("a user connected :"+socket_to_tbm.id));
-  tbm_status=true;
-  await os.comprueba_maquina_inicial();
-  await synchronize.synch_required();
-
+  server.io.emit('announce_user_connected',"a user connected");
+  if (!on_startup) {
+    console.log("aqui considero que no estoy en startup y por ende compruebo maquina inicial y luego hago sync");
+    tbm_status=true;
+    server.io.emit('show_connected_to_TBM',"show_connected_to_TBM");
+    console.log("iniciando tambiox manager ping");
+    os.tambox_manager_ping();
+    await os.comprueba_maquina_inicial();
+    await synchronize.synch_required();
+  }
 
 });
   socket_to_tbm.on('disconnect', function() {
-  console.log("Tambox_manager is offline..."+socket_to_tbm.id);
+  console.log(chalk.red("Tambox_manager is offline..."));
   server.io.emit('show_not_connected');
   tbm_status = false;
 });

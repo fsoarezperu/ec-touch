@@ -24,7 +24,7 @@ const InterByteTimeout = require('@serialport/parser-inter-byte-timeout')
     //   resolve("no hay conexion serial con el validador");
     // }finally{
       port.on('open', function () {
-          console.log(chalk.red('port open'));
+          console.log(chalk.green('port open'));
           global.is_head_online=true;
       });
       port.on('close', function (err) {

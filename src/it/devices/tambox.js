@@ -128,10 +128,10 @@ exports.finalizar_remesas_en_proceso=async function(){
     var remesay;
     var id_remesa;
     try {
-      console.log("Detectando remesa a finalizar");
+      os.logea("Detectando remesa a finalizar");
       remesay = await pool.query("SELECT * FROM remesas WHERE tipo='ingreso' and status='iniciada' OR  tipo='ingreso' and status='en_proceso'");
       if (remesay === undefined || remesay.length == 0) {
-          console.log("no remesa en status iniciada");
+          os.logea("no remesa en status iniciada");
           //res.render('index');
           return resolve("no remesa en status iniciada")
       } else {
@@ -176,10 +176,10 @@ exports.finalizar_remesas_en_proceso=async function(){
 exports.finalizar_pagos_en_proceso=async function(){
 return new Promise(async function(resolve, reject) {
   try {
-    console.log("Detectando egreso a finalizar");
+    os.logea("Detectando egreso a finalizar");
     remesay = await pool.query("SELECT * FROM remesas WHERE tipo='egreso' and status='recibido' OR  tipo='egreso' and status='en_proceso'");
     if (remesay === undefined || remesay.length == 0) {
-      console.log("no pago en status iniciada o en proceso");
+      os.logea("no pago en status iniciada o en proceso");
       //res.render('index');
       return resolve("no pago en status iniciada o en proceso")
   } else {

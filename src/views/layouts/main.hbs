@@ -106,6 +106,12 @@
     },
     {
       name: "saldo_insuficiente"
+    },
+    {
+      name: "not_conected"
+    },
+    {
+      name: "conected_tbm"
     }
   ],
   path: "/sounds/",
@@ -201,6 +207,13 @@
       ion.sound.play("water_droplet");
       console.log(msg);
     });
+
+    socket.on('tambox_has_started', function(msg) {
+      ion.sound.play("tambox_has_started");
+      console.log(msg);
+    });
+
+
 
     socket.on('error_during_payout', function(msg) {
       ion.sound.play("alarm-buzzer");

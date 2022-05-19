@@ -119,7 +119,7 @@ async function arranca_tambox_os() {
       console.log(chalk.green("Iniciando Validador"));
       var validator = await inicializar_validador();
       console.log(chalk.green("Validador inicio:" + validator));
-      console.log(chalk.green("***************************************"));
+    logea(chalk.green("***************************************"));
 
 
       ///////////////////////////////////////////////////////////////////
@@ -132,15 +132,15 @@ async function arranca_tambox_os() {
     //  console.log("RH_incial es:"+rh_inicial);
     //  console.log(chalk.green("comprobando remesa hermes inicial"));
     //  console.log(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
-      console.log(chalk.green("***************************************"));
+      logea(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
 
 
       console.log(chalk.green("Comprobando conexion con TBM"));
       var status=await coneccion_con_tbm();
     //  console.log("status es:"+JSON.stringify(status));
-      console.log("status es:"+ status);
-      console.log(chalk.green("***************************************"));
+      logea("status es:"+ status);
+      logea(chalk.green("***************************************"));
 
       //lee los valores locales de la maquina ,
       // var informacion_maquina_local = {
@@ -149,10 +149,10 @@ async function arranca_tambox_os() {
       //   public_machine_ip: global.public_machine_ip
       // }
       var informacion_maquina_local=await consulta_this_machine();
-      console.log(chalk.yellow("la informacion local de la maquina es:"));
-      console.log(JSON.parse(JSON.stringify(informacion_maquina_local)));
+      logea(chalk.yellow("la informacion local de la maquina es:"));
+      logea(JSON.parse(JSON.stringify(informacion_maquina_local)));
       //actualiza los valores remotos de la maquina
-      console.log(status);
+      logea(status);
 
       // return resolve (validator);// esto frena la ejecucion
 
@@ -165,7 +165,7 @@ async function arranca_tambox_os() {
         var x3=status.name;
         var is_locked11=status.is_locked;
         ///////////////////////////////////
-        globals.is_locked=status.is_locked;
+        global.is_locked=status.is_locked;
         ///////////////////////////////////
         console.log("x1 (tienda_id) es:"+x1);
         console.log("x2 (machine_sn) es:"+x2);
@@ -181,7 +181,7 @@ async function arranca_tambox_os() {
           //  if (tbm_status== TRUE) {
           await tbm_paso1();
           }else {
-          console.log("tbm status is offline 6758");
+          logea(chalk.red("tbm status is offline error#2356"));
           }
           //    }else {
           //    console.log(chalk.red("TBM still offline at this point!"));
@@ -209,7 +209,7 @@ async function inicializar_validador() {
   return new Promise(async function(resolve, reject) {
     try {
       await ssp.sync_and_stablish_presence_of(validator_address);
-      console.log("validator address is:"+validator_address);
+      logea("validator address is:"+validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
   //    console.log("validator poll var:",validatorpoll_var);
@@ -223,9 +223,9 @@ async function inicializar_validador() {
             await ssp.set_protocol_version(validator_address,validator_protocol_version);
             await ssp.setup_request_command2(validator_address);
             if(note_validator_type == "TEBS+Payout"){
-              console.log("********************************");
+            logea("********************************");
             await ssp.verificar_existencia_de_bolsa(receptor);
-              console.log("********************************");
+            logea("********************************");
              }
             await set_channel_inhivits2(validator_address);
             await set_validator_routing2(validator_address);
@@ -237,9 +237,9 @@ async function inicializar_validador() {
             await ssp.set_protocol_version(validator_address,validator_protocol_version);
             await ssp.setup_request_command2(validator_address);
             if(note_validator_type == "TEBS+Payout"){
-              console.log("********************************");
+              logea("********************************");
             await ssp.verificar_existencia_de_bolsa(receptor);
-              console.log("********************************");
+              logea("********************************");
              }
             await set_channel_inhivits2(validator_address);
             await set_validator_routing2(validator_address);
@@ -748,6 +748,7 @@ async function tambox_manager_ping() {
         }, 10000);
       } else {
         console.log(chalk.red("Connection to TBM lost...."));
+        server.io.emit('announce_tbm_is_offline',"announce_tbm_is_offline");
       }
     } catch (e) {
       return reject("error de ping"+e);
@@ -933,7 +934,7 @@ async function terminar_nueva_remesa(no_remesa) {
                                   //GET ALL LEVELS Aqui
                                   try {
                                       var new_values=await consulta_all_levels();
-                                      console.log(new_values);
+                                      console.log(chalk.green(new_values));
                                   } catch (e) {
                                     console.log(e);
                                   }finally{
@@ -1438,7 +1439,7 @@ async function consulta_historial() {
   console.log(chalk.cyan("consultando historial de remesas hermes locales:"));//+JSON.parse(JSON.stringify(historial)));
 //  console.log(JSON.stringify(historial));
 //console.log(JSON.parse(JSON.stringify(historial)));
-  console.log(historial);
+  logea(historial);
 
   var historial2=[];
 
@@ -1459,7 +1460,7 @@ async function consulta_historial() {
 module.exports.consulta_historial = consulta_historial;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesas_de_ese_tebsbarcode() {
-  console.log("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
+  logea("consultando remesas para el tebsbarcode:"+current_tebs_barcode);
   const remesas_de_tebs = await pool.query("SELECT * FROM remesas WHERE tebs_barcode=? and monto>'0' and status_hermes='en_tambox' ORDER BY id DESC", [current_tebs_barcode]);
   //console.log(JSON.stringify(remesa_hermes_entambox));
   var remesas_de_tebs2=[];
@@ -1548,27 +1549,27 @@ async function get_my_phisical_current_ip() {
   });
 };
 async function get_my_current_public_ip() {
-  console.log("1x1");
+  logea("1x1");
   const publicIp = require('public-ip');
-  console.log("1x2");
+  logea("1x2");
   return new Promise(async function(resolve, reject) {
-    console.log("1x3");
+    logea("1x3");
     //	console.log(await publicIp.v4());
     //=> '46.5.21.123'
     //	console.log(await publicIp.v6());
     //=> 'fe80::200:f8ff:fe21:67cf'
     try {
       var p_ip = await publicIp.v4();
-      console.log(p_ip);
+    logea(p_ip);
       resolve(p_ip);
     } catch (e) {
-      console.log(3);
+    logea(3);
       resolve("no network")
     } finally {
 
     }
 
-    console.log("1x4");
+    logea("1x4");
 
   });
 
@@ -1576,12 +1577,12 @@ async function get_my_current_public_ip() {
 async function obtener_datos_de_conexion() {
   return new Promise(async function(resolve, reject) {
     try {
-      console.log("entrando a revisar mis ips");
+      logea("entrando a revisar mis ips");
       var mi_ip = await get_my_phisical_current_ip();
-      console.log(mi_ip);
+      logea(mi_ip);
       global.machine_ip = mi_ip;
       var mi_public_ip = await get_my_current_public_ip();
-      console.log(mi_public_ip);
+      logea(mi_public_ip);
       global.public_machine_ip = mi_public_ip;
       //console.dir("detecting public ip assigned is:"+mi_public_ip);
       console.log(chalk.yellow("/////////////////////////////////////////////////////////////////"));
@@ -1777,16 +1778,16 @@ async function transmite_encriptado_y_procesa2(receptorx,polly){
 return new Promise(async function(resolve, reject) {
   try {
       if (bypass== false) {
-        console.log("aqui new polly es:"+new_polly);
+        logea("aqui new polly es:"+new_polly);
   //      console.log("aqui new receptor es:"+new_receptorx);
         var toSendw =await enc.prepare_Encryption(new_polly);
-        console.log("aqui toSend:"+toSendw);
+        logea("aqui toSend:"+toSendw);
           //var data=await sp.transmision_insegura(new_receptorx,toSendw);
           var data=await sp.transmision_insegura(global.validator_address,toSendw);
 
-          console.log("aqui toSend_response:"+data);
+        logea("aqui toSend_response:"+data);
               data=await enc.promise_handleEcommand(data);
-              console.log(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
+              logea(chalk.yellow("from here "+device+'<-:'), chalk.yellow(data));
               data= await ssp.handlepoll(data);
 
               if (data.length>0) {
@@ -1912,7 +1913,7 @@ return new Promise(async function(resolve, reject) {
           }
 
           totaccum = acum_level1 + acum_level2 + acum_level3 + acum_level4 + acum_level5;
-          console.log(chalk.cyan("en el Reciclador hay:" + totbills +" Billetes x monto acumulado de:"+totaccum +" Soles"));
+          console.log(chalk.green("en el Reciclador hay:" + totbills +" Billetes x monto acumulado de:"+totaccum +" Soles"));
           // console.log("total monto acumulado en reciclador:" + totaccum);
 
           await pool.query("UPDATE machine SET monto_en_reciclador=?,no_billetes_reci=?,billetes_de_10=?,billetes_de_20=?,billetes_de_50=?,billetes_de_100=?,billetes_de_200=?", [totaccum,totbills,note_level1,note_level2,note_level3,note_level4,note_level5]);
@@ -1924,7 +1925,7 @@ return new Promise(async function(resolve, reject) {
           global.total_dinero_acumulado_en_reciclador=totaccum;
           global.no_billetes_reci=totbills;
 
-          console.log("/////////// ALL LEVELS ///////////////");
+          console.log(chalk.green("/////////// ALL LEVELS ///////////////"));
           var cantidad_de_billetes_en_reciclador={
             de10:note_level1,
             de20:note_level2,
@@ -1945,7 +1946,7 @@ module.exports.consulta_all_levels=consulta_all_levels;
 /////////////////////////////////////////////////////////////////
 async function concilia_numeros(){
 var data124=await consulta_all_levels();
-   console.log("all levels es:"+data124);
+   console.log(chalk.green("all levels es:"+data124));
    return data124;
 }
 module.exports.concilia_numeros=concilia_numeros;
@@ -1955,18 +1956,18 @@ return new Promise(async function(resolve, reject) {
   try {
     //cuenta cuantas maquinas existen en la base de datos.
     if (tbm_status==true) {
-      console.log(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
+      logea(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
       var limites =await to_tbm_synch.consulta_limite_maximo_de_pago_en_tbm();
-      console.log("el limite es:"+limites);
+      console.log(chalk.green("Limite de pago obtenido por tbm:"+limites));
       await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,global.numero_de_serie]);
     }
 
-    console.log("USO LOCAL DE LIMITE DE PAGO");
+    logea(chalk.green("USO LOCAL DE LIMITE DE PAGO"));
     var this_machine222=await consulta_this_machine();
 
     if (this_machine222.length>0) {
       limite_maximo_de_retiro=this_machine222[0].limite_maximo_de_retiro;
-      console.log("limite maximo detectado para retiro es de:"+limite_maximo_de_retiro);
+      logea(chalk.green("limite maximo detectado para retiro es de:"+limite_maximo_de_retiro));
     //  console.log("MACHINE FOUND");
     //  console.log("this macine 222="+JSON.stringify(this_machine222));
     //  console.log("this machine222 length:"+this_machine222.length);

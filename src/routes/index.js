@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
               retiro: retiro[0]
             });
           } else {
-            console.log(chalk.red("loading website"));
+            console.log(chalk.yellow("A client loaded the interface"));
             console.log(chalk.yellow("This Machine name is:"+global.my_resgistered_machine_name));
             res.render('index',{my_resgistered_machine_name:global.my_resgistered_machine_name});
           }

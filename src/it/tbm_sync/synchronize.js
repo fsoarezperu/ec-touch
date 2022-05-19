@@ -61,15 +61,8 @@ module.exports.are_synched=are_synched;
 /////////////////////////////////////////////////////////
 async function get_tbm_remesas(){
 return  new Promise(function(resolve, reject) {
-    //emit al tbm
-    // if (true) {
     console.log(chalk.cyan("get_tbm_remesas.....enviando socket para consultar remesas."));
     to_tbm.socket_to_tbm.emit('consultando_excistencia_de_records',numero_de_serie);
-
-    // }else {
-    //   return reject("error");
-    // }
-
     to_tbm.socket_to_tbm.on('no_records', function(data) {
     console.log(chalk.cyan("no_records:"+data));
     return resolve("ok")
@@ -83,10 +76,10 @@ return  new Promise(function(resolve, reject) {
     for (var i=0; i <data.length;i++){
     new_data.push(data[i].no_remesa);
     }
-    console.log(chalk.cyan("//////////////////////////////////////////////////////"));
-    console.log(chalk.cyan("/////////////RESOLVING HERE//////////////////////////////"));
-    console.log(chalk.cyan("//////////////////////////////////////////////////////"));
-    console.log("new_data received by socket"+new_data);
+    console.log(chalk.cyan("/////////////////////////////////////////////////"));
+    console.log(chalk.cyan("/////////////  RESOLVING HERE   /////////////////"));
+    console.log(chalk.cyan("/////////////////////////////////////////////////"));
+    os.logea("new_data received by socket"+new_data);
     return resolve(new_data)
     // io.emit('messages', 'Hello');
     });
@@ -99,7 +92,7 @@ async function remote_update(id){
       console.log("updading... id:"+id);
       var record_to_synch=await pool.query("SELECT * FROM remesas WHERE no_remesa=?",[id]);
       if (record_to_synch.length!=0) {
-              console.log("this record:"+JSON.stringify(record_to_synch));
+              os.logea("this record:"+JSON.stringify(record_to_synch));
               to_tbm.socket_to_tbm.emit('synch_remesas',record_to_synch);
               //await confirmation_from_tbm()
       }else {
@@ -113,12 +106,13 @@ async function get_tbm_rh(this_tebs){ //envie socket a tbm consultando la existe
   // remesas hermes en la base de datos y devuelve un array con los tebs existentes.
 try {
   return  new Promise(function(resolve, reject) {
-  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
-  console.log(chalk.cyan("/////////////// Socket Requestd to TBM /////////////////////////"));
-  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+  console.log(chalk.cyan("/////////////////////////////////////////////////"));
+  console.log(chalk.cyan("///////// Socket Requestd to TBM ////////////////"));
+  console.log(chalk.cyan("/////////// to "+this_tebs+"/////////////////////"));
   to_tbm.socket_to_tbm.emit('consultando_excistencia_de_rh',this_tebs);
   to_tbm.socket_to_tbm.on('no_records', function(data) {
   console.log(chalk.cyan("no_records:"+data));
+
   return resolve("ok")
   });
   to_tbm.socket_to_tbm.on('tbm_rh', function(data) {
@@ -126,16 +120,21 @@ try {
   for (var i=0; i <data.length;i++){
   new_data_rh.push(data[i].tebs_barcode);
   }
-
   return resolve(new_data_rh)
+
   });
+
+  setTimeout(function () {
+    return resolve("error conecting to tbm");
+  }, 1000);
+
     });
 } catch (e) {
   console.log(e);
 } finally {
-  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
-  console.log(chalk.cyan("/////////////// Socket responded from TBM /////////////////////////"));
-  console.log(chalk.cyan("///////////////////////////////////////////////////////////////"));
+  console.log(chalk.cyan("//////////////////////////////////////////////"));
+  console.log(chalk.cyan("////// Socket responded from TBM /////////////"));
+  console.log(chalk.cyan("//////////////////////////////////////////////"));
 }
 
 }
@@ -146,16 +145,27 @@ async function consulta_limite_maximo_de_pago_en_tbm(){
     return new Promise(async function(resolve, reject) {
       try {
         to_tbm.socket_to_tbm.emit('consulta_limite_maximo_de_pago_en_tbm',global.numero_de_serie);
-        console.log("socket enviado consultado limite para machine_sn:"+global.numero_de_serie);
+        os.logea("socket enviado consultado limite para machine_sn:"+global.numero_de_serie);
         to_tbm.socket_to_tbm.on('consulta_limite_maximo_de_pago_en_tbm', async function(data) {
-        console.log(chalk.cyan("consulta_limite_maximo_de_pago_en_tbm:"+data));
-        var respuesta123=data[0].limite_maximo_de_retiro;
-        return resolve(respuesta123);
+          os.logea("lo de abajo es data");
+          os.logea(data);
+          if (data.length>0) {
+            //console.log(chalk.cyan("consulta_limite_maximo_de_pago_en_tbm:"+data[0].limite_maximo_de_retiro));
+            var respuesta123=data[0].limite_maximo_de_retiro;
+            return resolve(respuesta123);
+          }else {
+            console.log("data fue undefined");
+            setTimeout(function () {
+              console.log(chalk.red("RESOLVED BY TIMEOUT"));
+              return resolve(200);
+            }, 1000);
+          }
+
         });
       } catch (e) {
         console.log(e);
       } finally {
-        console.log("consulta_limite_maximo_de_pago_en_tbm ejecutada");
+        os.logea("consulta_limite_maximo_de_pago_en_tbm ejecutada");
       }
     });
   }else {
@@ -233,43 +243,60 @@ module.exports.remote_update_rh=remote_update_rh;
 async function synch_required(){
   console.log(chalk.magenta("Entering synch required..."));
   return new Promise(async function(resolve, reject) {
+    //si esta conectado a TBM
     if (tbm_status) {
-      console.log(chalk.green("Conexion a tambx manager satisfactoria"));
+      os.logea(chalk.green("Conexion a tambx manager satisfactoria"));
+      os.logea("lo de abajo es numero de serie");
+      os.logea(numero_de_serie);
       const local_id_records= await pool.query("SELECT no_remesa FROM remesas WHERE machine_sn=?",[numero_de_serie]);
+      os.logea(local_id_records);
       var local_array=JSON.parse(JSON.stringify(local_id_records));
-      console.log("a continuacion se muestran las "+local_array.length+" remesas a ser sincronizados");
-      console.log(local_array);
-       console.log(local_array.length);
+      os.logea(local_array);
+      os.logea(chalk.cyan("a continuacion se muestran las "+local_array.length+" remesas existentes en maquina"));
+      os.logea(local_array);
+      os.logea(local_array.length);
       var local=[];
+      //creo un subarray donde solo se muestran los no_remesa
       for (var i=0; i <local_array.length;i++){
         local.push(local_array[i].no_remesa);
       }
-      var consulta=await get_tbm_remesas();
-      console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
-      console.log(chalk.green("lo que yo tengo:"+local));
-      const toUpdate= arr_diff(consulta,local);
-      console.log("toUpdate:"+toUpdate);
-      for (var i=0; i <toUpdate.length;i++){
-        await remote_update(toUpdate[i])
+      //aqui consulto las remesas existentes en tbm (asumo que para este tebsbarcode)
+      if (local_array.length>0) {
+        console.log("local array es mayor a cero");
+        var consulta=await get_tbm_remesas();
+        console.log(chalk.cyan("lo que ya existe en tbm:"+consulta));
+        console.log(chalk.green("lo que yo tengo:"+local));
+        const toUpdate= arr_diff(consulta,local);
+        console.log(chalk.green("toUpdate:"+toUpdate));
+        for (var i=0; i <toUpdate.length;i++){
+          await remote_update(toUpdate[i])
+        }
+        console.log(toUpdate.length+" Records updated succesfully");
+      }else {
+        console.log("local array es vacio");
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       }
-      console.log(toUpdate.length+" Records updated succesfully");
+
     /////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////
+    os.logea("consultando remesas hermes para sincronizar.");
     const local_rh_records= await pool.query("SELECT tebs_barcode FROM remesa_hermes WHERE machine_sn=?",[global.numero_de_serie]);
     var local_rh_array=JSON.parse(JSON.stringify(local_rh_records));
     //var local_rh_array=JSON.stringify(local_rh_records);
-    console.log("regarding local_rh_records:",global.numero_de_serie);
-    console.log(local_rh_array);
-    console.log(local_rh_array.length);
+    os.logea("regarding local_rh_records:",global.numero_de_serie);
+    os.logea(local_rh_array);
+    //console.log(local_rh_array.length);
     var local_rh=[];
     for (var i=0; i <local_rh_array.length;i++){
-      local_rh.push(local_rh_array[i].no_remesa);
+      local_rh.push(local_rh_array[i].tebs_barcode);
     }
     try {
-      var consulta_rh=await get_tbm_rh();
+      var consulta_rh=await get_tbm_rh(local_rh_array[0].tebs_barcode);
+      os.logea("lo de abajo es consulta rh");
+      os.logea(consulta_rh);
       console.log(chalk.cyan("rh que ya existe en tbm:"+consulta_rh));
-    //  console.log(chalk.green("rh que yo tengo:"+local_rh_records[0].tebs_barcode));
+      //console.log(chalk.green("rh que yo tengo:"+consulta_rh[0].tebs_barcode));
       console.log(chalk.green("rh que yo tengo:"+local_rh));
 
       const toUpdate_rh= arr_diff(consulta_rh,local_rh);
@@ -290,8 +317,6 @@ async function synch_required(){
     }
 
   });
-
-
 
 };
 module.exports.synch_required=synch_required;
