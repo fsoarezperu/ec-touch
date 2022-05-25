@@ -198,7 +198,7 @@ return new Promise(async function(resolve, reject) {
   const no_billetes_pagados= await pool.query("SELECT SUM(no_billetes) AS total_billetes_pagados FROM remesas WHERE tipo='egreso'and status='completado' and status_hermes='en_tambox'");
 
   const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox' and no_billetes>0");
   const monto_remesa_hermes=monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
 
   console.log("total billetes:"+no_billetes_totales[0].total_billetes);

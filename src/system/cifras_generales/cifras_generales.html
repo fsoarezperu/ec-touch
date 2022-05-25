@@ -5,6 +5,9 @@
   $('#totaccum').html(mydata.totaccum);
   $('#monto_en_bolsa').html(mydata.monto_en_bolsa);
   $('#total_general').html(mydata.total_general);
+  $('#totbillsbolsa').html(mydata.totbillsbolsa);
+  $('#total_billetes_acumulados').html(mydata.total_billetes_acumulados);
+
 });
 
  </script>
@@ -30,12 +33,12 @@
         </tr>
         <tr>
           <td>en bolsa</td>
-          <td></td>
+          <td><div id="totbillsbolsa"></div></td>
           <td><div id="monto_en_bolsa"></div></td>
         </tr>
         <tr>
           <td>Totales</td>
-          <td></td>
+          <td><div id="total_billetes_acumulados"></div></td>
           <td><div id="total_general"></div></td>
         </tr>
 

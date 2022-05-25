@@ -33,6 +33,7 @@ const va = require('./it/devices/validator');
 const mis_classes= require('./it/mis_classes')
 const moment=require("moment");
 const synch_tbm = require('./it/tbm_sync/synchronize');
+const tebs_events = require('./it/devices/ssp/tebs_events');
 
 // app.use(morgan('dev'));
 app.use(express.urlencoded({extended: false}));
@@ -86,28 +87,37 @@ httpx.listen(machine_port, async function(io2) {
    var data=await os.consulta_all_levels();
    console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
 
+   console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
+   console.log(chalk.green("idle"));
+   await os.idle_poll_loop();
+
+  // var estox=await os.validatorpoll2(validator_address);
+  // console.log(estox);
+
+   setTimeout(function () {
+     io.emit("tambox_has_started");
+   }, 1000);
+
+   os.logea_a_client_side("hola guapo...");
+
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
   }finally{
-    await os.idle_poll_loop();
-    console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
-    console.log(chalk.green("idle"));
-    setTimeout(function () {
-      io.emit("tambox_has_started");
-    }, 1000);
 
 
-    logea_a_client_side("hola guapo...");
+
   }
+
+// console.log("nuevo pool loop cypher");
+// var esto1=await tebs_events.handle_evento([0x7F,0xF0]);
+// console.log(esto1);
+// console.log(tebs_events.lista_de_eventos.slave_reset);
+// var esto=mis_classes.Rectangulo(4);
+// console.log(esto);
+
 });
 
-function logea_a_client_side(mensaje){
-  //if (connected to scokets or send to console.) {
 
-//  }
-  io.emit("logeando_a_client_side",mensaje);
-  console.log(mensaje);
-}
 
 /////////////////////////////////////////////////////////
 module.exports.io=io;

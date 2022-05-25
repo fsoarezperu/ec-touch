@@ -92,6 +92,20 @@
     mandar_orden_sin_link("open_serial_port");
     mandar_orden_sin_link("initialize_validator");
     mandar_orden_sin_link("send_synch");
+    mandar_orden_sin_link("send_enable_from_ui");
+    mandar_orden_sin_link("send_desable_from_ui");
+    mandar_orden_sin_link("send_all_levels_from_ui");
+    mandar_orden_sin_link("encripted_poll");
+    mandar_orden_sin_link("reset_from_ui");
+    mandar_orden_sin_link("stop_polling_from_ui");
+    mandar_orden_sin_link("online_from_ui");
+
+
+
+
+
+
+
     mandar_orden_sin_link("request_support_online");
     mandar_orden_sin_link("reconectar_validador");
     mandar_orden_sin_link("lock_cashbox");
@@ -117,9 +131,13 @@
        socket.emit("socket_to_tbm",data);
      });
 
+     mandar_orden("pay_a_10");
      mandar_orden("pay_a_20");
      mandar_orden("pay_a_50");
+     mandar_orden("pay_a_60");
+
      mandar_orden("pay_a_100");
+     mandar_orden("pay_a_200");
      mandar_orden("iniciar_nueva_remesa");
      mandar_orden("finish");
 
@@ -142,10 +160,16 @@
 
 
     socket.on('logeando_a_client_side', function(msg) {
-           ion.sound.play("water_droplet");
-           // display_message(msg);
+          // ion.sound.play("water_droplet");
+          // display_message(msg);
+           var item = document.createElement('li');
+    item.textContent = msg;
+    message2.appendChild(item);
+    //window.scrollTo(0, document.body.scrollHeight);
+
            console.log(msg);
          });
+
     socket.on('lock_machine', function(msg) {
        console.log("locking machine");
          $('#overlay, #overlay-back').fadeIn(500);

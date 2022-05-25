@@ -15,6 +15,7 @@ const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
 const moment=require("moment");
 const synch_tbm = require('./tbm_sync/synchronize');
+const tebs_events= require('./devices/ssp/tebs_events');
 function  nuevo_enlace(pagina,ruta,vardata1){
   fs.readFile(path.join(__dirname,ruta), 'utf8', function (err,data) {
       if (err) {
@@ -377,6 +378,15 @@ io.on('connection', async function (socket) {
     io.emit('iniciando_remesa', "iniciando_remesa");
    });
 
+
+   socket.on('pay_a_10',async function(){
+      new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+      console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+      const this_machine= await pool.query("SELECT * FROM machine");
+      global.manual_pay=true;
+      os.crear_nuevo_pay_20(10,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+     });
+
   socket.on('pay_a_20',async function(){
      new_manual_pay= Math.floor((Math.random() * 10000) + 1);
      console.log(chalk.yellow("Nuevo pago manual ejecutado"));
@@ -388,6 +398,15 @@ io.on('connection', async function (socket) {
      //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
     //io.emit('realizando_pago', "realizando_pago");
     });
+
+    socket.on('pay_a_60',async function(){
+        new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+        console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+        const this_machine= await pool.query("SELECT * FROM machine");
+        global.manual_pay=true;
+        os.crear_nuevo_pay_20(60,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+       });
+
   socket.on('pay_a_50',async function(){
       new_manual_pay= Math.floor((Math.random() * 10000) + 1);
       console.log(chalk.yellow("Nuevo pago manual ejecutado"));
@@ -402,6 +421,14 @@ io.on('connection', async function (socket) {
        global.manual_pay=true;
        os.crear_nuevo_pay_20(100,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
       });
+
+      socket.on('pay_a_200',async function(){
+         new_manual_pay= Math.floor((Math.random() * 10000) + 1);
+         console.log(chalk.yellow("Nuevo pago manual ejecutado"));
+         const this_machine= await pool.query("SELECT * FROM machine");
+         global.manual_pay=true;
+         os.crear_nuevo_pay_20(200,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
+        });
 
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
@@ -626,9 +653,66 @@ module.exports.autostart=autostart;
       if (show_details) {
         console.log(chalk.yellow(device+'<-:'), chalk.yellow(step2));
       }
+      os.logea_a_client_side(device+'<-:'+step2)
+      // setTimeout(async function () {
+      //   var data=await os.consulta_all_levels();
+      //   console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
+      // }, 300);
+
   });
 
+  socket.on('send_enable_from_ui', async function(msg) {
+      console.log("sending enable via serialport to de validator");
+      var step1xy=await sp2.transmision_insegura(receptor,enable) //<------------------------------ synch
+      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+      os.logea_a_client_side("enable ->:"+step1xy);
 
+  });
+  socket.on('send_desable_from_ui', async function(msg) {
+      console.log("sending desable via serialport to de validator");
+      var step1xy=await sp2.transmision_insegura(receptor,desable) //<------------------------------ synch
+      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+      os.logea_a_client_side("desable ->:"+step1xy);
+  });
+  socket.on('send_all_levels_from_ui', async function(msg) {
+      console.log("sending get_all_levels via serialport to de validator");
+    //  os.logea_a_client_side("send_all_levels_from_ui ->:"+msg);
+      //var step1xy=await sp2.transmision_insegura(receptor,get_all_levels) //<------------------------------ synch
+      //console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+         var data=await os.consulta_all_levels();
+         console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
+         os.logea_a_client_side("send_all_levels_from_ui ->:"+JSON.stringify(data[0]));
+  });
+
+  socket.on('encripted_poll', async function(msg) {
+      console.log("sending get_all_levels via serialport to de validator");
+       var estox=await os.validatorpoll2(validator_address);
+       console.log(estox);
+       await tebs_events.handle_evento(estox);
+       os.logea_a_client_side("encripted_poll ->:"+estox);
+      //var step1xy=await sp2.transmision_insegura(receptor,get_all_levels) //<------------------------------ synch
+      //console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+      //   var data=await os.consulta_all_levels();
+    //     console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
+
+  });
+  socket.on('reset_from_ui', async function(msg) {
+      console.log("sending reset_from_ui via serialport to de validator");
+      var step1xy=await sp2.transmision_insegura(receptor,reset) //<------------------------------ synch
+      console.log(chalk.yellow(device+'<-:'), chalk.yellow(step1xy));
+       os.logea_a_client_side("reset_from_ui ->:"+msg);
+  });
+  socket.on('stop_polling_from_ui', async function(msg) {
+      console.log("sending stop_polling_from_ui via serialport to de validator");
+      clearTimeout(os.myTimeout);
+       os.logea_a_client_side("stop_polling_from_ui ->:"+msg);
+  });
+  socket.on('online_from_ui', async function(msg) {
+      //console.log("sending online_from_ui via serialport to tbm");
+    //  clearTimeout(os.myTimeout);
+      to_tbm.socket_to_tbm.emit('online', numero_de_serie);
+       os.logea_a_client_side("online_from_ui ->:"+msg);
+  });
 
   var this_machine = await pool.query("SELECT * FROM machine");
   var this_passcode=this_machine[0].passcode

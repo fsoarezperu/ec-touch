@@ -15,6 +15,8 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const socketjs=require('./../it/socket');
 const moment=require("moment");
 const path = require('path');
+
+const tebs_events= require('./devices/ssp/tebs_events');
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -22,30 +24,35 @@ const path = require('path');
 async function coneccion_con_tbm(){
   return new Promise(async function(resolve, reject) {
     try {
-        // var machine_queried=await consulta_this_machine_en_tbm();}
-      //  console.log("flag0568");
-        var machine_queried=await tock_tock_tbm();
-      //  console.log("en coneccion con tbm machine queried es123587:"+machine_queried);
-      //  console.log(tbm_status);
+      // var machine_queried=await consulta_this_machine_en_tbm();}
+       console.log("flag0568");
+      var machine_queried=await tock_tock_tbm();
+        console.log("en coneccion con tbm machine queried es123587:"+machine_queried);
+        if (machine_queried=="Online") {
+          tbm_status=true;
+        }else {
+          tbm_status=false;
+        }
+        console.log(tbm_status);
       if (typeof tbm_status === 'boolean' && tbm_status === false) {
         //  console.log(" tbm is OFFLINE");
-            //  tbm_status=false;
-            //  return resolve(chalk.magenta("Offline"));
-              return resolve(chalk.red("Offline"));
+        //  tbm_status=false;
+        //  return resolve(chalk.magenta("Offline"));
+        return resolve(chalk.red("Offline"));
 
       }else {
-          console.log(" tbm aparently online");
-              var machine_queried=await consulta_this_machine_en_tbm();
-              //console.log("en coneccion con tbm machine queried es:"+machine_queried);
-              console.log("Info en TBM sobre esta maquina:");
-              console.log(JSON.parse(JSON.stringify(machine_queried)));
-              //actualiza los datos de esta maquina y sobre escribe los datos locales.
-              tbm_status=true;
-            //   return resolve(chalk.green.inverse("Online"));
-          //     return resolve("Online");
+        console.log(" tbm aparently online");
+        var machine_queried=await consulta_this_machine_en_tbm();
+        //console.log("en coneccion con tbm machine queried es:"+machine_queried);
+        console.log("Info en TBM sobre esta maquina:");
+        console.log(JSON.parse(JSON.stringify(machine_queried)));
+        //actualiza los datos de esta maquina y sobre escribe los datos locales.
+        tbm_status=true;
+        //   return resolve(chalk.green.inverse("Online"));
+        //     return resolve("Online");
 
-              //
-            return resolve(machine_queried);
+        //
+        return resolve(machine_queried);
       }
 
     } catch (e) {
@@ -59,14 +66,14 @@ async function tock_tock_tbm() {
   return new Promise(async function(resolve, reject) {
     //consualta en TBM si existe este numero de maquina, sino existe lo crea como pendiente de registradora
     try {
-    //  console.log(chalk.green("consultando tock tock"));
+      //  console.log(chalk.green("consultando tock tock"));
       var tbm_adress=tbm_adressx;
       var fix= "/status";
       const url= tbm_adress+fix
       try {
         //console.log("first use of fetch with timeout");
         var machine_queried=await fetchWithTimeout2(url,5000);
-      //  console.log("machine_queried es:"+machine_queried);
+        //  console.log("machine_queried es:"+machine_queried);
         if (machine_queried==undefined) {
           machine_queried="Offline"
           return resolve(machine_queried);
@@ -117,30 +124,39 @@ async function arranca_tambox_os() {
       console.log(chalk.green("remesas Inconclusas fueron finalizadas:"+step2));
 
       console.log(chalk.green("Iniciando Validador"));
+      logea_a_client_side("Iniciando Validador");
+
       var validator = await inicializar_validador();
       console.log(chalk.green("Validador inicio:" + validator));
-    logea(chalk.green("***************************************"));
+      logea(chalk.green("***************************************"));
+////////////////////////////////////////////////////////////////////////
+try {
+  console.log(chalk.green("Comprobando conexion con TBM"));
+  var status=await coneccion_con_tbm();
+  console.log("status es:"+JSON.stringify(status));
+  console.log("status es:"+ status);
+  logea(chalk.green("***************************************"));
+} catch (e) {
+  console.log(e);
+} finally {
 
+}
 
       ///////////////////////////////////////////////////////////////////
       var maquina_inicial=await comprueba_maquina_inicial();
-      //console.log(chalk.green("comprobando maquina inicial"));
-      //console.log(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
-      //console.log(chalk.green("***************************************"));
+      logea(chalk.green("comprobando maquina inicial"));
+      logea(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
+      logea(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
       var rh_inicial=await comprueba_rh_inicial()
-    //  console.log("RH_incial es:"+rh_inicial);
-    //  console.log(chalk.green("comprobando remesa hermes inicial"));
-    //  console.log(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
+      logea("RH_incial es:"+rh_inicial);
+      logea(chalk.green("comprobando remesa hermes inicial"));
+      logea(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
       logea(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
 
 
-      console.log(chalk.green("Comprobando conexion con TBM"));
-      var status=await coneccion_con_tbm();
-    //  console.log("status es:"+JSON.stringify(status));
-      logea("status es:"+ status);
-      logea(chalk.green("***************************************"));
+
 
       //lee los valores locales de la maquina ,
       // var informacion_maquina_local = {
@@ -156,10 +172,10 @@ async function arranca_tambox_os() {
 
       // return resolve (validator);// esto frena la ejecucion
 
-    //  var second='Offline';
-            //  var result = status.localeCompare(second)
-            //  console.log(result);
-       if (tbm_status== true) {
+      //  var second='Offline';
+      //  var result = status.localeCompare(second)
+      //  console.log(result);
+      if (tbm_status== true) {
         var x1=status.tienda_id;
         var x2=status.machine_sn;
         var x3=status.name;
@@ -172,30 +188,33 @@ async function arranca_tambox_os() {
         console.log("x3 (name) es:"+x3);
 
         await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
-          console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
-          console.log("y el valor de is_locked:"+status.is_locked);
+        console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
+        console.log("y el valor de is_locked:"+status.is_locked);
 
-          //vuelve a ejecutar coneccion con
-          //  return resolve (status);
-          // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
-          //  if (tbm_status== TRUE) {
-          await tbm_paso1();
-          }else {
-          logea(chalk.red("tbm status is offline error#2356"));
-          }
-          //    }else {
-          //    console.log(chalk.red("TBM still offline at this point!"));
-          //    }
-          // var regis=await is_this_machine_registered();
-          // console.log("resgistered is:"+regis);
-          // console.log("***************************************");
+        //vuelve a ejecutar coneccion con
+        //  return resolve (status);
+        // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
+        //  if (tbm_status== TRUE) {
+        await tbm_paso1();
+      }else {
+        logea(chalk.red("tbm status is offline error#2356"));
+      }
+      //    }else {
+      //    console.log(chalk.red("TBM still offline at this point!"));
+      //    }
+      // var regis=await is_this_machine_registered();
+      // console.log("resgistered is:"+regis);
+      // console.log("***************************************");
       ///////////////////////////////////////////////////////////////////
       var step7=await enable_payout2(validator_address);
-      if (step7=="OK") {console.log(chalk.green("payout enabled in here"));}
+      if (step7=="OK") {
+        console.log(chalk.green("payout enabled in here"));
+        logea_a_client_side("payout enabled in here");
+      }
       //to_tbm_synch.are_synched();
-       on_startup=false;
-       server.io.emit("iniciando","iniciando");
-       tambox_manager_ping();
+      on_startup=false;
+      server.io.emit("iniciando","iniciando");
+      await tambox_manager_ping();
       return resolve (validator);
     } catch (e) {
       return reject(chalk.cyan("01-Starting Validator->") + e);
@@ -212,39 +231,39 @@ async function inicializar_validador() {
       logea("validator address is:"+validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
-  //    console.log("validator poll var:",validatorpoll_var);
+      //    console.log("validator poll var:",validatorpoll_var);
       if (validatorpoll_var == "no existe bolsa detectada") {
-            // console.log("Aqui compruebo que no hay bolsa");
-            await bolsa_retrial();
-            // console.log("aqui retornando de bolsa retrial:");
-            await new_lock_cashbox();
+        // console.log("Aqui compruebo que no hay bolsa");
+        await bolsa_retrial();
+        // console.log("aqui retornando de bolsa retrial:");
+        await new_lock_cashbox();
 
-            //aqui contonuo el arranque cuando no huno bolsa inicialmante.
-            await ssp.set_protocol_version(validator_address,validator_protocol_version);
-            await ssp.setup_request_command2(validator_address);
-            if(note_validator_type == "TEBS+Payout"){
-            logea("********************************");
-            await ssp.verificar_existencia_de_bolsa(receptor);
-            logea("********************************");
-             }
-            await set_channel_inhivits2(validator_address);
-            await set_validator_routing2(validator_address);
+        //aqui contonuo el arranque cuando no huno bolsa inicialmante.
+        await ssp.set_protocol_version(validator_address,validator_protocol_version);
+        await ssp.setup_request_command2(validator_address);
+        if(note_validator_type == "TEBS+Payout"){
+          logea("********************************");
+          await ssp.verificar_existencia_de_bolsa(receptor);
+          logea("********************************");
+        }
+        await set_channel_inhivits2(validator_address);
+        await set_validator_routing2(validator_address);
 
-            return resolve("Validador iniciado");
+        return resolve("Validador iniciado");
       } else {
         //
-      //  console.log("continuo arranque normal");
-            await ssp.set_protocol_version(validator_address,validator_protocol_version);
-            await ssp.setup_request_command2(validator_address);
-            if(note_validator_type == "TEBS+Payout"){
-              logea("********************************");
-            await ssp.verificar_existencia_de_bolsa(receptor);
-              logea("********************************");
-             }
-            await set_channel_inhivits2(validator_address);
-            await set_validator_routing2(validator_address);
-            // console.log("aqui compruebo que si hay bolsa, y continuo el arranque normal");
-            return resolve("OK");
+        //  console.log("continuo arranque normal");
+        await ssp.set_protocol_version(validator_address,validator_protocol_version);
+        await ssp.setup_request_command2(validator_address);
+        if(note_validator_type == "TEBS+Payout"){
+          logea("********************************");
+          await ssp.verificar_existencia_de_bolsa(receptor);
+          logea("********************************");
+        }
+        await set_channel_inhivits2(validator_address);
+        await set_validator_routing2(validator_address);
+        // console.log("aqui compruebo que si hay bolsa, y continuo el arranque normal");
+        return resolve("OK");
       }
 
     } catch (e) {
@@ -271,6 +290,14 @@ function logea(texto, variable) {
 }
 module.exports.logea = logea;
 
+function logea_a_client_side(mensaje){
+  //if (connected to scokets or send to console.) {
+
+//  }
+  server.io.emit("logeando_a_client_side",mensaje);
+  console.log(mensaje);
+}
+module.exports.logea_a_client_side=logea_a_client_side;
 
 /////////////////////////////////////////////////////////
 // Create shutdown function
@@ -301,63 +328,63 @@ module.exports.timer2 = timer2;
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 async function tbm_paso1() {
-    //verificar registro de maquina.
-         await comprueba_maquina_inicial();
-         await to_tbm.iniciar_handshake_con_tbm();
-          var regis=await is_this_machine_registered();
-         console.log("resgistered is:"+regis);
-          if (regis[0]=="machine_found_on_tbm") {
-           console.log("encontraron una maquina en TBM con este codigo, asi que actualizare mi base de datos en funcion a esa nueva data");
-         //console.log(regis[1].tienda_id);
-         //  remesa =
-         var x1=regis[1].tienda_id;
-         var x2=regis[1].machine_sn;
-         var x3=regis[1].machine_name;
+  //verificar registro de maquina.
+  await comprueba_maquina_inicial();
+  await to_tbm.iniciar_handshake_con_tbm();
+  var regis=await is_this_machine_registered();
+    console.log("resgistered is:"+regis);
+  if (regis[0]=="machine_found_on_tbm") {
+    console.log("encontraron una maquina en TBM con este codigo, asi que actualizare mi base de datos en funcion a esa nueva data");
+    //console.log(regis[1].tienda_id);
+    //  remesa =
+    var x1=regis[1].tienda_id;
+    var x2=regis[1].machine_sn;
+    var x3=regis[1].machine_name;
 
-         console.log("x1 tienda-id es:"+x1);
-         console.log("x2 machine_sn es:"+x2);
-         console.log("x3 machine_name es:"+x3);
+    console.log("x1 tienda-id es:"+x1);
+    console.log("x2 machine_sn es:"+x2);
+    console.log("x3 machine_name es:"+x3);
 
-         await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
-           console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
-           //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
-           //   //my_resgistered_machine=my_resgistered_machine[1];
-           //   os.logea(chalk.green("query:"+my_resgistered_machine));
-           //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
-           //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
-           //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
+    await pool.query("UPDATE machine SET tienda_id=?, machine_name=? WHERE machine_sn=?", [x1,x3,x2]);
+    console.log("luego del check in se actualizo el valor de tienda id a:"+regis[1].tienda_id);
+    //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
+    //   //my_resgistered_machine=my_resgistered_machine[1];
+    //   os.logea(chalk.green("query:"+my_resgistered_machine));
+    //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+    //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+    //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
 
-           //   var step7=await enable_payout(validator_address);
-           //    if (step7=="OK") {
-           //    //  await carga_monedas_al_hopper(validator_address);
-           //    console.log(chalk.green("payout enabled"));
-           //     // on_startup=false;
-           //     var step8=await validator_poll_loop(validator_address);
-           //     os.logea(glo.is_regis);
-           //     return resolve("OK");
-           //    }
-         }
-          if(regis=="OK"){
+    //   var step7=await enable_payout(validator_address);
+    //    if (step7=="OK") {
+    //    //  await carga_monedas_al_hopper(validator_address);
+    //    console.log(chalk.green("payout enabled"));
+    //     // on_startup=false;
+    //     var step8=await validator_poll_loop(validator_address);
+    //     os.logea(glo.is_regis);
+    //     return resolve("OK");
+    //    }
+  }
+  if(regis=="OK"){
 
-     console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
-     //   //var my_resgistered_machine=JSON.parse(await server.consulta_this_machine_en_tbm());
-     //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
-     //   //my_resgistered_machine=my_resgistered_machine[1];
-     //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
-     //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
-     //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
-     //   var step7=await enable_payout(validator_address);
+    console.log(chalk.green("Registro de maquina nueva realizado:"+regis));
+    //   //var my_resgistered_machine=JSON.parse(await server.consulta_this_machine_en_tbm());
+    //   var my_resgistered_machine=await os.consulta_this_machine_en_tbm();
+    //   //my_resgistered_machine=my_resgistered_machine[1];
+    //   console.log("Machine registered name:"+chalk.yellow(my_resgistered_machine.name));
+    //   await pool.query ("UPDATE machine SET is_registered=1, machine_name=?",[my_resgistered_machine.name]);
+    //   glo.my_resgistered_machine_name=my_resgistered_machine.name;
+    //   var step7=await enable_payout(validator_address);
 
-          }else {
-          //SI REGIS IS NOT OK (OSEA NO ESTA REGISTRADA)
-          global.is_regis=false;
-          await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
-          var machine_name_query= await pool.query("SELECT machine_name FROM machine");
-          machine_name_query=machine_name_query[0].machine_name
-          global.my_resgistered_machine_name=machine_name_query;
-          console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(global.my_resgistered_machine_name));
-          }
-    } //fin de funcion.
+  }else {
+    //SI REGIS IS NOT OK (OSEA NO ESTA REGISTRADA)
+    global.is_regis=false;
+    await pool.query("UPDATE machine SET machine_sn=?,machine_ip=?,machine_port=?,public_machine_ip=?", [global.numero_de_serie, global.machine_ip, global.machine_port, global.public_machine_ip]);
+    var machine_name_query= await pool.query("SELECT machine_name FROM machine");
+    machine_name_query=machine_name_query[0].machine_name
+    global.my_resgistered_machine_name=machine_name_query;
+    console.log(chalk.green("no se pudo sincronizar en Tambox Cloud,Esta maquina ya esta registrada con nombre:")+chalk.yellow(global.my_resgistered_machine_name));
+  }
+} //fin de funcion.
 //////////////////////////////////////////////////////////////////////
 async function is_this_machine_registered() {
   return new Promise(async function(resolve, reject) {
@@ -586,14 +613,32 @@ async function calcular_cifras_generales() {
 
   console.log("/////////// ALL LEVELS ///////////////");
   const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
-  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox' and no_billetes>0");
   var monto_en_bolsa = monto_total_remesas[0].totalremesax - monto_total_egresos[0].totalEgreso;
   monto_en_bolsa = monto_en_bolsa - totaccum;
   var total_general = totaccum + monto_en_bolsa;
+  var total_de_billetes_en_rh= await pool.query("SELECT no_billetes FROM remesa_hermes WHERE status='iniciada'")
+  console.log("total_de_billetes_en_rh");
+  console.log(total_de_billetes_en_rh[0].no_billetes);
+
+  var totbillsbolsa= total_de_billetes_en_rh[0].no_billetes - totbills;
+  console.log("totbillsbolsa");
+  console.log(totbillsbolsa);
+  try {
+    await pool.query("UPDATE machine SET no_billetes_bolsa=? WHERE machine_sn=?", [totbillsbolsa,global.numero_de_serie]);
+  } catch (e) {
+    console.log(e);
+  } finally {
+
+  }
+
+  var total_billetes_acumulados=totbills+totbillsbolsa;
   var mis_montos = {
     totbills,
     totaccum,
+    totbillsbolsa,
     monto_en_bolsa,
+    total_billetes_acumulados,
     total_general,
     moneda: country_code
   };
@@ -605,8 +650,8 @@ async function calcular_cuadre_diario() {
   var no_remesas = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and status='terminado' and status_hermes='en_tambox' and monto>'0'");
   var monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
 
-  var no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox'");
-  var monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'");
+  var no_egresos = await pool.query("SELECT COUNT(no_remesa) AS noEgreso FROM remesas WHERE tipo='egreso' and status='completado' and status_hermes='en_tambox' and no_billetes>0");
+  var monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'and no_billetes>0");
   //en PROCESO
   var no_remesas_pend = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE (tipo='ingreso' and status='terminado' and rms_status='pendiente' and status_hermes='en_tambox')");
   var monto_total_remesas_pend = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE (tipo='ingreso'and status='terminado'and rms_status='pendiente' and status_hermes='en_tambox')");
@@ -732,10 +777,10 @@ async function validator_disabled_now() {
 module.exports.validator_disabled_now = validator_disabled_now;
 //esta funcion manda una pulso al servidor cada tanto para indicar que esta en linea.!
 async function tambox_manager_ping() {
-  return new Promise(function(resolve, reject) {
+  return new Promise(async function(resolve, reject) {
     try {
       if (tbm_status) { // comprueba que tbm_status sea TRUE indicando que si hay coneccion con servidor cloud
-        setTimeout(() => {//la maquina indicara cada 20 segundos que esta activa
+        setTimeout(async () => {//la maquina indicara cada 20 segundos que esta activa
           console.log(chalk.green('connected to TBM'));
           //  console.log(is_regis);
           //if (global.is_regis) {
@@ -743,7 +788,7 @@ async function tambox_manager_ping() {
             server.io.emit('show_connected_to_TBM'); //muestra que la maquina esta conectada a nube
             to_tbm.socket_to_tbm.emit('online', numero_de_serie); //emite señal a nube indicando que estamos en funcionando
         //  }
-          tambox_manager_ping();
+           tambox_manager_ping();
           return resolve();
         }, 10000);
       } else {
@@ -912,7 +957,7 @@ async function terminar_nueva_remesa(no_remesa) {
         ////////////////////////////actualizando la remesa hermes para que refleje el nuevo monto de remesa ingresado
         //const no_billetes= await pool.query("SELECT SUM(no_billetes) AS total_billetes FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'");
         const monto_total_remesas = await pool.query("SELECT SUM(monto) AS totalremesax FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox' and tebs_barcode=?", [current_tebs_barcode]);
-        const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'and tebs_barcode=?", [current_tebs_barcode]);
+        const monto_total_egresos = await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'and tebs_barcode=? and no_billetes>0", [current_tebs_barcode]);
         // await pool.query("SELECT SUM(monto) AS totalEgreso FROM remesas WHERE  tipo='egreso' and status='completado'");
         const no_billetes_total_remesas = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_remesas FROM remesas WHERE tipo='ingreso'and status='terminado' and status_hermes='en_tambox'and tebs_barcode=?", [current_tebs_barcode]);
         const no_billetes_total_egresos = await pool.query("SELECT SUM(no_billetes) AS total_no_billetes_egresos FROM remesas WHERE  tipo='egreso' and status='completado' and status_hermes='en_tambox'and tebs_barcode=?", [current_tebs_barcode]);
@@ -1094,55 +1139,55 @@ async function crear_nuevo_pay_20(monto,no_remesa, tienda_id, no_caja, codigo_em
     console.log("aqui estoy creando una nuevo pago en la base de datos");
     console.log(chalk.yellow("iniciando NUEVO PAGO:" + no_remesa));
     ///////////////////////////////////////////////
-    const number_egreso = await pool.query("SELECT COUNT(no_remesa) AS noPagos FROM remesas WHERE tipo='egreso' and no_remesa=?", [no_remesa]);
+    const number_egreso = await pool.query("SELECT COUNT(no_remesa) AS noPagos FROM remesas WHERE tipo='egreso' and no_remesa=? and no_billetes>0", [no_remesa]);
     if (number_egreso[0].noPagos > 0) {
       console.log('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
     } else {
 
       // console.log(fechax1);
       // console.log(horax1);
-       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
-       console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
-       if (monto && tienda_id && no_caja && codigo_empleado && no_remesa) {
+      var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+      console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
+      if (monto && tienda_id && no_caja && codigo_empleado && no_remesa) {
 
-         var nueva_res = {
-           monto,
-           tienda_id,
-           no_caja,
-           codigo_empleado,
-           no_remesa,
-           fecha: fechax1,
-           hora: horax1,
-           moneda: country_code,
-           tebs_barcode: tebs_barcode,
-           machine_sn: numero_de_serie,
-           tipo: 'egreso',
-           status:'recibido',
+        var nueva_res = {
+          monto,
+          tienda_id,
+          no_caja,
+          codigo_empleado,
+          no_remesa,
+          fecha: fechax1,
+          hora: horax1,
+          moneda: country_code,
+          tebs_barcode: tebs_barcode,
+          machine_sn: numero_de_serie,
+          tipo: 'egreso',
+          status:'recibido',
           // no_billetes: 0, //,
-           ts_inicio:this_ts
-         }
-         await pool.query('INSERT INTO remesas set ?', [nueva_res]);
-         console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa:");
-         console.log(JSON.parse( JSON.stringify(nueva_res)));
-         try {
-                    console.log("aqui entrando a validdar pago :"+nueva_res.no_remesa);
-                    var prueba435=await validar_pago(nueva_res.no_remesa);
-                    console.log(prueba435);
-                    console.log("aRRIBA FUNCIONO?");
-         } catch (e) {
-              console.log(chalk.cyan("aqui indico que el pago no se pudo realizar por un motivo y lo indique y continue."));
-         }
+          ts_inicio:this_ts
+        }
+        await pool.query('INSERT INTO remesas set ?', [nueva_res]);
+        console.log("aqui ya inserte la remesa y estoy apunto en enviar comenzar_remesa:");
+        console.log(JSON.parse( JSON.stringify(nueva_res)));
+        try {
+          console.log("aqui entrando a validdar pago :"+nueva_res.no_remesa);
+          var prueba435=await validar_pago(nueva_res.no_remesa);
+          console.log(prueba435);
+          console.log("aRRIBA FUNCIONO?");
+        } catch (e) {
+          console.log(chalk.cyan("aqui indico que el pago no se pudo realizar por un motivo y lo indique y continue."));
+        }
 
-         //await ejecutar_pago(nueva_res.no_remesa);
+        //await ejecutar_pago(nueva_res.no_remesa);
 
-          console.log("todo va bien hasta aqui.");
-      //   //return;
-      //   await  validator_enabled_now();
-      //   socketjs.nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
-       } else {
-         console.log('Datos incompletos, revise documentacion');
-         //  return;
-       }
+        console.log("todo va bien hasta aqui.");
+        //   //return;
+        //   await  validator_enabled_now();
+        //   socketjs.nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
+      } else {
+        console.log('Datos incompletos, revise documentacion');
+        //  return;
+      }
     }
   } else {
     console.log('Estoy en Startup');
@@ -1167,7 +1212,8 @@ ConvertBase.dec2hex = function(num) {
 };
 ///////////////////////////////////////////////////////////////
 function handlepayoutvalue(data){
-//return  new Promise(function(resolve, reject) {
+  console.log("esto es handlepayoutvalue");
+return  new Promise(function(resolve, reject) {
 //    try {
 var poll_responde=data.match(/.{1,2}/g);
 //  console.log("data en poll_responde es:"+poll_responde);
@@ -1180,7 +1226,7 @@ poll_responde=poll_responde.slice(0,data_length_on_pool);
       if(poll_responde[1] == "F0"){
         console.log(chalk.green("PAGO PROCEDE"));
         server.io.emit("realizando_pago","realizando_pago");
-        return "ok";
+        return resolve("ok");
       }
         if(poll_responde[1] == "F5"){
         console.log(chalk.green("Command can not be processed"));
@@ -1189,23 +1235,25 @@ poll_responde=poll_responde.slice(0,data_length_on_pool);
           if(poll_responde[2] == "01"){
             console.log(chalk.green("Not enough value in device3"));
             server.io.emit("anuncio_saldo_insuficiente","anuncio_saldo_insuficiente");
-            return "saldo_insuficiente";
+            return resolve("saldo_insuficiente");
           }
           if(poll_responde[2] == "02"){
             console.log(chalk.green("Cannot pay exact amount"));
             server.io.emit("monto_exacto","monto_exacto");
-            return "no_monto_exacto";
+            return resolve("no_monto_exacto");
           }
           if(poll_responde[2] == "03"){
             console.log(chalk.green("Device Busy"));
-            return "ocupado";
+            return resolve("ocupado");
           }
           if(poll_responde[2] == "04"){
             console.log(chalk.green("Device Disabled"));
-            return  "desabilitado";
+            return  resolve("desabilitado");
           }
     }
-}
+});
+
+ };
 ///////////////////////////////////////////////////////////////
 async function validar_pago(no_remesa){
 
@@ -1287,7 +1335,7 @@ async function validar_pago(no_remesa){
                     }
                     console.log("esta es la respuesta a transmite encriptado y procesa2:"+datax1);
                       console.log(chalk.yellow("<-:"+datax1));
-                      var solucion=handlepayoutvalue(datax1);
+                      var solucion=await handlepayoutvalue(datax1);
 
                       console.log("solucion is:"+solucion);
                     if(solucion=="ok"){
@@ -1295,31 +1343,31 @@ async function validar_pago(no_remesa){
                       }
                     if(solucion=="no_monto_exacto"){
                         console.log("No_monto_exacto");
-                        server.io.emit('display_message_socket',"No_monto_exacto");
+                        server.io.emit('logeando_a_client_side',"No_monto_exacto");
                          await pool.query ("UPDATE remesas SET status='no_monto_exacto' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                         // res.json('No_monto_exacto');
-                         return reject("No_monto_exacto");
+                         return resolve("No_monto_exacto");
                       }
                     if(solucion=="saldo_insuficiente"){
                         //console.log("Saldo_insuficiente");
                         console.log("Saldo_insuficiente1234567");
-                        server.io.emit('display_message_socket',"Saldo_insuficiente");
+                        server.io.emit('logeando_a_client_side',"Saldo_insuficiente");
                          await pool.query ("UPDATE remesas SET status='saldo_insuficiente' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                          //res.json('Saldo_insuficiente');
-                         return reject("Saldo_insuficientex");
+                         return resolve("Saldo_insuficientex");
                       }
                     if(solucion=="ocupado"){
                         console.log("Ocupado");
                          await pool.query ("UPDATE remesas SET status='ocupado' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                          //res.json('Ocupado');
-                         return reject("Ocupado");
+                         return resolve("Ocupado");
                       }
                     if(solucion=="desabilitado"){
                         console.log("Deshabilitado");
-                        server.io.emit('display_message_socket',"Deshabilitado");
+                        server.io.emit('logeando_a_client_side',"Deshabilitado");
                         await pool.query ("UPDATE remesas SET status='desabilitado' WHERE no_remesa=? AND status<>'completado'",[no_remesa]);
                         // res.json('Deshabilitado');
-                        return reject("Deshabilitado");
+                        return resolve("Deshabilitado");
                       }
 
                   console.log("/////////////////////////////////");
@@ -1477,6 +1525,8 @@ async function consulta_remesas_de_ese_tebsbarcode() {
 }
 module.exports.consulta_remesas_de_ese_tebsbarcode = consulta_remesas_de_ese_tebsbarcode;
 /////////////////////////////////////////////////////////////////
+  let myTimeout;
+  module.exports.myTimeout=myTimeout;
 async function idle_poll_loop(receptor) {
 //  console.log("entrando a idel poll loop");
   try {
@@ -1489,14 +1539,27 @@ async function idle_poll_loop(receptor) {
                   var step1 = await sp.hacer_consulta_serial(receptor, global.poll);
                 //  console.log("step1:"+step1);
                       if (step1.length > 0) {
-                              await ssp.handlepoll(step1);
-                            let myTimeout =  setTimeout(async function() {
+
+                          try {
+                            await ssp.handlepoll(step1);
+                            //await sp.ensureIsSet3();
+                            //var datauio=await consulta_all_levels();
+                            //console.log(chalk.green("all levels es:"+JSON.stringify(datauio[0].cantidad_de_billetes_en_reciclador)));
+                          } catch (e) {
+                            console.log(e);
+                          }
+
+
+                            myTimeout =  setTimeout(async function() {
+                            //  var datauio=await consulta_all_levels();
+                            //  console.log(chalk.green("all levels es:"+JSON.stringify(datauio[0].cantidad_de_billetes_en_reciclador)));
+
                                 logea("//////////////////////////////");
                                 logea(chalk.green("VALIDATOR POLLINGx1"));
                                 await idle_poll_loop(validator_address);
                               //  console.log("idle poll loop");
                               }, 500);
-                              module.exports.myTimeout=myTimeout;
+
                         ready_for_pooling = true;
                         return resolve("OK");
                       } else {
@@ -1660,9 +1723,9 @@ async function validatorpoll2(receptor) {
           var data = await ssp.handlepoll(step1);
           //    console.log("data:"+data);
               if (global.existe_bolsa == false) {
-                return resolve("no existe bolsa detectada");
+                resolve("no existe bolsa detectada");
               }else {
-                return resolve(data);
+                resolve(data);
               }
         } catch (e) {
           return reject("on validator poll2 error ->:" + e);
@@ -1732,7 +1795,7 @@ async function set_channel_inhivits2(receptor) {
 };
 ///////////////////////////////////////////////////////////
 function set_validator_routing2(receptor) {
-  // console.log(chalk.yellow("ROUTING bills"));
+   console.log(chalk.green("set routing"));
   return new Promise(async function(resolve, reject) {
     try {
       await ssp.envia_encriptado(receptor,send_10_soles_a_cashbag);

@@ -85,10 +85,46 @@ li{
 .logo{
   display: none;
 }
+.ventanita_log{
+  background-color: rgb(83, 83, 83);
+  grid-area:ventanita_log;
+  border: 1.5px solid gray;
+  min-height: 180px;
+   margin: 0;
+   padding: 0;
+   overflow-y: scroll;
+   width:100%;
+}
 
+#message2{
+  list-style-type: none;
+  text-align: left;
+  font-size: 12px;
+  color:rgb(56, 143, 201);
+}
+#message2 > li {
+  /* padding: 0.5rem 1rem;  */
+}
+/* #message2 > li:nth-child(odd) { background: #efefef; } */
+
+ul{
+  padding-left: 0px;
+}
+.botonera{
+  grid-area:botonera;
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(2,1fr);
+}
 .panel1{
   grid-area:panel1;
   /* margin:30px; */
+  display:grid;
+    grid-template-areas:
+    "ventanita_log"
+    "botonera";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
 
   background-color: rgb(20, 143, 9) ;
   justify-content: center;
@@ -780,6 +816,17 @@ li{
   max-height: 400px;
   overflow-y: scroll;
 }
+
+.ec_panel_tarjeta_historial_remesa_hermes_verde::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_panel_tarjeta_historial_remesa_hermes_verde {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+
 .ec_panel_tarjeta_historial_remesa_hermes_roja{
   display: grid;
   /* background-color: rgb(43, 43, 43); */
@@ -809,6 +856,16 @@ li{
   margin-bottom: 5px;
   max-height: 400px;
   overflow-y: scroll;
+}
+
+.ec_panel_tarjeta_historial_remesa_hermes_roja::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_panel_tarjeta_historial_remesa_hermes_roja {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
 }
 .ec_panel_tarjeta_historial_verde{
   display: grid;
@@ -840,6 +897,17 @@ li{
   max-height: 400px;
   overflow-y: scroll;
 }
+
+.ec_panel_tarjeta_historial_verde::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_panel_tarjeta_historial_verde {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+
 .ec_panel_tarjeta_historial_roja{
   display: grid;
   /* background-color: rgb(43, 43, 43); */
@@ -870,6 +938,17 @@ li{
   max-height: 400px;
   overflow-y: scroll;
 }
+
+.ec_panel_tarjeta_historial_roja::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_panel_tarjeta_historial_roja {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+
 .ec_panel_tarjeta_historial_azul{
   display: grid;
   /* background-color: rgb(43, 43, 43); */
@@ -900,6 +979,17 @@ li{
   max-height: 400px;
   overflow-y: scroll;
 }
+
+.ec_panel_tarjeta_historial_azul::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_panel_tarjeta_historial_azul {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+
 .no_remesa{
   grid-area: no_remesa;
 }
@@ -969,7 +1059,7 @@ li{
     /* grid-column-start: span 2; */
     border-radius: 12px;
     border: 1.5px solid rgb(50, 50, 50);
-    /* padding: 10px; */
+    padding: 20px;
     margin:15px;
     filter: drop-shadow(1px 1px 15px #000000);
     text-align: center;
@@ -988,6 +1078,28 @@ li{
     filter: drop-shadow(1px 1px 15px #000000);
     overflow-y: scroll;
     text-align: center;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.ec_card2::-webkit-scrollbar {
+ display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.ec_card2 {
+ -ms-overflow-style: none;  /* IE and Edge */
+ scrollbar-width: none;  /* Firefox */
+}
+.ec_btn_new{
+    display:grid;
+    grid-auto-rows: 1fr 1fr;
+    border-radius: 12px;
+    /*  Muy buen skin !!!! */
+    background-image: linear-gradient(to right, rgb(43, 43, 43), rgba(65,65,65));
+    filter: drop-shadow(0px 1px 5px #de7897);
+    color:#6c6c6c;
+    padding: 0.2rem 1.3rem;
+    /* border: 3px solid rgb(101, 120, 238); */
 }
 .ec_btn{
     display:grid;

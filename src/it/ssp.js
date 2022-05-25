@@ -1644,6 +1644,7 @@ async function verificar_existencia_de_bolsa(receptor) {
 
 
                       //await sincroniza_remesa_hermes2([nueva_res_hermes]);
+                      await os.coneccion_con_tbm();
                       console.log("aqui tbm_status figura como:"+tbm_status);
                       try {
                         if (tbm_status==true) {
@@ -1806,16 +1807,15 @@ async function cambio_de_bolsa(receptor) {
                       await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
                       console.log("nueva remesa hermes insertada aqui.");
                       try {
-                        var query=("UPDATE machine SET monto_actual='0',no_billetes_bolsa='0',no_billetes_reci='0',billetes_de_10='0',billetes_de_20='0',billetes_de_50='0',billetes_de_100='0',billetes_de_200='0',monto_en_reciclador='0' WHERE machine_sn=?",[global.numero_de_serie]);
-                        console.log(query);
-                        await pool.query(query);
+                        await pool.query("UPDATE machine SET monto_actual='0',no_billetes_bolsa='0',no_billetes_reci='0',billetes_de_10='0',billetes_de_20='0',billetes_de_50='0',billetes_de_100='0',billetes_de_200='0',monto_en_reciclador='0' WHERE machine_sn=?",[global.numero_de_serie]);
                       } catch (e) {
                         console.log(e);
                       }
 
                     //  await sincroniza_remesa_hermes([nueva_res_hermes]);
                     //  await sincroniza_remesa_hermes2([nueva_res_hermes]);
-                      if (tbm_status==TRUE) {
+                    await os.coneccion_con_tbm();
+                      if (tbm_status==true) {
                                               await crea_rh_en_tbm([nueva_res_hermes]);
                       }else {
                         console.log("no se pudo sincronizar aun con tbm porque esta offline, se sincronizara cuando se conecte nuevamente.");
@@ -2099,6 +2099,7 @@ function negociate_encryption(receptor) {
                            if(step6.length>0){
                              os.logea(chalk.green('KEY:'), chalk.green(step6));
                              console.log(chalk.green("Encripted comunication Active"));
+                             os.logea_a_client_side("Encripted comunication Active");
                              os.logea(chalk.green("/////////////////////////////////"));
                              encryptionStatus = true;
                             //return resolve("OK")

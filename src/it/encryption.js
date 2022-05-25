@@ -356,10 +356,10 @@ function decrypt(mensaje) {
       return resolve(decryptedText);
     }else{
       //si el mensaje viene con bytes extras al final que necesitan ser cortados.
-      os.logea(chalk.cyan("NO desencriptado: "+mensaje));
-      os.logea("mensaje length: "+mensaje.length);
+      console.log(chalk.cyan("NO desencriptado: "+mensaje));
+      console.log("mensaje length: "+mensaje.length);
       if(mensaje.length==34||mensaje.length==66||mensaje.length==98||mensaje.length==130||mensaje.length==162||mensaje.length==194||mensaje.length==226||mensaje.length==258){
-        //console.log(chalk.magenta("CORTADO"));
+        console.log(chalk.magenta("CORTADO"));
         mensaje=mensaje.substr(0,mensaje.length-2);
         os.logea("new message trimmed is:"+mensaje);
         var key = aesjs.utils.hex.toBytes(full_KEY);
@@ -371,7 +371,7 @@ function decrypt(mensaje) {
         return resolve(decryptedText);
       }else {
         //console.log("hay un byter extra, HAY QUE CORTARLO");
-        return reject(chalk.red("error 4322:"+e));
+        return reject(chalk.red("error 4322:"));
       }
       console.log(chalk.red("NO SE PUDO DESENCRIPTAR"));
       //Reenvia el ultimo dato, igualito, misma cuenta, mismo todo.

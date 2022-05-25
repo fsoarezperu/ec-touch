@@ -63,7 +63,7 @@ socket_to_tbm.on("connect",async function(socket) {
     tbm_status=true;
     server.io.emit('show_connected_to_TBM',"show_connected_to_TBM");
     console.log("iniciando tambiox manager ping");
-    os.tambox_manager_ping();
+     os.tambox_manager_ping();
     await os.comprueba_maquina_inicial();
     await synchronize.synch_required();
   }
