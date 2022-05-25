@@ -252,7 +252,7 @@ ul{
   width: 100%;
   max-width: 700px;
   /*grid-row: auto; */
-  background-color: rgba(60, 60, 60, 1);
+  background-color: rgba(51, 51, 51, 1);
   /* background-image: url("../img/bg_image4.jpg"); */
   color: white;
   border: 4.5px solid white;
@@ -1096,10 +1096,15 @@ ul{
     border-radius: 12px;
     /*  Muy buen skin !!!! */
     background-image: linear-gradient(to right, rgb(43, 43, 43), rgba(65,65,65));
-    filter: drop-shadow(0px 1px 5px #de7897);
+    filter: drop-shadow(0px 3px 2px #000);
     color:#6c6c6c;
     padding: 0.2rem 1.3rem;
     /* border: 3px solid rgb(101, 120, 238); */
+     -moz-user-select:none;
+}
+
+.disable-select{
+   -moz-user-select:none;
 }
 .ec_btn{
     display:grid;
@@ -1214,6 +1219,10 @@ ul{
    border-radius: 15px;
    /* padding: 5px; */
    text-align: center;
+   /* margin:auto; */
+   place-items: center;
+
+   font-size: 30px;
  }
  .panel_oos{
    display: grid;
@@ -1222,7 +1231,7 @@ ul{
  }
  #titulo_popup{
    font-weight: bold;
-   color:red;
+   color:#4f4f4f;
    font-size: 34px;
    grid-row: 2 / span 1;
    grid-column: 2 / span 1;
@@ -1231,6 +1240,7 @@ ul{
    font-size: 24px;
    grid-row: 3 / span 1;
    grid-column: 2 / span 1;
+   color:#4f4f4f;
  }
  #mensaje_proceso{
    font-size: 24px;

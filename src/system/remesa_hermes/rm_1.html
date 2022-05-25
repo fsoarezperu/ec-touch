@@ -13,6 +13,10 @@
     $('#no_billetes').text(mydata[0].no_billetes);
     $('#ts_inicio').text(mydata[0].ts_inicio);
 
+  if (mydata[0].monto=="0") {
+    console.log("se detecto monto cero en bolsa, no requiere hacer remesa hermes");
+    $('.plantilla_remesa_hermes').text("se detecto monto cero en bolsa, no requiere hacer remesa hermes");
+  }
 
 
 

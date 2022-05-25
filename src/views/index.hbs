@@ -21,7 +21,7 @@
         mydata=msg[0];
         //console.log("esto viene de enlace a:"+JSON.stringify(mydata));
         console.log(mydata);
-        console.log("lo anterior vino de aqui. 12543");
+      //  console.log("lo anterior vino de aqui. 12543");
       });
       return;
     }
@@ -34,7 +34,7 @@
       });
       socket.on(a2, function(msg){
         console.log("receiving socket.on:"+a2);
-        console.log(msg);
+      //  console.log(msg);
         $('#display').html(msg[1]);
         mydata=msg[0];
         //  console.log("esto viene de enlace a:"+JSON.stringify(mydata));
@@ -322,7 +322,7 @@
     function control(variable) {
       tim = setTimeout(function() {
         updateStatus(online);
-      }, 3000); //aqui decia 1000
+      }, 10000); //aqui decia 1000
     }
     control(online);
     /////////////////////////////////////////////////////////////
@@ -341,11 +341,12 @@
       <div class="grupo3">
         <div></div>
         <div id="titulo_popup">Inicializando Sistema</div>
+        <!-- <i class="fas fa-atom fa-xs"></i> -->
         <div id="texto_popoup">Espere un momento se esta inicializando el sistema</div>
         <div id="mensaje_proceso"><div id="message2x"></div></div>
-        <div><a class="ec_btn" id="close_serial_port">cerrar puerto serial</a> </div>
+        <!-- <div><a class="ec_btn" id="close_serial_port">cerrar puerto serial</a> </div>
         <div><a class="ec_btn" id="open_serial_port">abrir puerto serial</a> </div>
-        <div><a class="ec_btn" id="initialize_validator">inicializar validador</a> </div>
+        <div><a class="ec_btn" id="initialize_validator">inicializar validador</a> </div> -->
 
       </div>
     </div>
