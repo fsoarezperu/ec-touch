@@ -461,6 +461,7 @@ io.on('connection', async function (socket) {
        console.log(chalk.green('will smart_empty:' + msg));
      //  await  ssp.transmite_encriptado_y_procesa(validator_address,smart_empty);
        nuevo_enlace('smart_empty','../system/remesa_hermes/rm_2.html');
+       await synch_tbm.remote_update_rh(global.tebs_barcode);
        await os.begin_remesa_hermes();
        console.log("aqui salgo de smart emptyy pASO A RM2");
      });

@@ -1855,10 +1855,11 @@ console.log("iniciando creacion de rh en nube:"+res2);
     var fecha=res[0].fecha;
     var hora=res[0].hora;
     var no_billetes=res[0].no_billetes;
+    var ts_inicio=res[0].ts_inicio;
     // var rms_status=remesax[0].rms_status;
     // var tipo=remesax[0].tipo;
     // var status_hermes=remesax[0].status_hermes;
-    const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode3+"/"+machine_sn+"/"+fecha+"/"+hora+"/"+no_billetes
+    const url= tbm_adress+fix+"/"+tienda_id+"/"+monto+"/"+moneda+"/"+status+"/"+tebs_barcode3+"/"+machine_sn+"/"+fecha+"/"+hora+"/"+no_billetes+"/"+ts_inicio
     console.log("url:"+url);
     /////////////////
     const Http= new XMLHttpRequest();

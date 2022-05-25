@@ -14,6 +14,7 @@ const ssp = require('./../it/ssp');
 const enc = require('./../it/encryption');
 const rem = require('./../api/remesas');
 const moment=require("moment");
+const to_tbm_synch = require('./../it/tbm_sync/synchronize');
 
 var no_remesa_actual;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
@@ -292,6 +293,7 @@ router.get('/smart_empty', async (req, res) => {
     //finaliza la remesa de la bolsa que se fue!
     await pool.query("UPDATE remesa_hermes SET status='finalizada' WHERE status='iniciada'");
     // aqui es neceario avisar a tambox manager que la transaccion finalizo .
+    await to_tbm_synch.remote_update_rh(current_tebs_barcode);
 
   res.render('configuracion/remesa_hermes/smart_empty', {bolsa});
 })
