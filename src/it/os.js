@@ -130,17 +130,15 @@ async function arranca_tambox_os() {
       console.log(chalk.green("Validador inicio:" + validator));
       logea(chalk.green("***************************************"));
 ////////////////////////////////////////////////////////////////////////
-try {
+//try {
   console.log(chalk.green("Comprobando conexion con TBM"));
   var status=await coneccion_con_tbm();
-  console.log("status es:"+JSON.stringify(status));
+  //console.log("status es:"+JSON.stringify(status));
   console.log("status es:"+ status);
   logea(chalk.green("***************************************"));
-} catch (e) {
-  console.log(e);
-} finally {
-
-}
+//} catch (e) {
+//  console.log(e);
+//}
 
       ///////////////////////////////////////////////////////////////////
       var maquina_inicial=await comprueba_maquina_inicial();
@@ -211,10 +209,14 @@ try {
         console.log(chalk.green("payout enabled in here"));
         logea_a_client_side("payout enabled in here");
       }
+      console.log("sali de step7");
       //to_tbm_synch.are_synched();
       on_startup=false;
+      console.log("startup false");
       server.io.emit("iniciando","iniciando");
-      await tambox_manager_ping();
+      console.log("emiti iniciando por socket");
+      tambox_manager_ping();
+      console.log("llame a tambox manager ping");
       return resolve (validator);
     } catch (e) {
       return reject(chalk.cyan("01-Starting Validator->") + e);
@@ -1607,8 +1609,9 @@ async function get_my_phisical_current_ip() {
       }
     }
     //return results;
-    //return results["en0"][0];
-    resolve(results["wlan0"][0]);
+    //console.log(results);
+    resolve(results["eth0"][0]);
+    //resolve(results["wlan0"][0]);
   });
 };
 async function get_my_current_public_ip() {

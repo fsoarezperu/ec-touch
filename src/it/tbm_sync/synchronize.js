@@ -190,6 +190,14 @@ async function remote_update_rh(this_tebs){
 //aqui get alllevels.,
 //GET ALL LEVELS Aqui
 //try {
+      var data=await os.consulta_all_levels();
+      console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
+      global.no_billetes_reci=data[0].no_billetes_reci;
+      global.billetes_de_10_en_reciclador=data[0].de10;
+      global.billetes_de_20_en_reciclador=data[0].de20;
+      global.billetes_de_50_en_reciclador=data[0].de50;
+      global.billetes_de_100_en_reciclador=data[0].de100;
+      global.billetes_de_200_en_reciclador=data[0].de200;
 //    var new_valuesy5=await os.consulta_all_levels();
 //    console.log(new_valuesy5);
     //respuesta agragada a socket emitido.
