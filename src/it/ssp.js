@@ -1093,7 +1093,7 @@ return new Promise(async function(resolve, reject) {
                   if (poll_responde[2] == "01") {
                       console.log("NO HAY DINERO SUFICIENTE");
                       }
-                      console.log("OPERACION NO SE PUEDE PROCESAR");
+                      console.log("OPERACION NO SE PUEDE PROCESAR"+);
                       // return resolve(poll_responde);
                     }
         }
