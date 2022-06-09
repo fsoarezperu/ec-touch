@@ -1261,6 +1261,8 @@ function handlesetuprequest(data){
     }
     console.log(chalk.green("Device type: " + chalk.yellow(note_validator_type)));
 
+
+
 ///////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 var firmware_version = myData.substr(4, 8);
@@ -1616,7 +1618,12 @@ async function verificar_existencia_de_bolsa(receptor) {
                        console.log("this_machine is:"+JSON.stringify(this_machine));
 
                        console.log(chalk.yellow("#123 No existe esta bolsa, se creara una nueva remesa hermes con tebsbarcode:"+tebs_barcode));
-                         var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+                       if (tebs_barcode==1000000000000000000) {
+                         //genenar tebsbarcode autogenerado de 10 digitas.
+                         tebs_barcode= Math.floor((Math.random() * 10000) + 1);
+                         console.log("tebs_barcode_autogenerado_para casbox");
+                       }
+                       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
                        const nueva_res_hermes={
                                                 tienda_id:this_machine[0].tienda_id,
                                                 monto:0,
@@ -1630,12 +1637,19 @@ async function verificar_existencia_de_bolsa(receptor) {
                                                 ts_inicio:this_ts
                                               }
                                                 console.log(chalk.cyan("flag3"));
-                      await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                                                try {
+                                                  await pool.query('INSERT INTO remesa_hermes set ?', [nueva_res_hermes]);
+                                                } catch (e) {
+                                                  console.log(e);
+                                                } finally {
+
+                                                }
+
                       console.log("nueva remesa hermes insertada aqui.al verificar existencis de bolsa");
                       //await pool.query("UPDATE machine SET monto_actual='0',no_billetes_bolsa='0',no_billetes_reci='0',billetes_de_10='0',billetes_de_20='0',billetes_de_50='0',billetes_de_100='0',billetes_de_200='0',monto_en_reciclador='0' WHERE machine_sn=?"+machine_sn);
 
                       try {
-                        await pool.query("UPDATE machine SET monto_actual='0' WHERE machine_sn=?",[globals.machine_sn]);
+                        await pool.query("UPDATE machine SET no_billetes_reci='0', no_billetes_bolsa='0',monto_actual='0',monto_en_reciclador='0',billetes_de_10='0', billetes_de_20='0',billetes_de_50='0',billetes_de_100='0',billetes_de_200='0' WHERE machine_sn=?",[globals.machine_sn]);
                       } catch (e) {
                         console.log(e);
                       } finally {
@@ -2038,6 +2052,7 @@ function sync_and_stablish_presence_of(receptor) {
             // os.logea("SYNCH command sent to:"+device);
                   for (var i = 0; i < 3; i++) {
                     ultimo_valor_enviado="synch";
+                  //  console.log("receptor:"+receptor+" Synch:"+synch);
                     var step1=await sp.transmision_insegura(receptor,synch) //<------------------------------ synch
                     os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
                     var step2=await handlesynch(step1);

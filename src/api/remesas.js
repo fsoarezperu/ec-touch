@@ -52,8 +52,8 @@ router.get('/nueva_remesa/:tienda_id/:no_caja/:codigo_empleado/:no_remesa/:fecha
         const number_remesa = await pool.query("SELECT COUNT(no_remesa) AS noRemesa FROM remesas WHERE tipo='ingreso' and no_remesa=?", [no_remesa]);
         if (number_remesa[0].noRemesa > 0) {
         //Consulta si remesa ya existe con ese numero
-        console.log('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
-        res.json('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.');
+        console.log('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.'+no_remesa);
+        res.json('Remesa ya existente, no se puede usar este codigo de remesa nuevamente.'+no_remesa);
         return;
       }else{
         global.manual_remesa=false;

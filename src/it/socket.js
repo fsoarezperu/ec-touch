@@ -716,13 +716,26 @@ module.exports.autostart=autostart;
   });
 
   var this_machine = await pool.query("SELECT * FROM machine");
-  var this_passcode=this_machine[0].passcode
+    var pass_code_data;
+  if (this_machine.length>0) {
+    console.log("maquina encontrada en base de datos ararnque inicial");
+    var this_passcode=this_machine[0].passcode;
+    pass_code_data={
+      pass_code:this_passcode
+    }
+  }else {
+      console.log("maquina no encontrada en base de datos, se pone clave default de 9999");
+    pass_code_data={
+      pass_code:"9999"
+    }
+  }
+console.log("global current_tebs sera consultado aQUI::::::::::::: ya existe? y fue populado?????");
   var config_data={
-    current_tebs:"global.current_tebs"
+    current_tebs:global.current_tebs
   }
-  var pass_code_data={
-    pass_code:this_passcode
-  }
+  console.log("config data:"+JSON.stringify(config_data));
+  console.log("passcode data:"+JSON.stringify(pass_code_data));
+
 // os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
 os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");

@@ -146,14 +146,16 @@ async function arranca_tambox_os() {
       logea(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
       logea(chalk.green("***************************************"));
       ///////////////////////////////////////////////////////////////////
-      var rh_inicial=await comprueba_rh_inicial()
-      logea("RH_incial es:"+rh_inicial);
-      logea(chalk.green("comprobando remesa hermes inicial"));
-      logea(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
-      logea(chalk.green("***************************************"));
-      ///////////////////////////////////////////////////////////////////
-
-
+      try {
+        var rh_inicial=await comprueba_rh_inicial()
+        logea("RH_incial es:"+rh_inicial);
+        logea(chalk.green("comprobando remesa hermes inicial"));
+        logea(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
+        logea(chalk.green("***************************************"));
+        ///////////////////////////////////////////////////////////////////
+      } catch (e) {
+        console.log(e);
+      }
 
 
       //lee los valores locales de la maquina ,
@@ -168,7 +170,7 @@ async function arranca_tambox_os() {
       //actualiza los valores remotos de la maquina
       logea(status);
 
-      // return resolve (validator);// esto frena la ejecucion
+       return resolve (validator);// esto frena la ejecucion
 
       //  var second='Offline';
       //  var result = status.localeCompare(second)
@@ -929,6 +931,8 @@ module.exports.crear_nueva_remesa = crear_nueva_remesa;
 async function terminar_nueva_remesa(no_remesa) {
   console.log("terminar_nueva_remesa...aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
   //return new Promise(async function(resolve, reject) {
+  var got_tebsbarcode=await pool.query("SELECT tebs_barcode FROM remesas WHERE no_remesa=?",[no_remesa]);
+  current_tebs_barcode=got_tebsbarcode[0].tebs_barcode;
   console.log("al momento de terminar nueva remesa se detecta un current_tebs_barcode:" + current_tebs_barcode);
   if (on_startup === false) {
     if (no_remesa) {
@@ -1126,9 +1130,17 @@ async function begin_remesa_hermes() {
 module.exports.begin_remesa_hermes = begin_remesa_hermes;
 /////////////////////////////////////////////////////////////////
 async function consulta_remesa_hermes_actual() {
+  console.log(chalk.yellow("consultando reemesa heremes actual con tebsbarcode:"+tebs_barcode));
+  if (tebs_barcode.length==0) {
+    //genenar tebsbarcode autogenerado de 10 digitas.
+    tebs_barcode= await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and machine_sn=?",[global.numero_de_serie])
+    console.log("tebs_barcode_consultado_para casbox");
+  }
+  console.log("ahora el tebsbarcode esta marcando esto:"+tebs_barcode[0].tebs_barcode);
+  current_tebs_barcode=tebs_barcode[0].tebs_barcode;
   const remesa_hermes_entambox = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
-  //console.log("consulta_remesa_hermes_actual en status iniciada:");
-  //console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
+  console.log("consulta_remesa_hermes_actual en status iniciada:");
+  console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
   return remesa_hermes_entambox;
 }
 module.exports.consulta_remesa_hermes_actual = consulta_remesa_hermes_actual;
@@ -1609,9 +1621,9 @@ async function get_my_phisical_current_ip() {
       }
     }
     //return results;
-    //console.log(results);
-    resolve(results["eth0"][0]);
-    //resolve(results["wlan0"][0]);
+    console.log(results);
+    //resolve(results["eth0"][0]);
+    resolve(results["wlan0"][0]);
   });
 };
 async function get_my_current_public_ip() {
@@ -2021,12 +2033,7 @@ async function comprueba_maquina_inicial(){
 return new Promise(async function(resolve, reject) {
   try {
     //cuenta cuantas maquinas existen en la base de datos.
-    if (tbm_status==true) {
-      logea(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
-      var limites =await to_tbm_synch.consulta_limite_maximo_de_pago_en_tbm();
-      console.log(chalk.green("Limite de pago obtenido por tbm:"+limites));
-      await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,global.numero_de_serie]);
-    }
+
 
     logea(chalk.green("USO LOCAL DE LIMITE DE PAGO"));
     var this_machine222=await consulta_this_machine();
@@ -2034,6 +2041,13 @@ return new Promise(async function(resolve, reject) {
     if (this_machine222.length>0) {
       limite_maximo_de_retiro=this_machine222[0].limite_maximo_de_retiro;
       logea(chalk.green("limite maximo detectado para retiro es de:"+limite_maximo_de_retiro));
+
+      if (tbm_status==true) {
+        logea(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
+        var limites =await to_tbm_synch.consulta_limite_maximo_de_pago_en_tbm();
+        console.log(chalk.green("Limite de pago obtenido por tbm:"+limites+ " y actualizado en la base de datos local- tabla machine"));
+        await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,global.numero_de_serie]);
+      }
     //  console.log("MACHINE FOUND");
     //  console.log("this macine 222="+JSON.stringify(this_machine222));
     //  console.log("this machine222 length:"+this_machine222.length);

@@ -1,104 +1,104 @@
 <script type="text/javascript">
-  var timer_de_display_remote_conection_to_tbm;
-  //var remote_TBM = io.connect('http://192.168.1.6:3000');
-  var is_connected = false;
-  var mydata;
-  var online= false;
-  $(document).ready(function() {
-    cargar_pantalla_guardada();
-    $("#TBM_icon").css('visibility', 'hidden');
-    display_remote_conection_to_TBM();
-    /////////////////////////////////////////////////////////////
-    function enlace_a(a1) {
-      var a1x="#"+a1;
-      $(document).on("click",a1x,function(){
-        console.log("emitting:"+a1);
-        socket.emit(a1,a1);
-      });
-      socket.on(a1, function(msg){
-        console.log("receiving:"+a1);
-        $('#display').html(msg[1]);
-        mydata=msg[0];
-        //console.log("esto viene de enlace a:"+JSON.stringify(mydata));
-        console.log(mydata);
+var timer_de_display_remote_conection_to_tbm;
+//var remote_TBM = io.connect('http://192.168.1.6:3000');
+var is_connected = false;
+var mydata;
+var online= false;
+$(document).ready(function() {
+  cargar_pantalla_guardada();
+  $("#TBM_icon").css('visibility', 'hidden');
+  display_remote_conection_to_TBM();
+  /////////////////////////////////////////////////////////////
+  function enlace_a(a1) {
+    var a1x="#"+a1;
+    $(document).on("click",a1x,function(){
+      console.log("emitting:"+a1);
+      socket.emit(a1,a1);
+    });
+    socket.on(a1, function(msg){
+      console.log("receiving:"+a1);
+      $('#display').html(msg[1]);
+      mydata=msg[0];
+      //console.log("esto viene de enlace a:"+JSON.stringify(mydata));
+      console.log(mydata);
       //  console.log("lo anterior vino de aqui. 12543");
-      });
-      return;
-    }
-    ////////////////////////////////////////////////////////////
-    function mandar_orden(a2) {
-      var a2y="#"+a2;
-      $(document).on("click",a2y,function(){
-        console.log("mandar order:"+a2);
-        socket.emit(a2,a2);
-      });
-      socket.on(a2, function(msg){
-        console.log("receiving socket.on:"+a2);
+    });
+    return;
+  }
+  ////////////////////////////////////////////////////////////
+  function mandar_orden(a2) {
+    var a2y="#"+a2;
+    $(document).on("click",a2y,function(){
+      console.log("mandar order:"+a2);
+      socket.emit(a2,a2);
+    });
+    socket.on(a2, function(msg){
+      console.log("receiving socket.on:"+a2);
       //  console.log(msg);
-        $('#display').html(msg[1]);
-        mydata=msg[0];
-        //  console.log("esto viene de enlace a:"+JSON.stringify(mydata));
-        //  console.log("Nombre:"+ mydata.nombre);
+      $('#display').html(msg[1]);
+      mydata=msg[0];
+      //  console.log("esto viene de enlace a:"+JSON.stringify(mydata));
+      //  console.log("Nombre:"+ mydata.nombre);
 
-       // display_message(msg);
+      // display_message(msg);
       //      socket.emit(a2,msg);
       //  console.log(msg);
-      });
-      return;
-    }
-      ////////////////////////////////////////////////////////////
-    function mandar_orden_sin_link(a2) {
-      var a2y="#"+a2;
-      $(document).on("click",a2y,function(){
-        console.log("receiving sin link:"+a2);
-        socket.emit(a2,a2);
-      });
-      return;
-    }
-    ////////////////////////////////////////////////////////////
-    function reflejar_orden(a2) {
-      var a2y="#"+a2;
-      // $(document).on("click",a2y,function(){
-      //   console.log(a2);
-      //   socket.emit(a2,a2);
-      // });
-      socket.on(a2, function(msg){
-        console.log("receiving:"+a2);
+    });
+    return;
+  }
+  ////////////////////////////////////////////////////////////
+  function mandar_orden_sin_link(a2) {
+    var a2y="#"+a2;
+    $(document).on("click",a2y,function(){
+      console.log("receiving sin link:"+a2);
+      socket.emit(a2,a2);
+    });
+    return;
+  }
+  ////////////////////////////////////////////////////////////
+  function reflejar_orden(a2) {
+    var a2y="#"+a2;
+    // $(document).on("click",a2y,function(){
+    //   console.log(a2);
+    //   socket.emit(a2,a2);
+    // });
+    socket.on(a2, function(msg){
+      console.log("receiving:"+a2);
       //  $('#display').html(msg[1]);
       //  mydata=msg[0];
       //  display_message(msg);
       console.log("reflejando orden:"+a2);
-        socket.emit(a2,msg);
+      socket.emit(a2,msg);
       //  console.log(msg);
-      });
-      return;
-    }
-/////////////////////////////////////////////////////////////////////
-    enlace_a("main");
-/////////////////////////////////////////////////////////////////////
-    enlace_a("config");
-    enlace_a("security_page");
-    enlace_a("retiro_en_proceso");
+    });
+    return;
+  }
+  /////////////////////////////////////////////////////////////////////
+  enlace_a("main");
+  /////////////////////////////////////////////////////////////////////
+  enlace_a("config");
+  enlace_a("security_page");
+  enlace_a("retiro_en_proceso");
   //  enlace_a("info");
-//    enlace_a("cuadre_diario");
-//    enlace_a("cifras_generales");
-//    enlace_a("remesa_hermes");
-//    enlace_a("Smart_emptying");
-    enlace_a("Smart_emptied");
-    enlace_a("cashbox_unlocked");
-    enlace_a("Cashbox_Back_in_Service");
+  //    enlace_a("cuadre_diario");
+  //    enlace_a("cifras_generales");
+  //    enlace_a("remesa_hermes");
+  //    enlace_a("Smart_emptying");
+  enlace_a("Smart_emptied");
+  enlace_a("cashbox_unlocked");
+  enlace_a("Cashbox_Back_in_Service");
   //  enlace_a("iniciar_nueva_remesa");
-    mandar_orden_sin_link("close_serial_port");
-    mandar_orden_sin_link("open_serial_port");
-    mandar_orden_sin_link("initialize_validator");
-    mandar_orden_sin_link("send_synch");
-    mandar_orden_sin_link("send_enable_from_ui");
-    mandar_orden_sin_link("send_desable_from_ui");
-    mandar_orden_sin_link("send_all_levels_from_ui");
-    mandar_orden_sin_link("encripted_poll");
-    mandar_orden_sin_link("reset_from_ui");
-    mandar_orden_sin_link("stop_polling_from_ui");
-    mandar_orden_sin_link("online_from_ui");
+  mandar_orden_sin_link("close_serial_port");
+  mandar_orden_sin_link("open_serial_port");
+  mandar_orden_sin_link("initialize_validator");
+  mandar_orden_sin_link("send_synch");
+  mandar_orden_sin_link("send_enable_from_ui");
+  mandar_orden_sin_link("send_desable_from_ui");
+  mandar_orden_sin_link("send_all_levels_from_ui");
+  mandar_orden_sin_link("encripted_poll");
+  mandar_orden_sin_link("reset_from_ui");
+  mandar_orden_sin_link("stop_polling_from_ui");
+  mandar_orden_sin_link("online_from_ui");
 
 
 
@@ -106,114 +106,114 @@
 
 
 
-    mandar_orden_sin_link("request_support_online");
-    mandar_orden_sin_link("reconectar_validador");
-    mandar_orden_sin_link("lock_cashbox");
-    mandar_orden_sin_link("unlock_cashbox");
-    mandar_orden("smart_empty");
-    mandar_orden_sin_link("Smart_emptying");
-    mandar_orden_sin_link("read_new_tebs");
+  mandar_orden_sin_link("request_support_online");
+  mandar_orden_sin_link("reconectar_validador");
+  mandar_orden_sin_link("lock_cashbox");
+  mandar_orden_sin_link("unlock_cashbox");
+  mandar_orden("smart_empty");
+  mandar_orden_sin_link("Smart_emptying");
+  mandar_orden_sin_link("read_new_tebs");
   //  reflejar_orden("Smart_emptied");
   //  mandar_orden("Cashbox_Back_in_Service");
-    mandar_orden("cancelar_remesa");
-    // mandar_orden("trigger_socket");
-    //
-    //mopdificnado socket_to_tbm para incliuir in objeto a enviar.
-     //mandar_orden("socket_to_tbm");
+  mandar_orden("cancelar_remesa");
+  // mandar_orden("trigger_socket");
+  //
+  //mopdificnado socket_to_tbm para incliuir in objeto a enviar.
+  //mandar_orden("socket_to_tbm");
 
-     $(document).on("click","#socket_to_tbm",function(){
-       var data=[{
-         id:1,
-         tienda_id:9999,
-         monto:100
-       }]
-       console.log("sicronizando via socket con dato:"+data);
-       socket.emit("socket_to_tbm",data);
-     });
+  $(document).on("click","#socket_to_tbm",function(){
+    var data=[{
+      id:1,
+      tienda_id:9999,
+      monto:100
+    }]
+    console.log("sicronizando via socket con dato:"+data);
+    socket.emit("socket_to_tbm",data);
+  });
 
-     mandar_orden("pay_a_10");
-     mandar_orden("pay_a_20");
-     mandar_orden("pay_a_50");
-     mandar_orden("pay_a_60");
+  mandar_orden("pay_a_10");
+  mandar_orden("pay_a_20");
+  mandar_orden("pay_a_50");
+  mandar_orden("pay_a_60");
 
-     mandar_orden("pay_a_100");
-     mandar_orden("pay_a_200");
-     mandar_orden("iniciar_nueva_remesa");
-     mandar_orden("finish");
+  mandar_orden("pay_a_100");
+  mandar_orden("pay_a_200");
+  mandar_orden("iniciar_nueva_remesa");
+  mandar_orden("finish");
 
   //   mandar_orden("config");
-     mandar_orden("info");
+  mandar_orden("info");
   //   mandar_orden("main");
-     enlace_a("reciclador");
-     mandar_orden("cuadre_diario");
-     mandar_orden("cifras_generales");
-     mandar_orden("remesa_hermes");
-     mandar_orden("rm_2");
-     mandar_orden("rm_3");
-     mandar_orden("rm_4");
-     mandar_orden("rm_4_1");
-     mandar_orden("rm_5");
-    // mandar_orden("connected");
-    //orden iniciada en el client the tambox, enviada
-     mandar_orden("orden_sync");
-     mandar_orden_sin_link("lock_machine");
+  enlace_a("reciclador");
+  mandar_orden("cuadre_diario");
+  mandar_orden("cifras_generales");
+  mandar_orden("remesa_hermes");
+  mandar_orden("rm_2");
+  mandar_orden("rm_3");
+  mandar_orden("rm_4");
+  mandar_orden("rm_4_1");
+  mandar_orden("rm_5");
+  // mandar_orden("connected");
+  //orden iniciada en el client the tambox, enviada
+  mandar_orden("orden_sync");
+  mandar_orden_sin_link("lock_machine");
 
 
-    socket.on('logeando_a_client_side', function(msg) {
-          // ion.sound.play("water_droplet");
-          // display_message(msg);
-           var item = document.createElement('li');
+  socket.on('logeando_a_client_side', function(msg) {
+    // ion.sound.play("water_droplet");
+    // display_message(msg);
+    var item = document.createElement('li');
     item.textContent = msg;
     message2.appendChild(item);
     //window.scrollTo(0, document.body.scrollHeight);
 
-           console.log(msg);
-         });
+    console.log(msg);
+  });
 
-    socket.on('lock_machine', function(msg) {
-       console.log("locking machine");
-         $('#overlay, #overlay-back').fadeIn(500);
-     });
-    socket.on('iniciando', function(msg) {
-      console.log("refrescando pantallas");
-      window.location.replace("/");
-    });
-    socket.on('go_to_main', function(msg) {
-      socket.emit('main','main');
-    });
+  socket.on('lock_machine', function(msg) {
+    console.log("locking machine");
+    $('#overlay, #overlay-back').fadeIn(500);
+  });
+  socket.on('iniciando', function(msg) {
+    console.log("refrescando pantallas");
+    window.location.replace("/");
+  });
+  socket.on('go_to_main', function(msg) {
+    socket.emit('main','main');
+  });
 
-    // socket.on('Read', function(msg){
-    //   console.log("reading yeah!!");
-    //  display_message(msg);
-    // });
+  // socket.on('Read', function(msg){
+  //   console.log("reading yeah!!");
+  //  display_message(msg);
+  // });
 
 
-    /////////////////////////////////////////////////////////////////////
-    // socket.on('Cashbox_out_of_Service', function(msg) {
-    //   //display_system_running_indicator();
-    //   //online = true;
-    //   console.log(msg);
-    // });
-    // remote_TBM.on('machine', function(data) {
-    //   console.log("ticking...");
-    // });
-    ////////////////////////////////////////////////////
-    socket.on('system_running_indicator', function(msg) {
-      display_system_running_indicator();
-      online = true;
-      //console.log("system running ok");
-    });
-    function display_system_running_indicator() {
-      $("#system_running_indicator").show();
-      setTimeout(clear_system_running_indicator, 1000);
-    };
-    function clear_system_running_indicator() {
-      $("#system_running_indicator").hide();
-      // $('#overlay-back').fadeIn(500);
-    };
-    ////////////////////////////////////////////////////
-    var announce_once=true;
-    socket.on('show_connected_to_TBM', function(msg) {
+  /////////////////////////////////////////////////////////////////////
+  // socket.on('Cashbox_out_of_Service', function(msg) {
+  //   //display_system_running_indicator();
+  //   //online = true;
+  //   console.log(msg);
+  // });
+  // remote_TBM.on('machine', function(data) {
+  //   console.log("ticking...");
+  // });
+  ////////////////////////////////////////////////////
+  socket.on('system_running_indicator', function(msg) {
+    display_system_running_indicator();
+    online = true;
+    //console.log("system running ok");
+  });
+  function display_system_running_indicator() {
+    $("#system_running_indicator").show();
+    setTimeout(clear_system_running_indicator, 1000);
+  };
+  function clear_system_running_indicator() {
+    $("#system_running_indicator").hide();
+    // $('#overlay-back').fadeIn(500);
+  };
+  ////////////////////////////////////////////////////
+  var announce_once=true;
+  socket.on('show_connected_to_TBM', function(msg) {
     //  ion.sound.play("tambox_manager_is_online");
     // if (is_connected==true) {
     //
@@ -226,107 +226,107 @@
       announce_once=false;
 
     }
-      is_connected = true;
-      display_remote_conection_to_TBM();
-      clearTimeout(timer_de_display_remote_conection_to_tbm);
-      console.log("show_connected_to_TBM");
-      clear_conection_to_TBM();
-    });
-    socket.on('show_not_connected', function(msg) {
-      is_connected = false;
-      announce_once=true;
-      //aqui audio de perdida de conexion.
-      //ion.sound.play("glass");
-      ion.sound.play("not_conected");
-    });
-    socket.on('announce_user_connected', function(msg) {
-      console.log("a_user_has_connected");
+    is_connected = true;
+    display_remote_conection_to_TBM();
+    clearTimeout(timer_de_display_remote_conection_to_tbm);
+    console.log("show_connected_to_TBM");
+    clear_conection_to_TBM();
+  });
+  socket.on('show_not_connected', function(msg) {
+    is_connected = false;
+    announce_once=true;
+    //aqui audio de perdida de conexion.
+    //ion.sound.play("glass");
+    ion.sound.play("not_conected");
+  });
+  socket.on('announce_user_connected', function(msg) {
+    console.log("a_user_has_connected");
     //  ion.sound.play("glass");
 
-    });
+  });
 
-    socket.on('announce_tbm_is_online', function(msg) {
-      console.log("a_user_has_connected");
+  socket.on('announce_tbm_is_online', function(msg) {
+    console.log("a_user_has_connected");
     //  ion.sound.play("glass");
     server.io.emit('announce_tbm_is_online',"announce_tbm_is_online");
-    });
-
-    socket.on('announce_tbm_is_offline', function(msg) {
-      clear_conection_to_TBM();
-      console.log("announce_tbm_is_offline");
-      //ion.sound.play("not_conected");
-
-    });
-
-    socket.on('display_message_socket', function(msg) {
-      display_message(msg);
-      console.log(msg);
-    });
-    function clear_conection_to_TBM() {
-      timer_de_display_remote_conection_to_tbm = setTimeout(function() {
-        is_connected = false;
-      }, 20000);
-    }
-    function display_remote_conection_to_TBM() {
-      if (is_connected) {
-        $("#TBM_icon").css('visibility', 'visible');
-      } else {
-        $("#TBM_icon").css('visibility', 'hidden');
-      }
-      setTimeout(function() {
-        display_remote_conection_to_TBM();
-      }, 10000);
-    }
-    ////////////////////////////////////////////////////
-    function loadFile(filePath) {
-      var result = null;
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.open("GET", filePath, false);
-      xmlhttp.send();
-      if (xmlhttp.status==200) {
-        result = xmlhttp.responseText;
-      }
-      return result;
-    }
-    function cargar_pantalla_guardada() {
-        socket.emit("main");
-        //  $('#display').load("./system/buffer.html");
-          //,{machine_name:"PRO_0103"});
-
-    }
-    //////////////////////////////////////////
-    function display_message(mes_to_display) {
-      document.getElementById("message2").innerHTML = mes_to_display;
-      setTimeout(clear_message, 5000);
-    };
-    function clear_message() {
-      document.getElementById("message2").innerHTML = "";
-    //  document.getElementById("msg1").innerHTML = "Bloqueado";
-    };
-    //////////////////////////////////////////
-    function updateStatus(variable) {
-      if (!variable) {
-        document.getElementById('display').style.display = 'none';
-        document.getElementById('loading').style.display = 'inline';
-        //  ion.sound.play("un_momento_porfavor");
-      } else {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('display').style.display = 'inline';
-      //  ion.sound.play("tambox_manager_is_online");
-      }
-      online = false;
-      control(online);
-    }
-    // /////////////////////////////////////////////////////////////
-    var tim;
-    function control(variable) {
-      tim = setTimeout(function() {
-        updateStatus(online);
-      }, 10000); //aqui decia 1000
-    }
-    control(online);
-    /////////////////////////////////////////////////////////////
   });
+
+  socket.on('announce_tbm_is_offline', function(msg) {
+    clear_conection_to_TBM();
+    console.log("announce_tbm_is_offline");
+    //ion.sound.play("not_conected");
+
+  });
+
+  socket.on('display_message_socket', function(msg) {
+    display_message(msg);
+    console.log(msg);
+  });
+  function clear_conection_to_TBM() {
+    timer_de_display_remote_conection_to_tbm = setTimeout(function() {
+      is_connected = false;
+    }, 20000);
+  }
+  function display_remote_conection_to_TBM() {
+    if (is_connected) {
+      $("#TBM_icon").css('visibility', 'visible');
+    } else {
+      $("#TBM_icon").css('visibility', 'hidden');
+    }
+    setTimeout(function() {
+      display_remote_conection_to_TBM();
+    }, 10000);
+  }
+  ////////////////////////////////////////////////////
+  function loadFile(filePath) {
+    var result = null;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", filePath, false);
+    xmlhttp.send();
+    if (xmlhttp.status==200) {
+      result = xmlhttp.responseText;
+    }
+    return result;
+  }
+  function cargar_pantalla_guardada() {
+    socket.emit("main");
+    //  $('#display').load("./system/buffer.html");
+    //,{machine_name:"PRO_0103"});
+
+  }
+  //////////////////////////////////////////
+  function display_message(mes_to_display) {
+    document.getElementById("message2").innerHTML = mes_to_display;
+    setTimeout(clear_message, 5000);
+  };
+  function clear_message() {
+    document.getElementById("message2").innerHTML = "";
+    //  document.getElementById("msg1").innerHTML = "Bloqueado";
+  };
+  //////////////////////////////////////////
+  function updateStatus(variable) {
+    if (!variable) {
+      document.getElementById('display').style.display = 'none';
+      document.getElementById('loading').style.display = 'inline';
+      //  ion.sound.play("un_momento_porfavor");
+    } else {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('display').style.display = 'inline';
+      //  ion.sound.play("tambox_manager_is_online");
+    }
+    online = false;
+    control(online);
+  }
+  // /////////////////////////////////////////////////////////////
+  var tim;
+  function control(variable) {
+    tim = setTimeout(function() {
+      updateStatus(online);
+    }, 10000); //aqui decia 1000
+  }
+  control(online);
+  /////////////////////////////////////////////////////////////
+});
 
 
 </script>
@@ -352,10 +352,12 @@
     </div>
 
   </div>
+
+
   <div class="display_rasp" id="display">
     <div class="wrapperx" id="pizarra">
       <!-- ESTO SE LLENA EN LINEA CON LA INFORMACION GUARDADA EN BUFFER.HTML -->
     </div>
   </div>
-<!-- <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
+  <!-- <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script> -->
 </body>

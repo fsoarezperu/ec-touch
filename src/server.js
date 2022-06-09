@@ -68,6 +68,10 @@ app.set('view engine', '.hbs');
 httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
+  console.log("ramdom:");
+  var randy=Math.floor((Math.random() * 10000) + 1);
+  console.log(randy);
+
 ///////////////////////////////////////////////////
 //  console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
   try {
@@ -91,14 +95,18 @@ httpx.listen(machine_port, async function(io2) {
    console.log(chalk.green("idle"));
    await os.idle_poll_loop();
 
+   await si_es_espectral_ejecuta_esto(bingo("super bingo genio"));
+
+
+
   // var estox=await os.validatorpoll2(validator_address);
   // console.log(estox);
 
    setTimeout(function () {
-     io.emit("tambox_has_started");
+     io.emit("tambox_has_started","tambox OS inicio satisfactoriamente");
    }, 1000);
 
-   os.logea_a_client_side("hola guapo...");
+   os.logea_a_client_side("Sistema inicio...");
 
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
@@ -117,7 +125,30 @@ httpx.listen(machine_port, async function(io2) {
 
 });
 
+function si_es_espectral_ejecuta_esto(funcion_a_ajecutar){
+  return new Promise(function(resolve, reject) {
 
+    if (global.note_validator_type=="NV200 Spectral") {
+      try {
+        funcion_a_ajecutar
+        return   resolve()
+      } catch (e) {
+        console.log(e);
+      } finally {
 
+      }
+
+    }else {
+      console.log("esta maquina no es spectral");
+      return resolve();
+    }
+
+  });
+
+};
+
+function bingo(msg){
+  console.log("bingo esto fue ejectuado luego de ser detectado como spectral machine:"+msg);
+}
 /////////////////////////////////////////////////////////
 module.exports.io=io;
