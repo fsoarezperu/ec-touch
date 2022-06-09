@@ -896,6 +896,10 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
       console.log(horax1);
       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
+      console.log("tebsbarcode es:"+JSON.stringify(tebs_barcode));
+      var getting_cashbox_tebs_barcode=tebs_barcode;
+      getting_cashbox_tebs_barcode=getting_cashbox_tebs_barcode[0].tebs_barcode;
+      console.log(getting_cashbox_tebs_barcode);
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
         const nueva_res = {
           tienda_id,
@@ -905,7 +909,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
           fecha: fechax1,
           hora: horax1,
           moneda: country_code,
-          tebs_barcode: tebs_barcode,
+          tebs_barcode: getting_cashbox_tebs_barcode,
           machine_sn: numero_de_serie,
           tipo: 'ingreso',
           no_billetes: 0, //,
