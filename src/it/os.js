@@ -170,7 +170,7 @@ async function arranca_tambox_os() {
       //actualiza los valores remotos de la maquina
       logea(status);
 
-       return resolve (validator);// esto frena la ejecucion
+  //     return resolve (validator);// esto frena la ejecucion
 
       //  var second='Offline';
       //  var result = status.localeCompare(second)
@@ -1135,6 +1135,11 @@ async function consulta_remesa_hermes_actual() {
     //genenar tebsbarcode autogenerado de 10 digitas.
     tebs_barcode= await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and machine_sn=?",[global.numero_de_serie])
     console.log("tebs_barcode_consultado_para casbox");
+    if (tebs_barcode.length==0) {
+      console.log("aqui obviamante no hay bolsa, lo que podria significar que es spectral.");
+    return [];
+    }
+
   }
   console.log("ahora el tebsbarcode esta marcando esto:"+tebs_barcode[0].tebs_barcode);
   current_tebs_barcode=tebs_barcode[0].tebs_barcode;
