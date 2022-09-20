@@ -1,0 +1,45 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+    function mandar_orden_sin_link2(a2) {
+      var a2y="#"+a2;
+      $(document).on("click",a2y,function(){
+        console.log("receiving sin link:"+a2);
+        socket.emit(a2,a2);
+      });
+      return;
+    };
+    console.log("loading softare update page");
+
+    //$("#start_software_udpate").click(function() {
+  //    alert("iniciating update");
+      mandar_orden_sin_link2("start_software_udpate");
+  //  });
+
+
+  });
+
+
+  </script>
+
+<body  oncontextmenu="return false">
+  <div class="wrapper">
+    <div class="titulo">
+        <div class="ec_btn" id='config'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div>
+      <div>Sotware Update</div>
+    </div>
+
+    <div class="remesa_hermes">
+      <div class="mensaje_centrado2">
+        <p>Version de software actual:</p>
+        <div class="ec_btn btn_grupo4" id='start_software_udpate'><i class="fas fa-sync-alt fa-3x"></i>Iniciar Update</div>
+      </div>
+      <!-- <div class="btn" id='main'><i class="fas fa-long-arrow-alt-left  fa-1x"></i></div> -->
+
+    </div>
+
+  </div>
+  <div id="message">
+    <ol></ol>
+  </div>
+
+</body>

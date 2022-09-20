@@ -141,23 +141,25 @@ try {
 module.exports.get_tbm_rh=get_tbm_rh;
 //////////////////////////////////////////////////////////////
 async function consulta_limite_maximo_de_pago_en_tbm(){
+  var timer_limite_de_pago;
   if (tbm_status==true) {
     return new Promise(async function(resolve, reject) {
       try {
         to_tbm.socket_to_tbm.emit('consulta_limite_maximo_de_pago_en_tbm',global.numero_de_serie);
-        os.logea("socket enviado consultado limite para machine_sn:"+global.numero_de_serie);
+        console.log("socket enviado consultado limite para machine_sn:"+global.numero_de_serie);
         to_tbm.socket_to_tbm.on('consulta_limite_maximo_de_pago_en_tbm', async function(data) {
-          os.logea("lo de abajo es data");
-          os.logea(data);
+          console.log("lo de abajo es data1");
+          console.log(data);
           if (data.length>0) {
             //console.log(chalk.cyan("consulta_limite_maximo_de_pago_en_tbm:"+data[0].limite_maximo_de_retiro));
             var respuesta123=data[0].limite_maximo_de_retiro;
+            clearTimeout(timer_limite_de_pago);
             return resolve(respuesta123);
           }else {
             console.log("data fue undefined");
-            setTimeout(function () {
+            timer_limite_de_pago=setTimeout(function () {
               console.log(chalk.red("RESOLVED BY TIMEOUT"));
-              return resolve(200);
+              return resolve(global.limite_maximo_de_retiro);
             }, 1000);
           }
 

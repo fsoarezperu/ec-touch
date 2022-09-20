@@ -64,55 +64,100 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'}));
 app.set('view engine', '.hbs');
 /////////////////////////////////////////////////////////////////////
+
+let probando=  new Promise(async function(resolve, reject) {
+  console.log("iniciando las consultas previas ");
+    try {
+      console.log(chalk.cyan("/////////////////////////////////////////////////"));
+      await os.habilita_sockets();
+      ///////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////
+      console.log(chalk.magenta("/////////////////////////////////////////////////"));
+      await os.comprobar_serialcom();
+      ///////////////////////////////////////////////////////////////////
+      console.log(chalk.cyan("/////////////////////////////////////////////////"));
+      await os.obtener_datos_de_conexion();
+      ///////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////
+      var os_step1=await os.arranca_tambox_os();
+      console.log("os_step1:"+os_step1);
+      console.log("TBM status is:"+tbm_status);
+      console.log("device is:"+note_validator_type);
+      if (note_validator_type=='NV200 Spectral') {
+        console.log(chalk.cyan("Spectral fue detectado aqui"));
+      }else {
+        console.log(chalk.yellow("Note validator type is:"+note_validator_type));
+      }
+      console.log("comprobando maquina inicial aqui abajo:");
+      var maquina_inicial=await os.comprueba_maquina_inicial();
+      os.logea(chalk.green("comprobando maquina inicial"));
+      os.logea(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
+      os.logea(chalk.green("***************************************"));
+      ///////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////
+
+       console.log(chalk.magenta("/////////////////////////////////////////////////"));
+       ///////////////////////////////////////////////////////////////////
+       ///////////////////////////////////////////////////////////////////
+       ///////////////////////////////////////////////////////////////////
+       ///////////////////////////////////////////////////////////////////
+         resolve();
+     } catch (e) {
+       console.log(e);
+     }
+  })
+
+probando.then(() =>{
+setTimeout(function () {
 //////////////////////////////////////////////////////////////////////
 httpx.listen(machine_port, async function(io2) {
   on_startup = true; //mientras esta variable este en true, no permitira que el servidor reciba consultar desde las apis.
   os.logea("indica que esta en startup");
-  console.log("ramdom:");
-  var randy=Math.floor((Math.random() * 10000) + 1);
-  console.log(randy);
+  // console.log("ramdom:");
+  // var randy=Math.floor((Math.random() * 10000) + 1);
+  // console.log(randy);
+
+  //child proces
+  // const { exec } = require('child_process');
+  //
+  // setTimeout(function () {
+  //   var yourscript = exec('sh hi.sh',
+  //           (error, stdout, stderr) => {
+  //               console.log(stdout);
+  //               console.log(stderr);
+  //               if (error !== null) {
+  //                   console.log(`exec error: ${error}`);
+  //               }
+  //           });
+  // }, 10000);
 
 ///////////////////////////////////////////////////
 //  console.log("Rectangulo es:"+mis_classes.Rectangulo(456));
   try {
-    try {
-          await os.obtener_datos_de_conexion();
-    } catch (e) {
-      console.log(e);
-    }
-
-    await os.habilita_sockets();
-    await os.comprobar_serialcom();
-    await os.arranca_tambox_os();
-    if (tbm_status) {
-      await synch_tbm.are_synched();
-    };
-
-   var data=await os.consulta_all_levels();
-   console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
-
+   //  if (tbm_status) {
+   //    await synch_tbm.are_synched();
+   //  };
+   //
+   // var data=await os.consulta_all_levels();
+   // console.log(chalk.green("all levels es:"+JSON.stringify(data[0].cantidad_de_billetes_en_reciclador)));
+   //
    console.log(chalk.green("El sistema arranco sin problemas, iniciando Poll loop"));
    console.log(chalk.green("idle"));
+   on_startup = false; 
    await os.idle_poll_loop();
-
-   await si_es_espectral_ejecuta_esto(bingo("super bingo genio"));
-
-
-
-  // var estox=await os.validatorpoll2(validator_address);
-  // console.log(estox);
-
+   //
+   // await si_es_espectral_ejecuta_esto(bingo("super bingo genio"));
    setTimeout(function () {
      io.emit("tambox_has_started","tambox OS inicio satisfactoriamente");
    }, 1000);
 
-   os.logea_a_client_side("Sistema inicio...");
+   os.logea_a_client_side("Activando servidor web");
 
   } catch (e) {
     console.log(chalk.magenta.inverse("error General de OS:"+e));
   }finally{
-
-
 
   }
 
@@ -122,6 +167,10 @@ httpx.listen(machine_port, async function(io2) {
 // console.log(tebs_events.lista_de_eventos.slave_reset);
 // var esto=mis_classes.Rectangulo(4);
 // console.log(esto);
+
+});
+
+}, 10000);
 
 });
 

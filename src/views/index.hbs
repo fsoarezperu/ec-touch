@@ -88,6 +88,9 @@ $(document).ready(function() {
   enlace_a("cashbox_unlocked");
   enlace_a("Cashbox_Back_in_Service");
   //  enlace_a("iniciar_nueva_remesa");
+
+
+
   mandar_orden_sin_link("close_serial_port");
   mandar_orden_sin_link("open_serial_port");
   mandar_orden_sin_link("initialize_validator");
@@ -157,6 +160,8 @@ $(document).ready(function() {
   //orden iniciada en el client the tambox, enviada
   mandar_orden("orden_sync");
   mandar_orden_sin_link("lock_machine");
+  mandar_orden("software_udpate");
+  mandar_orden("remote_sync");
 
 
   socket.on('logeando_a_client_side', function(msg) {

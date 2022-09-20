@@ -220,6 +220,18 @@
       console.log("trasaccion finalizada automaticamente por la maquina.");
       console.log(msg);
     });
+
+    socket.on('software_udpate', function(msg) {
+      ion.sound.play("tambox_has_started");
+      console.log("software update requested automaticamente por la maquina.");
+      console.log(msg);
+    });
+    socket.on('remote_sync', function(msg) {
+      ion.sound.play("tambox_has_started");
+      console.log("remote sync requested automaticamente por la maquina.");
+      console.log(msg);
+    });
+
     // socket.on('adopt', function(msg) {
     // //  $('#out_of_service').fadeOut(500);
     // console.log("adopting machine:"+msg);

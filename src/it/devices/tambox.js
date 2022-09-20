@@ -173,6 +173,7 @@ exports.finalizar_remesas_en_proceso=async function(){
   });
 }
 
+//esto necesita finalizar solo los pagos de la maquina especifica, necesito agregar where machine_sn=?  global.machine_sn
 exports.finalizar_pagos_en_proceso=async function(){
 return new Promise(async function(resolve, reject) {
   try {

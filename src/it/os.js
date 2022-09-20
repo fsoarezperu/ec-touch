@@ -25,15 +25,15 @@ async function coneccion_con_tbm(){
   return new Promise(async function(resolve, reject) {
     try {
       // var machine_queried=await consulta_this_machine_en_tbm();}
-       console.log("flag0568");
+      // console.log("flag0568");
       var machine_queried=await tock_tock_tbm();
-        console.log("en coneccion con tbm machine queried es123587:"+machine_queried);
+        //console.log("en coneccion con tbm machine queried es123587:"+machine_queried);
         if (machine_queried=="Online") {
           tbm_status=true;
         }else {
           tbm_status=false;
         }
-        console.log(tbm_status);
+      //  console.log(tbm_status);
       if (typeof tbm_status === 'boolean' && tbm_status === false) {
         //  console.log(" tbm is OFFLINE");
         //  tbm_status=false;
@@ -42,16 +42,7 @@ async function coneccion_con_tbm(){
 
       }else {
         console.log(" tbm aparently online");
-        var machine_queried=await consulta_this_machine_en_tbm();
-        //console.log("en coneccion con tbm machine queried es:"+machine_queried);
-        console.log("Info en TBM sobre esta maquina:");
-        console.log(JSON.parse(JSON.stringify(machine_queried)));
-        //actualiza los datos de esta maquina y sobre escribe los datos locales.
-        tbm_status=true;
-        //   return resolve(chalk.green.inverse("Online"));
-        //     return resolve("Online");
 
-        //
         return resolve(machine_queried);
       }
 
@@ -98,6 +89,7 @@ async function tock_tock_tbm() {
 }
 module.exports.tock_tock_tbm = tock_tock_tbm;
 //////////////////////////////////////////////
+// esta funcion comprueba si existe una remesa hermes en la base de datos y sino la crea en status iniciada.
 async function comprueba_rh_inicial(){
   var rh_leida=await consulta_remesa_hermes_actual();
   if (rh_leida.length>0) {
@@ -114,50 +106,106 @@ module.exports.comprueba_rh_inicial=comprueba_rh_inicial;
 async function arranca_tambox_os() {
   return new Promise(async function(resolve, reject) {
     try {
-      // slave_count=0;
-      // ecount=0;
       var this_ts=moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
       console.log(this_ts);
-      let step1=await tambox.finalizar_pagos_en_proceso();
-      console.log(chalk.green("pagos Inconclusos fueron finalizadas:"+step1));
-      let step2=await tambox.finalizar_remesas_en_proceso();
-      console.log(chalk.green("remesas Inconclusas fueron finalizadas:"+step2));
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
 
-      console.log(chalk.green("Iniciando Validador"));
+      // let step1=await tambox.finalizar_pagos_en_proceso();
+      // console.log(chalk.green("pagos Inconclusos fueron finalizadas:"+step1));
+      // let step2=await tambox.finalizar_remesas_en_proceso();
+      // console.log(chalk.green("remesas Inconclusas fueron finalizadas:"+step2));
+
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      console.log(chalk.magenta("/////////////////////////////////////////////////"));
+      console.log(chalk.magenta("Starting Tambox OS 1.0"));
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      logea(chalk.green("Iniciando Validador"));
       logea_a_client_side("Iniciando Validador");
-
       var validator = await inicializar_validador();
       console.log(chalk.green("Validador inicio:" + validator));
-      logea(chalk.green("***************************************"));
-////////////////////////////////////////////////////////////////////////
-//try {
-  console.log(chalk.green("Comprobando conexion con TBM"));
-  var status=await coneccion_con_tbm();
-  //console.log("status es:"+JSON.stringify(status));
-  console.log("status es:"+ status);
-  logea(chalk.green("***************************************"));
-//} catch (e) {
-//  console.log(e);
-//}
+      console.log(chalk.green("***************************************"));
+    //  console.log(chalk.magenta("Point OF interest 1 reached here"));
+    //  console.log(chalk.magenta("/////////////////////////////////////////////////"));
 
-      ///////////////////////////////////////////////////////////////////
-      var maquina_inicial=await comprueba_maquina_inicial();
-      logea(chalk.green("comprobando maquina inicial"));
-      logea(chalk.green("maquina_inicial es:"+ JSON.stringify(maquina_inicial)));
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      console.log(chalk.green("Comprobando conexion con TBM"));
+      var status=await coneccion_con_tbm();
+      //console.log("status es:"+JSON.stringify(status));
+      console.log("status es:"+ status);
       logea(chalk.green("***************************************"));
-      ///////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+if (status=='Online') {
+  console.log("since tbm is online, we are quering this sn machine to find out the latest information about it on the cloud. and use it during startup");
+  var machine_queried=await consulta_this_machine_en_tbm();
+  //console.log("en coneccion con tbm machine queried es:"+machine_queried);
+  console.log("Info en TBM sobre esta maquina:");
+  console.log(JSON.parse(JSON.stringify(machine_queried)));
+  //actualiza los datos de esta maquina y sobre escribe los datos locales.
+    var x1=machine_queried.tienda_id;
+    var x2=machine_queried.machine_sn;
+    var x3=machine_queried.name;
+    var is_locked11=machine_queried.is_locked;
+    ///////////////////////////////////
+    global.is_locked=machine_queried.is_locked;
+    ///////////////////////////////////
+    console.log("x1 (tienda_id) es:"+x1);
+    console.log("x2 (machine_sn) es:"+x2);
+    console.log("x3 (name) es:"+x3);
+
+    await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
+    console.log("luego del check in se actualizo el valor de tienda id a:"+machine_queried.tienda_id);
+    console.log("y el valor de is_locked:"+machine_queried.is_locked);
+
+    //vuelve a ejecutar coneccion con
+    //  return resolve (status);
+    // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
+    //  if (tbm_status== TRUE) {
+    await tbm_paso1();
+
+
+
+}else {
+  console.log("since tbm is currently offline, we can not get the update from cloud for this machine sn.");
+}
+// console.log(chalk.magenta("Point OF interest 2 reached"));
+// console.log(chalk.magenta("/////////////////////////////////////////////////"));
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+
+// console.log(chalk.magenta("tebs_barcode en global aqui abajo3"));
+// console.log(global.tebs_barcode);
+//
+//       console.log(chalk.magenta("tebs_barcode en global aqui abajo4"));
+//       console.log(global.tebs_barcode);
       try {
+        console.log("comprobando rh inicial aqui abajo:");
         var rh_inicial=await comprueba_rh_inicial()
         logea("RH_incial es:"+rh_inicial);
         logea(chalk.green("comprobando remesa hermes inicial"));
-        logea(chalk.green("maquina_inicial es:"+JSON.stringify( rh_inicial)));
+        logea(chalk.green("remesa hermes es:"+JSON.stringify( rh_inicial)));
         logea(chalk.green("***************************************"));
         ///////////////////////////////////////////////////////////////////
       } catch (e) {
         console.log(e);
       }
-
-
+  //return resolve("ended");
+      // console.log(chalk.magenta("tebs_barcode en global aqui abajo5"));
+      // console.log(global.tebs_barcode);
       //lee los valores locales de la maquina ,
       // var informacion_maquina_local = {
       //   numero_de_serie: global.numero_de_serie,
@@ -169,36 +217,24 @@ async function arranca_tambox_os() {
       logea(JSON.parse(JSON.stringify(informacion_maquina_local)));
       //actualiza los valores remotos de la maquina
       logea(status);
-
+      // console.log(chalk.magenta("tebs_barcode en global aqui abajo6"));
+      // console.log(global.tebs_barcode);
   //     return resolve (validator);// esto frena la ejecucion
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 
       //  var second='Offline';
       //  var result = status.localeCompare(second)
       //  console.log(result);
-      if (tbm_status== true) {
-        var x1=status.tienda_id;
-        var x2=status.machine_sn;
-        var x3=status.name;
-        var is_locked11=status.is_locked;
-        ///////////////////////////////////
-        global.is_locked=status.is_locked;
-        ///////////////////////////////////
-        console.log("x1 (tienda_id) es:"+x1);
-        console.log("x2 (machine_sn) es:"+x2);
-        console.log("x3 (name) es:"+x3);
 
-        await pool.query("UPDATE machine SET tienda_id=?, machine_name=?, is_locked=? WHERE machine_sn=?", [x1,x3,is_locked11,x2]);
-        console.log("luego del check in se actualizo el valor de tienda id a:"+status.tienda_id);
-        console.log("y el valor de is_locked:"+status.is_locked);
-
-        //vuelve a ejecutar coneccion con
-        //  return resolve (status);
-        // OJO AQUI CREO QUE LO DE ABAJO NO SE ESTA CORRIENDO POR EL RETURN DE ARRIBA
-        //  if (tbm_status== TRUE) {
-        await tbm_paso1();
-      }else {
-        logea(chalk.red("tbm status is offline error#2356"));
-      }
       //    }else {
       //    console.log(chalk.red("TBM still offline at this point!"));
       //    }
@@ -235,9 +271,15 @@ async function inicializar_validador() {
       logea("validator address is:"+validator_address);
       await ssp.negociate_encryption(validator_address);
       var validatorpoll_var = await validatorpoll2(validator_address);
-      //    console.log("validator poll var:",validatorpoll_var);
+      //  console.log("validator poll var:",validatorpoll_var);
       if (validatorpoll_var == "no existe bolsa detectada") {
-        // console.log("Aqui compruebo que no hay bolsa");
+
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+
+        console.log("Aqui compruebo que no hay bolsa");
         await bolsa_retrial();
         // console.log("aqui retornando de bolsa retrial:");
         await new_lock_cashbox();
@@ -251,12 +293,24 @@ async function inicializar_validador() {
           logea("********************************");
         }
         await set_channel_inhivits2(validator_address);
-        await set_validator_routing2(validator_address);
+        if (note_validator_type!='NV200 Spectral') {
+          await set_validator_routing2(validator_address);
+        }else {
+          console.log("spectral detected, no setting routing here. no needed");
 
+        }
         return resolve("Validador iniciado");
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+
       } else {
-        //
-        //  console.log("continuo arranque normal");
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        logea("continua arranque normal habiendo encontrado bolsa");
         await ssp.set_protocol_version(validator_address,validator_protocol_version);
         await ssp.setup_request_command2(validator_address);
         if(note_validator_type == "TEBS+Payout"){
@@ -265,9 +319,21 @@ async function inicializar_validador() {
           logea("********************************");
         }
         await set_channel_inhivits2(validator_address);
-        await set_validator_routing2(validator_address);
+        // await set_validator_routing2(validator_address);
+        if (note_validator_type!='NV200 Spectral') {
+
+          await set_validator_routing2(validator_address);
+        }else {
+          logea("spectral detected, no setting routing here. no needed");
+
+        }
         // console.log("aqui compruebo que si hay bolsa, y continuo el arranque normal");
         return resolve("OK");
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////
+
       }
 
     } catch (e) {
@@ -303,6 +369,44 @@ function logea_a_client_side(mensaje){
 }
 module.exports.logea_a_client_side=logea_a_client_side;
 
+////////////////////////////////////////////////////////////
+function get_configuration_data(){
+  return new Promise(async function(resolve, reject) {
+    try {
+      var this_machine = await pool.query("SELECT * FROM machine");
+        var pass_code_data;
+        var config_data;
+      if (this_machine.length>0) {
+        logea("maquina encontrada en base de datos arranque inicial");
+        logea(this_machine);
+        var this_passcode=this_machine[0].passcode;
+        pass_code_data={
+          pass_code:this_passcode
+        }
+      }else {
+          console.log("maquina no encontrada en base de datos, se pone clave default de 9999");
+        pass_code_data={
+          pass_code:"9999"
+        }
+      }
+    //  console.log("global current_tebs sera consultado aQUI::::::::::::: esto deberia correrse luego de que el validador dio OK");
+    //  console.log(global.tebs_barcode);
+    //  console.log("arriba imprimi el valor de tebsbarcode en gloabls.");
+       config_data={
+        current_tebs:global.tebs_barcode
+      }
+    //  console.log("config data:"+JSON.stringify(config_data));
+    //  console.log("passcode data:"+JSON.stringify(pass_code_data));
+      return resolve({config_data,pass_code_data});
+    } catch (e) {
+      console.log(e);
+    } finally {
+
+    }
+  });
+}
+module.exports.get_configuration_data=get_configuration_data;
+
 /////////////////////////////////////////////////////////
 // Create shutdown function
 function shutdown(callback) {
@@ -333,6 +437,8 @@ module.exports.timer2 = timer2;
 /////////////////////////////////////////////////////////
 async function tbm_paso1() {
   //verificar registro de maquina.
+        console.log(chalk.magenta("/////////////////////////////////////////////////"));
+        console.log(chalk.magenta("/////////////// TBM paso 1 //////////////////////"));
   await comprueba_maquina_inicial();
   await to_tbm.iniciar_handshake_con_tbm();
   var regis=await is_this_machine_registered();
@@ -898,7 +1004,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
       console.log("probando aqui de agregar ts_incio al momento de crear nueva remesa manual:"+this_ts);
       console.log("tebsbarcode es:"+JSON.stringify(tebs_barcode));
       var getting_cashbox_tebs_barcode=tebs_barcode;
-      getting_cashbox_tebs_barcode=getting_cashbox_tebs_barcode[0].tebs_barcode;
+    //  getting_cashbox_tebs_barcode=getting_cashbox_tebs_barcode[0].tebs_barcode;
       console.log(getting_cashbox_tebs_barcode);
       if (tienda_id && no_caja && codigo_empleado && no_remesa) {
         const nueva_res = {
@@ -1146,7 +1252,8 @@ async function consulta_remesa_hermes_actual() {
 
   }
   console.log("ahora el tebsbarcode esta marcando esto:"+tebs_barcode[0].tebs_barcode);
-  current_tebs_barcode=tebs_barcode[0].tebs_barcode;
+  global.tebs_barcode=tebs_barcode[0].tebs_barcode;
+  current_tebs_barcode=global.tebs_barcode;
   const remesa_hermes_entambox = await pool.query("SELECT * FROM remesa_hermes WHERE status='iniciada' and tebs_barcode=?", [current_tebs_barcode]);
   console.log("consulta_remesa_hermes_actual en status iniciada:");
   console.log(JSON.parse(JSON.stringify(remesa_hermes_entambox)));
@@ -1730,8 +1837,10 @@ function habilita_sockets() {
       const io2 = require('./socket')(server.io);
       //reject("no se pudieron habilitar!");
       //console.log("habilitados");
-      resolve();
-    }, 1000);
+      console.log("socket io habilitado");
+      return resolve();
+    }, 500);
+
   });
 
 
@@ -1739,13 +1848,14 @@ function habilita_sockets() {
 module.exports.habilita_sockets = habilita_sockets;
 /////////////////////////////////////////////////////////////////
 async function validatorpoll2(receptor) {
-//   console.log("entrando a validator pool2");
+   //console.log("entrando a validator pool2");
     return new Promise(async function(resolve, reject) {
         try {
           var step1 = await ssp.envia_encriptado(receptor, global.poll);
-            //console.log("step1:"+step1);
+          //  console.log("step1:"+step1);
           var data = await ssp.handlepoll(step1);
-          //    console.log("data:"+data);
+            //  console.log("data:"+data);
+          //    console.log("global.existe_bolsa="+global.existe_bolsa);
               if (global.existe_bolsa == false) {
                 resolve("no existe bolsa detectada");
               }else {
@@ -2042,11 +2152,9 @@ async function comprueba_maquina_inicial(){
 return new Promise(async function(resolve, reject) {
   try {
     //cuenta cuantas maquinas existen en la base de datos.
-
-
-    logea(chalk.green("USO LOCAL DE LIMITE DE PAGO"));
+    //logea(chalk.green("USO LOCAL DE LIMITE DE PAGO"));
     var this_machine222=await consulta_this_machine();
-
+    console.log(this_machine222);
     if (this_machine222.length>0) {
       limite_maximo_de_retiro=this_machine222[0].limite_maximo_de_retiro;
       logea(chalk.green("limite maximo detectado para retiro es de:"+limite_maximo_de_retiro));
@@ -2064,12 +2172,12 @@ return new Promise(async function(resolve, reject) {
     }else {
       console.log("NEW MACHINE CREATED");
       const nueva_machine_inicial = {
-        tienda_id:9999,
+        tienda_id:global.new_machine_default_id,
         machine_sn: global.numero_de_serie,
         tipo: global.note_validator_type,
         public_machine_ip: global.public_machine_ip,
         machine_ip:global.machine_ip,
-        limite_maximo_de_retiro:200
+        limite_maximo_de_retiro:global.limite_maximo_de_retiro
       }
       await pool.query('INSERT INTO machine set ?', [nueva_machine_inicial]);
       return resolve("OK");

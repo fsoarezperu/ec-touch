@@ -9,7 +9,7 @@ global.en_reciclador_antes_de_retiro=0;
 global.en_reciclador_despues_de_retiro=0;
 global.no_billetes_en_ultimo_retiro=0;
 
-
+global.new_machine_default_id=9999; //id when created a defult new machine.
 global.limite_maximo_de_retiro=50;
 global.si_existe_bolsa=false;
 global.new_manual_remesa;

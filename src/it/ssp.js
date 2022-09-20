@@ -2047,7 +2047,7 @@ function sync_and_stablish_presence_of(receptor) {
     return new Promise(async function(resolve, reject) {
       try {
             os.logea(chalk.green("/////////////////////////////////"));
-            console.log(chalk.green("sync_and_stablish_presence_of:"+device));
+            os.logea(chalk.green("sync_and_stablish_presence_of:"+device));
             os.logea(chalk.green("/////////////////////////////////"));
             // os.logea("SYNCH command sent to:"+device);
                   for (var i = 0; i < 3; i++) {
@@ -2082,7 +2082,7 @@ function negociate_encryption(receptor) {
         enc.getkeys();
         var setGenerator = enc.set_generator_();
         os.logea(chalk.green("/////////////////////////////////"));
-        console.log(chalk.green("SET GENERATOR command sent"));
+        os.logea(chalk.green("SET GENERATOR command sent"));
          ultimo_valor_enviado="setGenerator";
           var step1=await sp.transmision_insegura(receptor,setGenerator) //<------------------------------ synch
             os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step1));
@@ -2093,7 +2093,7 @@ function negociate_encryption(receptor) {
              if (step2=="OK") {
                var setModulus = enc.set_modulus();
                os.logea(chalk.green("/////////////////////////////////"));
-              console.log(chalk.green("SET MODULUS command sent"));
+              os.logea(chalk.green("SET MODULUS command sent"));
                            ultimo_valor_enviado="setModulus";
                var step3=await sp.transmision_insegura(receptor,setModulus) //<------------------------------ synch
                  os.logea(chalk.yellow(device+'<-:'), chalk.yellow(step3));
@@ -2105,7 +2105,7 @@ function negociate_encryption(receptor) {
                          //  var step6;
                          var rKE = await enc.send_request_key_exchange();
                          os.logea(chalk.green("/////////////////////////////////"));
-                         console.log(chalk.green("Request Key Exchange command sentx1"));
+                         os.logea(chalk.green("Request Key Exchange command sentx1"));
                          ultimo_valor_enviado="request key exchange";
                          os.logea("ecount2:",ecount+" slave_count:",slave_count);
                          var step5=await sp.transmision_insegura(receptor,rKE); //<--------------------------- REquest key exchange
@@ -2114,7 +2114,7 @@ function negociate_encryption(receptor) {
                            var step6=await enc.handleRKE(step5);
                            if(step6.length>0){
                              os.logea(chalk.green('KEY:'), chalk.green(step6));
-                             console.log(chalk.green("Encripted comunication Active"));
+                             os.logea(chalk.green("Encripted comunication Active"));
                              os.logea_a_client_side("Encripted comunication Active");
                              os.logea(chalk.green("/////////////////////////////////"));
                              encryptionStatus = true;

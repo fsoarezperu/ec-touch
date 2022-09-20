@@ -11,6 +11,7 @@ const pool = require('./../database');
 const sp2= require('./serial_port');
 module.exports = function (io) {
 //let io = require('socket.io')(server,{cookie: false});
+
 const sp= require('./serial_port')(io);
 const ssp = require('./ssp')(io);
 const moment=require("moment");
@@ -377,16 +378,13 @@ io.on('connection', async function (socket) {
     //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
     io.emit('iniciando_remesa', "iniciando_remesa");
    });
-
-
-   socket.on('pay_a_10',async function(){
+  socket.on('pay_a_10',async function(){
       new_manual_pay= Math.floor((Math.random() * 10000) + 1);
       console.log(chalk.yellow("Nuevo pago manual ejecutado"));
       const this_machine= await pool.query("SELECT * FROM machine");
       global.manual_pay=true;
       os.crear_nuevo_pay_20(10,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
      });
-
   socket.on('pay_a_20',async function(){
      new_manual_pay= Math.floor((Math.random() * 10000) + 1);
      console.log(chalk.yellow("Nuevo pago manual ejecutado"));
@@ -398,15 +396,13 @@ io.on('connection', async function (socket) {
      //nuevo_enlace('iniciar_nueva_remesa','../system/remesa/remesa_1.html');
     //io.emit('realizando_pago', "realizando_pago");
     });
-
-    socket.on('pay_a_60',async function(){
+  socket.on('pay_a_60',async function(){
         new_manual_pay= Math.floor((Math.random() * 10000) + 1);
         console.log(chalk.yellow("Nuevo pago manual ejecutado"));
         const this_machine= await pool.query("SELECT * FROM machine");
         global.manual_pay=true;
         os.crear_nuevo_pay_20(60,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
        });
-
   socket.on('pay_a_50',async function(){
       new_manual_pay= Math.floor((Math.random() * 10000) + 1);
       console.log(chalk.yellow("Nuevo pago manual ejecutado"));
@@ -421,15 +417,13 @@ io.on('connection', async function (socket) {
        global.manual_pay=true;
        os.crear_nuevo_pay_20(100,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
       });
-
-      socket.on('pay_a_200',async function(){
+  socket.on('pay_a_200',async function(){
          new_manual_pay= Math.floor((Math.random() * 10000) + 1);
          console.log(chalk.yellow("Nuevo pago manual ejecutado"));
          const this_machine= await pool.query("SELECT * FROM machine");
          global.manual_pay=true;
          os.crear_nuevo_pay_20(200,new_manual_pay,this_machine[0].tienda_id,001,8888,tambox.fecha_actual(),tambox.hora_actual());
         });
-
   socket.on('finish',async function(){
      console.log(chalk.yellow("Nueva remesa manual terminada"));
      try {
@@ -715,31 +709,26 @@ module.exports.autostart=autostart;
        os.logea_a_client_side("online_from_ui ->:"+msg);
   });
 
-  var this_machine = await pool.query("SELECT * FROM machine");
-    var pass_code_data;
-  if (this_machine.length>0) {
-    console.log("maquina encontrada en base de datos ararnque inicial");
-    var this_passcode=this_machine[0].passcode;
-    pass_code_data={
-      pass_code:this_passcode
-    }
-  }else {
-      console.log("maquina no encontrada en base de datos, se pone clave default de 9999");
-    pass_code_data={
-      pass_code:"9999"
-    }
-  }
-console.log("global current_tebs sera consultado aQUI::::::::::::: ya existe? y fue populado?????");
-  var config_data={
-    current_tebs:global.current_tebs
-  }
-  console.log("config data:"+JSON.stringify(config_data));
-  console.log("passcode data:"+JSON.stringify(pass_code_data));
+console.log(chalk.cyan("//////////////////////////////////////////////////////////////////////"));
+console.log(chalk.cyan("//////////////// Getting info to load main website////////////////////"));
+console.log(chalk.cyan("//////////////////////////////////////////////////////////////////////"));
+
+var config_data=await os.get_configuration_data();
+console.log("config_data is:");
+console.log(config_data.config_data);
+console.log("passcode data is:");
+console.log(config_data.pass_code_data);
+console.log(chalk.cyan("//////////////////////////////////////////////////////////////////////"));
+console.log(chalk.cyan("//////////////////////////////////////////////////////////////////////"));
+console.log(chalk.cyan("//////////////////////////////////////////////////////////////////////"));
 
 // os.conectar_enlace_de(socket,'config','../system/configuracion.html',config_data);
 os.conectar_enlace_de(socket,'Smart_emptied','../system/remesa_hermes/rm_3.html',"null");
 os.conectar_enlace_de(socket,'cashbox_unlocked','../system/remesa_hermes/rm_4.html',"null");
 os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/rm_5.html',"null");
+
+os.conectar_enlace_de(socket,'software_udpate','../system/software_update/soft_update_1.html',"null");
+os.conectar_enlace_de(socket,'remote_sync','../system/remote_sync/remote_sync_1.html',"null");
 
   function super_enlace(orden,mensaje,ruta_de_plantilla,vardataxxy,pre_call_back){
   if(pre_call_back !== undefined){
@@ -753,9 +742,9 @@ os.conectar_enlace_de(socket,'Cashbox_Back_in_Service','../system/remesa_hermes/
 };
   module.exports.super_enlace=super_enlace;
 
-  super_enlace('config','config','../system/configuracion.html',config_data);
+  super_enlace('config','config','../system/configuracion.html',config_data.config_data);
   super_enlace('Smart_emptying','../system/remesa_hermes/rm_2.html');
-  super_enlace('security_page','security_page','../system/security_page.html',pass_code_data);
+  super_enlace('security_page','security_page','../system/security_page.html',config_data.pass_code_data);
 
 })
 }
