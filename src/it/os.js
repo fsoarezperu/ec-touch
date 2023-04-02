@@ -1038,6 +1038,7 @@ async function crear_nueva_remesa(no_remesa, tienda_id, no_caja, codigo_empleado
 }
 module.exports.crear_nueva_remesa = crear_nueva_remesa;
 /////////////////////////////////////////////////////////////////
+//esta funcion tiene que cumplir con terminar la nueva remesa generada.
 async function terminar_nueva_remesa(no_remesa) {
   console.log("terminar_nueva_remesa...aqui estoy terminando una nueva remesa en la base de datos con numero:"+no_remesa);
   //return new Promise(async function(resolve, reject) {
@@ -1103,6 +1104,7 @@ async function terminar_nueva_remesa(no_remesa) {
                                     console.log("abajo monto actual");
                                     console.log(monto_remesa_hermes);
                                   }
+
                                   var values_to_update_machines={
                                     tienda_id:got_tienda_id,
                                      monto_actual:monto_remesa_hermes,
@@ -1116,6 +1118,7 @@ async function terminar_nueva_remesa(no_remesa) {
                                     // no_billetes_reci:new_values.total_notes
                                   }
                                   console.log(values_to_update_machines);
+
                                   try {
                                     await pool.query("UPDATE machine SET ? WHERE tienda_id=?", [values_to_update_machines,got_tienda_id]);
 
@@ -2162,8 +2165,11 @@ return new Promise(async function(resolve, reject) {
       if (tbm_status==true) {
         logea(chalk.yellow("AQUI CONSULTA EN TBM EL LIMITE MAXIMO PARA ESTA MAQUINA Y ACTUALIZA LOCALMENTE"));
         var limites =await to_tbm_synch.consulta_limite_maximo_de_pago_en_tbm();
-        console.log(chalk.green("Limite de pago obtenido por tbm:"+limites+ " y actualizado en la base de datos local- tabla machine"));
-        await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,global.numero_de_serie]);
+        console.log(chalk.green("Limite de pago obtenido por tbm:"+limites[0].limite_maximo_de_retiro+ " y actualizado en la base de datos local- tabla machine"));
+//        await pool.query('UPDATE machine set limite_maximo_de_retiro=? WHERE machine_sn=?', [limites,globals.numero_de_serie]);
+      console.log(limites);
+        await pool.query('UPDATE machine set ? WHERE machine_sn=?', [limites[0],globals.numero_de_serie]);
+
       }
     //  console.log("MACHINE FOUND");
     //  console.log("this macine 222="+JSON.stringify(this_machine222));
@@ -2193,6 +2199,9 @@ module.exports.comprueba_maquina_inicial=comprueba_maquina_inicial;
 async function consulta_this_machine() {
   const this_machine2121 = await pool.query("SELECT * FROM machine");
   //console.log(JSON.stringify(remesa_hermes_entambox));
+  console.log(this_machine2121[0].machine_sn);
+  globals.numero_de_serie=this_machine2121[0].machine_sn;
+  console.log("guardando numero de serie en globals."+ globals.numero_de_serie);
   return this_machine2121;
 }
 module.exports.consulta_this_machine = consulta_this_machine;

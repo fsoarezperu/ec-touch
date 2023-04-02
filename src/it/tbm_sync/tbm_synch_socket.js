@@ -65,7 +65,7 @@ console.log("socket emmited announce_user_connected");
     server.io.emit('show_connected_to_TBM',"show_connected_to_TBM");
     console.log("iniciando tambiox manager ping");
      os.tambox_manager_ping();
-     console.log("comprueba_maquina_inicial");
+     console.log("comprueba_maquina_inicial x001");
     await os.comprueba_maquina_inicial();
     console.log("synch_required");
     await synchronize.synch_required();
